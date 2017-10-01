@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">SpeakerBand</string>
     <string name="action_settings">Settings</string>
+    <string name="titleShuffle">Shuffle</string>
+    <string name="titleEnd">END</string>
+    <string name="permission_menssage">SpeakerBand  necesita permisos de lectura para mostrar tu biblioteca musical en la aplicaion</string>
 </resources>

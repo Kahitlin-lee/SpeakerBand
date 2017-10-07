@@ -164,11 +164,11 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+//TODO - Esto me peta en mi movil!!! Dice que songList es null
         //Actualizamos el Servicio con toda la lista de canciones
-        musicService.setList(songList);
-
-        SongAdapter songAdt = new SongAdapter(this, songList);
-        songView.setAdapter(songAdt);
+//        musicService.setList(songList);
+//        SongAdapter songAdt = new SongAdapter(this, songList);
+//        songView.setAdapter(songAdt);
 
     }
 

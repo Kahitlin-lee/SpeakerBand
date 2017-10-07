@@ -1,6 +1,17 @@
 apply plugin: 'com.android.application'
 
 android {
+
+    sourceSets {
+        main {
+            res.srcDirs = [
+                    'src/main/res/layouts/connection' ,
+                    'src/main/res/layouts/reproductor' ,
+                    'src/main/res/layouts' ,
+                    'src/main/res'
+            ]
+        }
+    }
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
     defaultConfig {

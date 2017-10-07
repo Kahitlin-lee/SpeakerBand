@@ -13,9 +13,9 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
-import java.util.HashMap;
+import com.speakerband.R;
 
-import edu.rit.se.crashavoidance.R;
+import java.util.HashMap;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
 
 /**
@@ -29,7 +29,7 @@ public class MainFragment extends Fragment {
     private Switch noPromptServiceRegistrationSwitch;
     private Button discoverServicesButton;
     private AvailableServicesFragment availableServicesFragment;
-    private MainActivity mainActivity;
+    private ConnectionActivity mainActivity;
     private Toolbar toolbar;
     private static final String TAG = WifiDirectHandler.TAG + "MainFragment";
 
@@ -149,7 +149,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mainActivity = (MainActivity) getActivity();
+        mainActivity = (ConnectionActivity) getActivity();
     }
 
     /**

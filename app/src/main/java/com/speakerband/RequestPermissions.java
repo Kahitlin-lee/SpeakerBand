@@ -24,8 +24,12 @@ public class RequestPermissions
     /**
      *  Permisos "peligrosos" no concedidos por el manifiesto en versiones >= Marshmallow
      */
-    public static final String[] NEEDED_PERMISSIONS = {android.Manifest.permission.READ_EXTERNAL_STORAGE
-            , android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    public static final String[] NEEDED_PERMISSIONS = {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+            , android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            , android.Manifest.permission.ACCESS_FINE_LOCATION
+            , android.Manifest.permission.RECORD_AUDIO};        //TODO No sé para qué quiere grabar audio!
+
     public View dialogoPermisos = null;
     public ViewGroup vistaPadre = null;
 

@@ -11,11 +11,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import com.speakerband.R;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import edu.rit.se.crashavoidance.R;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
 
 /**

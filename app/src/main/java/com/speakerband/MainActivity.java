@@ -19,6 +19,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+
+import com.speakerband.connection.ConnectionActivity;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -149,6 +152,11 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
+                Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
+                startActivity(intent);
+
+
             }
         });
 
@@ -163,11 +171,11 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-//TODO - Esto me peta en mi movil!!! Dice que songList es null
+//TODO - Esto me peta en mi movil algunas veces!!! Dice que songList es null
         //Actualizamos el Servicio con toda la lista de canciones
 //        musicService.setList(songList);
-//        SongAdapter songAdt = new SongAdapter(this, songList);
-//        songView.setAdapter(songAdt);
+        SongAdapter songAdt = new SongAdapter(this, songList);
+        songView.setAdapter(songAdt);
 
     }
 

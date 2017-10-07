@@ -50,7 +50,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "Creating MainActivity");
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_connection);
 
         // Initialize ActionBar
         Toolbar toolbar = (Toolbar) findViewById(R.id.mainToolbar);

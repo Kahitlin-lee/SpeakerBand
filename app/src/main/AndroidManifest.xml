@@ -43,6 +43,7 @@
 
         <activity android:name=".connection.ConnectionActivity"
             android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
 
         <service android:name="com.speakerband.MusicService" />

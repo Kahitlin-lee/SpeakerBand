@@ -145,20 +145,7 @@ public class MainActivity extends AppCompatActivity
      */
     public void drawScreenAfterPermissions()
     {
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-
-                Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
-                startActivity(intent);
-
-
-            }
-        });
+        initActionButton();
 
         songView = (ListView) findViewById(R.id.song_list);
         songList = new ArrayList<Song>();
@@ -177,6 +164,21 @@ public class MainActivity extends AppCompatActivity
         SongAdapter songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
 
+    }
+
+    private void initActionButton() {
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+
+                Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     /**

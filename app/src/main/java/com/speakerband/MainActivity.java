@@ -149,10 +149,6 @@ public class MainActivity extends AppCompatActivity
 
         songView = (ListView) findViewById(R.id.song_list);
         ArrayList songList = getSongList();
-
-//TODO - Esto me peta en mi movil algunas veces!!! Dice que songList es null
-        //Actualizamos el Servicio con toda la lista de canciones
-//        musicService.setList(songList);
         SongAdapter songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
 

@@ -1,5 +1,6 @@
 package com.speakerband;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -13,6 +14,8 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -55,9 +58,9 @@ public class MainActivity extends AppCompatActivity
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
         requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
 
-        { //Pinta la aplicacion una vez aceptados los permisos
-            drawScreenAfterPermissions();
-        }
+        //Pinta la aplicacion
+        drawScreen();
+
     }
 
 
@@ -139,7 +142,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Una vez aceptados los permisos este metodo es el encargado de pintar la aplicacion
      */
-    public void drawScreenAfterPermissions()
+    public void drawScreen()
     {
         initActionButton();
 
@@ -187,7 +190,7 @@ public class MainActivity extends AppCompatActivity
         if (grantedPermissions == grantResults.length)
         {
             requerirPermisos.eliminarDialogoPermisos();
-            drawScreenAfterPermissions();
+            drawScreen();
         }
     }
     //Metodos que obtienen la musica local del movil y la muestra
@@ -197,6 +200,11 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<Song> getSongList()
     {
         ArrayList list = new ArrayList();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            return list;
+        }
+
         //instancia de ContentResolver
         ContentResolver musicResolver = getContentResolver();
         //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".

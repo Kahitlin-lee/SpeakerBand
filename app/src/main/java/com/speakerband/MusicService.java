@@ -26,7 +26,7 @@ public class MusicService extends Service implements
     //lista de canciones, array con las canciones
     private ArrayList<Song> songs;
     //posición actual
-    private int songPosition;
+    private Song song;
     //variable de instancia que represente la clase Binder
     private final IBinder musicBind = new MusicBinder();
 
@@ -38,7 +38,6 @@ public class MusicService extends Service implements
         //creamos el Servicio
         super.onCreate();
         //inicializamos la posicion
-        songPosition = 0;
         //Creamos el MediaPlayer
         mediaPlayer = new MediaPlayer();
         //invocamos al merodo initializeMusicPlayer();
@@ -112,10 +111,8 @@ public class MusicService extends Service implements
         //es necesario restablecer el MediaPlayer ya que también se usara cuando el usuario
         //esté reproduciendo las canciones.
         mediaPlayer.reset();
-        //obtengo song la cancion
-        Song playSong = songs.get(songPosition);
         //obtengo el  id de la cancion
-        long currSong = playSong.getID();
+        long currSong = song.getID();
         //cambio uri
         Uri trackUri = ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -134,11 +131,11 @@ public class MusicService extends Service implements
     /**
      * Merodo para establecer la canción actual.
      * Lo llamaremos cuando el usuario escoja una canción de la lista.
-     * @param songIndex
+     * @param song
      */
-    public void setSong(int songIndex)
+    public void setSong(Song song)
     {
-        songPosition = songIndex;
+        this.song = song;
     }
 
     /**

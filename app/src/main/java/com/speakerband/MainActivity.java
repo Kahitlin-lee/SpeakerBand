@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity
     protected void onStart()
     {
         super.onStart();
-        if(playIntent==null)
+        if(playIntent == null)
         {
             playIntent = new Intent(this, MusicService.class);
             bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
@@ -147,7 +147,6 @@ public class MainActivity extends AppCompatActivity
         List songList = getSongList();
         SongAdapter songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
-
     }
 
     private void initActionButton() {
@@ -211,7 +210,7 @@ public class MainActivity extends AppCompatActivity
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
 
         //iterar los resultados, primero chequeando que tenemos datos válidos:
-        if(musicCursor!=null && musicCursor.moveToFirst())
+        if(musicCursor != null && musicCursor.moveToFirst())
         {
             //get Columnas
             int titleColumn = musicCursor.getColumnIndex

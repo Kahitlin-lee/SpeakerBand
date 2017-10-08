@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity
     public void drawScreen()
     {
         ListView songView = (ListView) findViewById(R.id.song_list);
-        List songList = getSongList(getContentResolver());
+        List songList = getSongList(this);
         SongAdapter songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
 

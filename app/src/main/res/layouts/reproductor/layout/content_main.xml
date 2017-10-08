@@ -8,15 +8,12 @@
     tools:context="com.speakerband.MainActivity"
     tools:showIn="@layout/activity_main">
 
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical"
         android:background="#FF330000"
-        tools:context=".MainActivity"
-        android:id="@+id/linearLayoutMainContent">
+        android:id="@+id/relativeLayoutMainContent">
 
         <ListView
             android:id="@+id/song_list"
@@ -24,6 +21,17 @@
             android:layout_height="wrap_content" >
         </ListView>
 
-    </LinearLayout>
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#FF330000"
+            tools:context=".MainActivity"
+            android:layout_below="@id/song_list"
+            android:layout_alignParentBottom = "true"
+            android:id="@+id/linear">
+        </LinearLayout>
+    </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

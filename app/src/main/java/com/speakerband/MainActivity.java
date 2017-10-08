@@ -1,5 +1,6 @@
 package com.speakerband;
 
+
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -19,27 +20,33 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
-
+import android.widget.MediaController.MediaPlayerControl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import com.speakerband.connection.ConnectionActivity;
+
+import java.util.*;
+
 /**
  * Activity principal
  */
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements MediaPlayerControl
 {
-    static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 99;
-
-    private ArrayList<Song> songList;
     //TODO cambiar por RecyclerView
-    private ListView songView;
     private RequestPermissions requerirPermisos;
     //--
     private MusicService musicService;
     private Intent playIntent;
+    //--
     private boolean musicIsConnected = false;
-
+    //Clase MusicController
+    private MusicController controller;
+    //variables pause y volver atras
+    private boolean paused = false, playbackPaused = false;
+    //
+    private List<Song> songList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -49,19 +56,15 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        initActionButton();
         requerirPermisos = new RequestPermissions();
-
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
-        if(requerirPermisos.havePermissions(this) == false)
-        {
-            requerirPermisos.showWarning(MainActivity.this, getIntent());
-        }
-        else
-        { //Pinta la aplicacion una vez aceptados los permisos
-            drawScreenAfterPermissions();
-        }
-    }
+        requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
 
+        //Pinta la aplicacion
+        drawScreen();
+        setController();
+    }
 
     /**
      * Declaración e inicialización del objeto que representa al servicio
@@ -82,7 +85,7 @@ public class MainActivity extends AppCompatActivity
             //obtenemos el servicio
             musicService = binder.getService();
             //pasamos la lista
-            //musicService.setList(songList);
+            musicService.setList(songList);
             musicIsConnected = true;
         }
 
@@ -92,6 +95,7 @@ public class MainActivity extends AppCompatActivity
          */
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            //TODO
             musicIsConnected = false;
         }
     };
@@ -108,7 +112,7 @@ public class MainActivity extends AppCompatActivity
     protected void onStart()
     {
         super.onStart();
-        if(playIntent==null)
+        if(playIntent == null)
         {
             playIntent = new Intent(this, MusicService.class);
             bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
@@ -116,6 +120,31 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     *
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (paused) {
+            setController();
+            paused = false;
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    protected void onStop()
+    {
+        controller.hide();
+        super.onStop();
+    }
+
+    /**
+     *
+     */
     @Override
     protected void onDestroy()
     {
@@ -133,15 +162,37 @@ public class MainActivity extends AppCompatActivity
      */
     public void songPicked(View view)
     {
-        musicService.setSong(Integer.parseInt(view.getTag().toString()));
+        musicService.setSong((Song)view.getTag());
         musicService.playSong();
+        if(playbackPaused)
+        {
+            setController();
+            playbackPaused = false;
+        }
+        controller.show(0);
     }
 
     //Metodosj usados para administrar los permisos de la api mayores a las 26
     /**
      * Una vez aceptados los permisos este metodo es el encargado de pintar la aplicacion
      */
-    public void drawScreenAfterPermissions()
+    public void drawScreen()
+    {
+        initActionButton();
+        ListView songView = (ListView) findViewById(R.id.song_list);
+        songList = getSongList(this);
+        SongAdapter songAdt = new SongAdapter(this, songList);
+        songView.setAdapter(songAdt);
+
+        //Actualizamos el Servicio con toda la lista de canciones
+        if(musicService != null)
+            musicService.setList(songList);
+    }
+
+    /**
+     *
+     */
+    private void initActionButton()
     {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
@@ -150,26 +201,11 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
+                Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
+                startActivity(intent);
             }
         });
-
-        songView = (ListView) findViewById(R.id.song_list);
-        songList = new ArrayList<Song>();
-        getSongList();
-
-        //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
-        Collections.sort(songList, new Comparator<Song>() {
-            public int compare(Song a, Song b) {
-                return a.getTITLE().compareTo(b.getTITLE());
-            }
-        });
-
-        //Actualizamos el Servicio con toda la lista de canciones
-        musicService.setList(songList);
-
-        SongAdapter songAdt = new SongAdapter(this, songList);
-        songView.setAdapter(songAdt);
-
     }
 
     /**
@@ -194,17 +230,24 @@ public class MainActivity extends AppCompatActivity
         if (grantedPermissions == grantResults.length)
         {
             requerirPermisos.eliminarDialogoPermisos();
-            drawScreenAfterPermissions();
+            drawScreen();
         }
     }
+
     //Metodos que obtienen la musica local del movil y la muestra
     /**
      * método auxiliar para obtener la información del archivo de audio:
      */
-    public void getSongList()
+    public static List<Song> getSongList(Context context)
     {
+        ArrayList list = new ArrayList();
+        if (android.support.v4.app.ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            return list;
+        }
+
         //instancia de ContentResolver
-        ContentResolver musicResolver = getContentResolver();
+        ContentResolver musicResolver = context.getContentResolver();
         //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
@@ -212,7 +255,7 @@ public class MainActivity extends AppCompatActivity
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
 
         //iterar los resultados, primero chequeando que tenemos datos válidos:
-        if(musicCursor!=null && musicCursor.moveToFirst())
+        if(musicCursor != null && musicCursor.moveToFirst())
         {
             //get Columnas
             int titleColumn = musicCursor.getColumnIndex
@@ -231,10 +274,14 @@ public class MainActivity extends AppCompatActivity
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisAlbum = musicCursor.getString(albumColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
-                songList.add(new Song(thisId, thisTitle, thisAlbum, thisArtist));
+                list.add(new Song(thisId, thisTitle, thisAlbum, thisArtist));
             }
             while (musicCursor.moveToNext());
+
+            //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
+            sortByName(list);
         }
+        return list;
     }
 
     //---------------
@@ -249,21 +296,214 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        int id = item.getItemId();
-
         switch (item.getItemId())
         {
             case R.id.action_shuffle:
+                musicService.setMezclar();
                 break;
             case R.id.action_end:
-                stopService(playIntent);
-                musicService=null;
-                System.exit(0);
+                musicService = null;
+                finish();
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    //MEtodo de MusicController ,
 
+    /**
+     * Metodo de ayuda para configurar el controlador
+     * más de una vez en el ciclo de vida de la aplicación
+     */
+    private void setController()
+    {
+        // instanciar el controlador:
+        controller = new MusicController(this);
+        controller.setMediaPlayer(this);
+        controller.setAnchorView(findViewById(R.id.linear));
+        controller.setEnabled(true);
+
+        controller.setPrevNextListeners(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                playNext();
+            }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playPrev();
+            }
+        });
+    }
+
+    //métodos que llamamos cuando establecemos el controlador:
+
+    /**
+     * play next
+     */
+    private void playNext()
+    {
+        musicService.playNext();
+        if(playbackPaused){
+            setController();
+            playbackPaused = false;
+        }
+        controller.show(0);
+    }
+
+    /**
+     * play previous
+     */
+    private void playPrev()
+    {
+        musicService.playPrev();
+        if(playbackPaused){
+            setController();
+            playbackPaused = false;
+        }
+        controller.show(0);
+    }
+
+    //Metodos  de MediaPlayerControl
+
+    /**
+     *
+     */
+    @Override
+    public void start()
+    {
+        musicService.pausePlayer();
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void pause()
+    {
+        playbackPaused = true;
+        musicService.pausePlayer();
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public int getDuration()
+    {
+        if(musicService!=null && musicIsConnected && musicService.isPng())
+            return musicService.getDur();
+        else return 0;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public int getCurrentPosition()
+    {
+        if(musicService!=null && musicIsConnected && musicService.isPng())
+            return musicService.getPosn();
+        else return 0;
+    }
+
+    /**
+     *
+     * @param pos
+     */
+    @Override
+    public void seekTo(int pos) {
+        musicService.seek(pos);
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public boolean isPlaying()
+    {
+        if(musicService!=null && musicIsConnected)
+            return musicService.isPng();
+        return false;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public int getBufferPercentage() {
+        return 0;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return 0;
+    }
+
+
+    //Metodos de ordenacion
+    /**
+     * Metodo que ordena las canciones por nombre
+     * @param sl
+     * @return
+     */
+    public static ArrayList sortByName(ArrayList sl)
+    {
+        //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
+        Collections.sort(sl, new Comparator<Song>() {
+            public int compare(Song a, Song b) {
+                return a.getTITLE().compareTo(b.getTITLE());
+            }
+        });
+        return sl;
+    }
+
+    /**
+     * Metodo que ordena las canciones por artista
+     * @param sl
+     * @return
+     */
+    public static ArrayList sortByArtist(ArrayList sl)
+    {
+        //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
+        Collections.sort(sl, new Comparator<Song>() {
+            public int compare(Song a, Song b) {
+                return a.getARTIST().compareTo(b.getARTIST());
+            }
+        });
+        return sl;
+    }
 
 }

@@ -3,7 +3,8 @@ package com.speakerband;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
@@ -16,7 +17,7 @@ import android.widget.TextView;
 
 public class SongAdapter extends BaseAdapter
 {
-    private ArrayList<Song> songs;
+    private List<Song> songs;
     private LayoutInflater songInf;
 
     /**
@@ -24,7 +25,7 @@ public class SongAdapter extends BaseAdapter
      * @param c
      * @param theSongs
      */
-    public SongAdapter(Context c, ArrayList<Song> theSongs)
+    public SongAdapter(Context c, List<Song> theSongs)
     {
         songs = theSongs;
         songInf = LayoutInflater.from(c);
@@ -60,8 +61,8 @@ public class SongAdapter extends BaseAdapter
         //obtener títulos y  artista
         titleView.setText(currSong.getTITLE());
         artistView.setText(currSong.getARTIST());
-        //establecer posición como etiqueta
-        songLay.setTag(position);
+        //establecer Song como etiqueta
+        songLay.setTag(currSong);
         return songLay;
     }
 }

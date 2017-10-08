@@ -24,8 +24,12 @@ public class RequestPermissions
     /**
      *  Permisos "peligrosos" no concedidos por el manifiesto en versiones >= Marshmallow
      */
-    public static final String[] NEEDED_PERMISSIONS = {android.Manifest.permission.READ_EXTERNAL_STORAGE
-            , android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    public static final String[] NEEDED_PERMISSIONS = {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+            , android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            , android.Manifest.permission.ACCESS_FINE_LOCATION
+            , android.Manifest.permission.RECORD_AUDIO};        //TODO No sé para qué quiere grabar audio!
+
     public View dialogoPermisos = null;
     public ViewGroup vistaPadre = null;
 
@@ -35,8 +39,11 @@ public class RequestPermissions
      * @param activity Reference to LibraryActivity
      * @param intent   The intent starting the parent activity
      */
-    public void showWarning(final MainActivity activity, final Intent intent)
+    public void showWarningWhenNeeded(final MainActivity activity, final Intent intent)
     {
+        if(havePermissions(activity)){
+            return;
+        }
         LayoutInflater inflater = LayoutInflater.from(activity);
         dialogoPermisos = inflater.inflate(R.layout.permission_request, null, false);
 
@@ -47,7 +54,7 @@ public class RequestPermissions
                 requestPermissions(activity, intent);
             }
         });
-        vistaPadre = (ViewGroup) activity.findViewById(R.id.linearLayoutMainContent); // main layout of library_content
+        vistaPadre = (ViewGroup) activity.findViewById(R.id.relativeLayoutMainContent); // main layout of library_content
         vistaPadre.addView(dialogoPermisos, -1);
     }
 

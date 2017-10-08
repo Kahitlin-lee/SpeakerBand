@@ -263,9 +263,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_shuffle:
                 break;
             case R.id.action_end:
-                stopService(playIntent);
-                musicService=null;
-                System.exit(0);
+                finish();
                 break;
         }
         return super.onOptionsItemSelected(item);

@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity
 {
     static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 99;
 
-    private ArrayList<Song> songList;
+//    private ArrayList<Song> songList;
     //TODO cambiar por RecyclerView
     private ListView songView;
     private RequestPermissions requerirPermisos;
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity
         initActionButton();
 
         songView = (ListView) findViewById(R.id.song_list);
-        songList = getSongList();
+        ArrayList songList = getSongList();
 
 //TODO - Esto me peta en mi movil algunas veces!!! Dice que songList es null
         //Actualizamos el Servicio con toda la lista de canciones

@@ -148,8 +148,7 @@ public class MainActivity extends AppCompatActivity
         initActionButton();
 
         songView = (ListView) findViewById(R.id.song_list);
-        songList = new ArrayList<Song>();
-        getSongList();
+        songList = getSongList();
 
 //TODO - Esto me peta en mi movil algunas veces!!! Dice que songList es null
         //Actualizamos el Servicio con toda la lista de canciones
@@ -203,8 +202,9 @@ public class MainActivity extends AppCompatActivity
     /**
      * método auxiliar para obtener la información del archivo de audio:
      */
-    public void getSongList()
+    public ArrayList<Song> getSongList()
     {
+        ArrayList list = new ArrayList();
         //instancia de ContentResolver
         ContentResolver musicResolver = getContentResolver();
         //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
@@ -233,18 +233,19 @@ public class MainActivity extends AppCompatActivity
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisAlbum = musicCursor.getString(albumColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
-                songList.add(new Song(thisId, thisTitle, thisAlbum, thisArtist));
+                list.add(new Song(thisId, thisTitle, thisAlbum, thisArtist));
             }
             while (musicCursor.moveToNext());
 
 
             //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
-            Collections.sort(songList, new Comparator<Song>() {
+            Collections.sort(list, new Comparator<Song>() {
                 public int compare(Song a, Song b) {
                     return a.getTITLE().compareTo(b.getTITLE());
                 }
             });
         }
+        return list;
     }
 
     //---------------

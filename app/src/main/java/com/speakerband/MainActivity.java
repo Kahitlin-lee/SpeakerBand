@@ -25,9 +25,7 @@ import android.widget.ListView;
 
 import com.speakerband.connection.ConnectionActivity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 
 /**
  * Activity principal
@@ -146,7 +144,7 @@ public class MainActivity extends AppCompatActivity
     public void drawScreen()
     {
         songView = (ListView) findViewById(R.id.song_list);
-        ArrayList songList = getSongList();
+        List songList = getSongList();
         SongAdapter songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
 
@@ -196,7 +194,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * método auxiliar para obtener la información del archivo de audio:
      */
-    public ArrayList<Song> getSongList()
+    public List<Song> getSongList()
     {
         ArrayList list = new ArrayList();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)

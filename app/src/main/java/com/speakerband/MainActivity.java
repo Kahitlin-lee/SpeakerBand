@@ -151,13 +151,6 @@ public class MainActivity extends AppCompatActivity
         songList = new ArrayList<Song>();
         getSongList();
 
-        //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
-        Collections.sort(songList, new Comparator<Song>() {
-            public int compare(Song a, Song b) {
-                return a.getTITLE().compareTo(b.getTITLE());
-            }
-        });
-
 //TODO - Esto me peta en mi movil algunas veces!!! Dice que songList es null
         //Actualizamos el Servicio con toda la lista de canciones
 //        musicService.setList(songList);
@@ -243,6 +236,14 @@ public class MainActivity extends AppCompatActivity
                 songList.add(new Song(thisId, thisTitle, thisAlbum, thisArtist));
             }
             while (musicCursor.moveToNext());
+
+
+            //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
+            Collections.sort(songList, new Comparator<Song>() {
+                public int compare(Song a, Song b) {
+                    return a.getTITLE().compareTo(b.getTITLE());
+                }
+            });
         }
     }
 

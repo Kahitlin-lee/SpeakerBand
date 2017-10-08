@@ -54,7 +54,7 @@ public class RequestPermissions
                 requestPermissions(activity, intent);
             }
         });
-        vistaPadre = (ViewGroup) activity.findViewById(R.id.linearLayoutMainContent); // main layout of library_content
+        vistaPadre = (ViewGroup) activity.findViewById(R.id.relativeLayoutMainContent); // main layout of library_content
         vistaPadre.addView(dialogoPermisos, -1);
     }
 

@@ -5,6 +5,13 @@
     <string name="titleEnd">END</string>
     <string name="permission_menssage">SpeakerBand  necesita permisos de lectura para mostrar tu biblioteca musical en la aplicaion</string>
 
+    <string name="remote_service_started">Musica</string>
+    <string name="cover_art">Carátula</string>
+    <string name="close_notification">Cerrar notificación</string>
+    <string name="next_song">Next track</string>
+    <string name="play_pause">Reproducir/Pausar</string>
+    <string name="previous_song">Previous track</string>
+
     <!-- Todos estos estilos son importados del Wifi-Direct -->
     <!-- Titles -->
     <string name="title_logs">Logs</string>

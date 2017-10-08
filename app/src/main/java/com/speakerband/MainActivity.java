@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity
     public void drawScreen()
     {
         ListView songView = (ListView) findViewById(R.id.song_list);
-        List songList = getSongList();
+        List songList = getSongList(getContentResolver());
         SongAdapter songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
 
@@ -176,16 +176,16 @@ public class MainActivity extends AppCompatActivity
     /**
      * método auxiliar para obtener la información del archivo de audio:
      */
-    public List<Song> getSongList()
+    public static List<Song> getSongList(Context context)
     {
         ArrayList list = new ArrayList();
-        if (android.support.v4.app.ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (android.support.v4.app.ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             return list;
         }
 
         //instancia de ContentResolver
-        ContentResolver musicResolver = getContentResolver();
+        ContentResolver musicResolver = context.getContentResolver();
         //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 

@@ -1,26 +1,15 @@
 package com.speakerband;
 
-import android.Manifest;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.content.*;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.IBinder;
+import android.os.*;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import android.support.design.widget.*;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
+import android.view.*;
 import android.widget.ListView;
 
 import com.speakerband.connection.ConnectionActivity;
@@ -32,16 +21,12 @@ import java.util.*;
  */
 public class MainActivity extends AppCompatActivity
 {
-    static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 99;
 
-//    private ArrayList<Song> songList;
     //TODO cambiar por RecyclerView
-    private ListView songView;
     private RequestPermissions requerirPermisos;
     //--
     private MusicService musicService;
     private Intent playIntent;
-    private boolean musicIsConnected = false;
 
 
     @Override
@@ -81,9 +66,6 @@ public class MainActivity extends AppCompatActivity
             MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
             //obtenemos el servicio
             musicService = binder.getService();
-            //pasamos la lista
-            //musicService.setList(songList);
-            musicIsConnected = true;
         }
 
         /**
@@ -92,7 +74,7 @@ public class MainActivity extends AppCompatActivity
          */
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            musicIsConnected = false;
+            //TODO
         }
     };
 
@@ -143,7 +125,7 @@ public class MainActivity extends AppCompatActivity
      */
     public void drawScreen()
     {
-        songView = (ListView) findViewById(R.id.song_list);
+        ListView songView = (ListView) findViewById(R.id.song_list);
         List songList = getSongList();
         SongAdapter songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
@@ -197,7 +179,7 @@ public class MainActivity extends AppCompatActivity
     public List<Song> getSongList()
     {
         ArrayList list = new ArrayList();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (android.support.v4.app.ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             return list;
         }
@@ -257,7 +239,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        int id = item.getItemId();
 
         switch (item.getItemId())
         {

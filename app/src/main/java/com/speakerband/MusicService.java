@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
-import java.util.ArrayList;
 import android.content.ContentUris;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -23,9 +22,7 @@ public class MusicService extends Service implements
 {
     //media player , de la clase MediaPlayer
     private MediaPlayer mediaPlayer;
-    //lista de canciones, array con las canciones
-    private ArrayList<Song> songs;
-    //posición actual
+    //canción actual
     private Song song;
     //variable de instancia que represente la clase Binder
     private final IBinder musicBind = new MusicBinder();
@@ -96,15 +93,6 @@ public class MusicService extends Service implements
 
     /**
      *
-     * @param theSongs
-     */
-    public void setList(ArrayList<Song> theSongs)
-    {
-        songs = theSongs;
-    }
-
-    /**
-     *
      */
     public void playSong()
     {
@@ -130,7 +118,7 @@ public class MusicService extends Service implements
 
     /**
      * Merodo para establecer la canción actual.
-     * Lo llamaremos cuando el usuario escoja una canción de la lista.
+     * Lo llamaremos cuando el usuario escoja una canción.
      * @param song
      */
     public void setSong(Song song)

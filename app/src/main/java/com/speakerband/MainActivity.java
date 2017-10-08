@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        initActionButton();
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
         requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
@@ -144,8 +145,6 @@ public class MainActivity extends AppCompatActivity
      */
     public void drawScreen()
     {
-        initActionButton();
-
         songView = (ListView) findViewById(R.id.song_list);
         ArrayList songList = getSongList();
         SongAdapter songAdt = new SongAdapter(this, songList);

@@ -52,13 +52,9 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         requerirPermisos = new RequestPermissions();
-
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
-        if(requerirPermisos.havePermissions(this) == false)
-        {
-            requerirPermisos.showWarning(MainActivity.this, getIntent());
-        }
-        else
+        requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
+
         { //Pinta la aplicacion una vez aceptados los permisos
             drawScreenAfterPermissions();
         }

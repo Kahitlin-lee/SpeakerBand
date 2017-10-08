@@ -39,8 +39,11 @@ public class RequestPermissions
      * @param activity Reference to LibraryActivity
      * @param intent   The intent starting the parent activity
      */
-    public void showWarning(final MainActivity activity, final Intent intent)
+    public void showWarningWhenNeeded(final MainActivity activity, final Intent intent)
     {
+        if(havePermissions(activity)){
+            return;
+        }
         LayoutInflater inflater = LayoutInflater.from(activity);
         dialogoPermisos = inflater.inflate(R.layout.permission_request, null, false);
 

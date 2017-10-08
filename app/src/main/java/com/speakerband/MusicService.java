@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
-import java.util.ArrayList;
 import android.content.ContentUris;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -23,10 +22,8 @@ public class MusicService extends Service implements
 {
     //media player , de la clase MediaPlayer
     private MediaPlayer mediaPlayer;
-    //lista de canciones, array con las canciones
-    private ArrayList<Song> songs;
-    //posición actual
-    private int songPosition;
+    //canción actual
+    private Song song;
     //variable de instancia que represente la clase Binder
     private final IBinder musicBind = new MusicBinder();
 
@@ -38,7 +35,6 @@ public class MusicService extends Service implements
         //creamos el Servicio
         super.onCreate();
         //inicializamos la posicion
-        songPosition = 0;
         //Creamos el MediaPlayer
         mediaPlayer = new MediaPlayer();
         //invocamos al merodo initializeMusicPlayer();
@@ -97,25 +93,14 @@ public class MusicService extends Service implements
 
     /**
      *
-     * @param theSongs
-     */
-    public void setList(ArrayList<Song> theSongs)
-    {
-        songs = theSongs;
-    }
-
-    /**
-     *
      */
     public void playSong()
     {
         //es necesario restablecer el MediaPlayer ya que también se usara cuando el usuario
         //esté reproduciendo las canciones.
         mediaPlayer.reset();
-        //obtengo song la cancion
-        Song playSong = songs.get(songPosition);
         //obtengo el  id de la cancion
-        long currSong = playSong.getID();
+        long currSong = song.getID();
         //cambio uri
         Uri trackUri = ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -123,22 +108,23 @@ public class MusicService extends Service implements
         try
         {
             mediaPlayer.setDataSource(getApplicationContext(), trackUri);
+            mediaPlayer.prepareAsync();
         }
         catch(Exception e){
             Log.e("MUSIC SERVICE", "Error al establecer la fuente de datos", e);
         }
         //Prepara el reproductor para su reproducción, de forma asíncrona
-        mediaPlayer.prepareAsync();
+
     }
 
     /**
      * Merodo para establecer la canción actual.
-     * Lo llamaremos cuando el usuario escoja una canción de la lista.
-     * @param songIndex
+     * Lo llamaremos cuando el usuario escoja una canción.
+     * @param song
      */
-    public void setSong(int songIndex)
+    public void setSong(Song song)
     {
-        songPosition = songIndex;
+        this.song = song;
     }
 
     /**

@@ -61,8 +61,8 @@ public class SongAdapter extends BaseAdapter
         //obtener títulos y  artista
         titleView.setText(currSong.getTITLE());
         artistView.setText(currSong.getARTIST());
-        //establecer posición como etiqueta
-        songLay.setTag(position);
+        //establecer Song como etiqueta
+        songLay.setTag(currSong);
         return songLay;
     }
 }

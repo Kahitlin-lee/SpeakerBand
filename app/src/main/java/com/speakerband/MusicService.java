@@ -108,12 +108,13 @@ public class MusicService extends Service implements
         try
         {
             mediaPlayer.setDataSource(getApplicationContext(), trackUri);
+            mediaPlayer.prepareAsync();
         }
         catch(Exception e){
             Log.e("MUSIC SERVICE", "Error al establecer la fuente de datos", e);
         }
         //Prepara el reproductor para su reproducción, de forma asíncrona
-        mediaPlayer.prepareAsync();
+
     }
 
     /**

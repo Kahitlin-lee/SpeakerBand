@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:onClick="songPicked"
     android:orientation="vertical"
+    android:longClickable="true"
     android:padding="5dp" >
 
     <TextView

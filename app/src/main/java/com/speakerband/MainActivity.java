@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
@@ -23,6 +24,9 @@ import android.widget.MediaController.MediaPlayerControl;
 
 import com.speakerband.connection.ConnectionActivity;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -299,6 +303,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             if (musicService != null)
                 musicService.setList(listSelection);
  //       }
+        //Intento crear una carpeta interna para que la use mi app y asi enviarlo mejor de un
+        //dispositivo a otro
+//        File mydir = context.getDir("mydir", Context.MODE_PRIVATE); //Creating an internal dir;
+//        File fileWithinMyDir = new File(mydir, "myfile"); //Getting a file within the dir.
+//        try {
+//            FileOutputStream out = new FileOutputStream(fileWithinMyDir); //Use the stream as usual to write into the file
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+       // }
     }
 
     /**

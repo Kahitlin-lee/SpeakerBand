@@ -27,9 +27,9 @@ import edu.rit.se.wifibuddy.DnsSdService;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
 
 /**
- * The main Activity of the application, which is a container for Fragments and the ActionBar.
- * Contains WifiDirectHandler, which is a service
- * MainActivity has a Communication BroadcastReceiver to handle Intents fired from WifiDirectHandler.
+ * The main Activity of the application,  que es un contenedor para Fragment y la ActionBar.
+ * Contains WifiDirectHandler, que es un service
+ * MainActivity tiene Communication BroadcastReceiver to handle Intents diparado desde WifiDirectHandler.
  */
 public class ConnectionActivity extends AppCompatActivity implements WiFiDirectHandlerAccessor
 {
@@ -52,7 +52,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         Log.i(TAG, "Creating MainActivity");
         setContentView(R.layout.activity_main_connection);
 
-        // Initialize ActionBar
+        // Inicializa ActionBar
         Toolbar toolbar = (Toolbar) findViewById(R.id.mainToolbar);
         setSupportActionBar(toolbar);
 
@@ -66,8 +66,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     }
 
     /**
-     * Set the CommunicationReceiver for receiving intents fired from the WifiDirectHandler
-     * Used to update the UI and receive communication messages
+     * Configura CommunicationReceiver para recibir intents disparados de WifiDirectHandler
+     * Se utiliza para actualizar la interfaz de usuario y recibir mensajes de comunicación
      */
     private void registerCommunicationReceiver() {
         CommunicationReceiver communicationReceiver = new CommunicationReceiver();
@@ -81,7 +81,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     }
 
     /**
-     * Adds the Main Menu to the ActionBar
+     * Agrega al  Main Menu de ActionBar
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -90,7 +90,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     }
 
     /**
-     * Called when a MenuItem in the Main Menu is selected
+     * Se llama cuando MenuItem cuando main menu esta seleccionado
      * @param item Item selected
      */
     @Override

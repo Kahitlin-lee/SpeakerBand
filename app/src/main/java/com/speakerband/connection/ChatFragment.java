@@ -45,8 +45,8 @@ import static com.speakerband.ListSelection.listSelection;
 import static com.speakerband.MainActivity.getSongList;
 
 /**
- * This fragment handles chat related UI which includes a list view for messages
- * and a message entry field with a send button.
+ * Este fragmento gestiona la interfaz de usuario relacionada con el chat, que incluye una vista de lista de mensajes
+ * y un campo de entrada de mensaje con un botón de envío.
  */
 public class ChatFragment extends ListFragment {
 
@@ -54,14 +54,15 @@ public class ChatFragment extends ListFragment {
     private ChatMessageAdapter adapter = null;
     private List<String> items = new ArrayList<>();
     private ArrayList<String> messages = new ArrayList<>();
+    //instancia de la interfaz WiFiDirectHandlerAccessor
     private WiFiDirectHandlerAccessor handlerAccessor;
     private Toolbar toolbar;
+    //variables de los botones
     private Button sendButton;
     private ImageButton cameraButton;
-    private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
-
-    //--
     private ImageButton songButton;
+
+    private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
     /**
      *
@@ -96,15 +97,17 @@ public class ChatFragment extends ListFragment {
             }
         });
 
+        //el adaptador es solo usado para los mensajes
         ListView messagesListView = (ListView) view.findViewById(android.R.id.list);
         adapter = new ChatMessageAdapter(getActivity(), android.R.id.text1, items);
         messagesListView.setAdapter(adapter);
         messagesListView.setDividerHeight(0);
 
-        // Prevents the keyboard from pushing the fragment and messages up and off the screen
+        // Evita que el teclado empuje el fragmento y los mensajes hacia arriba y hacia fuera de la pantalla
         messagesListView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
         messagesListView.setStackFromBottom(true);
 
+        //Evento del boton enviar de el chat
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -113,7 +116,7 @@ public class ChatFragment extends ListFragment {
                 if (communicationManager != null && !textMessageEditText.toString().equals(""))
                 {
                     String message = textMessageEditText.getText().toString();
-                    // Gets first word of device name
+                    // Obtiene la primera palabra del nombre del dispositivo
                     String author = handlerAccessor.getWifiHandler().getThisDevice().deviceName.split(" ")[0];
                     byte[] messageBytes = (author + ": " + message).getBytes();
                     Message finalMessage = new Message(MessageType.TEXT, messageBytes);
@@ -132,6 +135,7 @@ public class ChatFragment extends ListFragment {
             }
         });
 
+        //evento del voton que saca la foto y la envia
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -144,7 +148,7 @@ public class ChatFragment extends ListFragment {
             }
         });
 
-        //probamos enviar una cancion
+        //evento del boton  enviar una cancion
         songButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -165,7 +169,9 @@ public class ChatFragment extends ListFragment {
      * Coge
      * @param readMessage
      */
-    public void pushMessage(byte[] readMessage) {
+    public void pushMessage(byte[] readMessage)
+    {
+        //deserializa lo que llegue
         Message message = SerializationUtils.deserialize(readMessage);
         Bitmap bitmap;
         switch(message.messageType) {
@@ -180,6 +186,7 @@ public class ChatFragment extends ListFragment {
                 bitmap = BitmapFactory.decodeByteArray(message.message, 0, message.message.length);
                 ImageView imageView = new ImageView(getContext());
                 imageView.setImageBitmap(bitmap);
+                //lo envia al metodo que crea nuevamente la imagen
                 loadPhoto(imageView, bitmap.getWidth(), bitmap.getHeight());
                 break;
             //cancion
@@ -193,6 +200,8 @@ public class ChatFragment extends ListFragment {
 
     /**
      * Envia el texto
+     * Este metodo se usa en el onClick de el envio de texto
+     * e internamente en el otro metodo pushMenssage
      * @param message
      */
     public void pushMessage(String message)
@@ -203,6 +212,7 @@ public class ChatFragment extends ListFragment {
 
     /**
      * Envia la imagen
+     * Este metodo se implementa en ConnectionActivity
      * @param image
      */
     public void pushImage(Bitmap image)
@@ -224,18 +234,23 @@ public class ChatFragment extends ListFragment {
         //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
+
+
         //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
         //toByteArray(Crea una matriz de bytes recién asignada.
+        // en los 3 casos lo pasa a un array de bytes
         byte[] byteArraySong = stream.toByteArray();
-        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array
+        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los 3 casos
         Message message = new Message(MessageType.SONG, byteArraySong);
+        //esto lo hace en los 3 casos
         CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
-        //lo serializa
+        //lo serializa, esto tambien en los 3 casos
         communicationManager.write(SerializationUtils.serialize(message));
     }
 
     /**
-     * ArrayAdapter to manage chat messages.
+     * ArrayAdapter para administrar mensajes de chat.
+     * Solo lo utiliza para los mensajes de texto
      */
     public class ChatMessageAdapter extends ArrayAdapter<String>
     {
@@ -296,6 +311,7 @@ public class ChatFragment extends ListFragment {
 
     /**
      * Carga la foto en el movil que la coge
+     * Y la muestra con el boton de OK en un layout
      * @param imageView
      * @param width
      * @param height
@@ -319,14 +335,13 @@ public class ChatFragment extends ListFragment {
             }
 
         });
-
-
         imageDialog.create();
         imageDialog.show();
     }
 
     /**
-     *
+     * En este metodo es donde querria que se coja la cacion y la sume a la lista
+     * de reproduccion del cliente
      * @param song
      */
     private void loadSong(Song song)

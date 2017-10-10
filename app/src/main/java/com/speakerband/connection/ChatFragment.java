@@ -29,6 +29,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.speakerband.R;
+import com.speakerband.Song;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 
@@ -39,6 +40,9 @@ import java.util.ArrayList;
 import java.util.List;
 import edu.rit.se.wifibuddy.CommunicationManager;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
+
+import static com.speakerband.ListSelection.listSelection;
+import static com.speakerband.MainActivity.getSongList;
 
 /**
  * This fragment handles chat related UI which includes a list view for messages
@@ -56,6 +60,16 @@ public class ChatFragment extends ListFragment {
     private ImageButton cameraButton;
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
+    //--
+    private ImageButton songButton;
+
+    /**
+     *
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
@@ -64,6 +78,8 @@ public class ChatFragment extends ListFragment {
         sendButton.setEnabled(false);
 
         cameraButton = (ImageButton) view.findViewById(R.id.cameraButton);
+        //Agrego y anlazo el boton para pasar una cancion
+        songButton = (ImageButton) view.findViewById(R.id.songButton);
 
         textMessageEditText = (EditText) view.findViewById(R.id.textMessageEditText);
         textMessageEditText.addTextChangedListener(new TextWatcher() {
@@ -94,7 +110,8 @@ public class ChatFragment extends ListFragment {
             public void onClick(View arg0) {
                 Log.i(WifiDirectHandler.TAG, "Send button tapped");
                 CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
-                if (communicationManager != null && !textMessageEditText.toString().equals("")) {
+                if (communicationManager != null && !textMessageEditText.toString().equals(""))
+                {
                     String message = textMessageEditText.getText().toString();
                     // Gets first word of device name
                     String author = handlerAccessor.getWifiHandler().getThisDevice().deviceName.split(" ")[0];
@@ -120,8 +137,18 @@ public class ChatFragment extends ListFragment {
             public void onClick(View v) {
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (takePictureIntent.resolveActivity(getContext().getPackageManager()) != null) {
+                    //se envia la informacion de un activity a otro con
+                    //startActivityForResult
                     startActivityForResult(takePictureIntent, 1);
                 }
+            }
+        });
+
+        //probamos enviar una cancion
+        songButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
             }
         });
 
@@ -134,29 +161,52 @@ public class ChatFragment extends ListFragment {
         Handler getHandler();
     }
 
+    /**
+     * Coge
+     * @param readMessage
+     */
     public void pushMessage(byte[] readMessage) {
         Message message = SerializationUtils.deserialize(readMessage);
+        Bitmap bitmap;
         switch(message.messageType) {
             case TEXT:
                 Log.i(TAG, "Text message received");
+                //aca esta cogiendo el mensaje
                 pushMessage(new String(message.message));
                 break;
             case IMAGE:
+                //con esto coge la imagen
                 Log.i(TAG, "Image message received");
-                Bitmap bitmap = BitmapFactory.decodeByteArray(message.message, 0, message.message.length);
+                bitmap = BitmapFactory.decodeByteArray(message.message, 0, message.message.length);
                 ImageView imageView = new ImageView(getContext());
                 imageView.setImageBitmap(bitmap);
                 loadPhoto(imageView, bitmap.getWidth(), bitmap.getHeight());
                 break;
+            //cancion
+            case SONG:
+                Log.i(TAG, "Song");
+                //pushSong();
+                break;
+
         }
     }
 
-    public void pushMessage(String message) {
+    /**
+     * Envia el texto
+     * @param message
+     */
+    public void pushMessage(String message)
+    {
         adapter.add(message);
         adapter.notifyDataSetChanged();
     }
 
-    public void pushImage(Bitmap image) {
+    /**
+     * Envia la imagen
+     * @param image
+     */
+    public void pushImage(Bitmap image)
+    {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] byteArray = stream.toByteArray();
@@ -167,10 +217,28 @@ public class ChatFragment extends ListFragment {
     }
 
     /**
+     * Envia la cancion
+     */
+    public void pushSong(Song song)
+    {
+        //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
+        //toByteArray(Crea una matriz de bytes recién asignada.
+        byte[] byteArraySong = stream.toByteArray();
+        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array
+        Message message = new Message(MessageType.SONG, byteArraySong);
+        CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
+        //lo serializa
+        communicationManager.write(SerializationUtils.serialize(message));
+    }
+
+    /**
      * ArrayAdapter to manage chat messages.
      */
-    public class ChatMessageAdapter extends ArrayAdapter<String> {
-
+    public class ChatMessageAdapter extends ArrayAdapter<String>
+    {
         public ChatMessageAdapter(Context context, int textViewResourceId, List<String> items) {
             super(context, textViewResourceId, items);
         }
@@ -226,10 +294,15 @@ public class ChatFragment extends ListFragment {
         }
     }
 
-    private void loadPhoto(ImageView imageView, int width, int height) {
-
+    /**
+     * Carga la foto en el movil que la coge
+     * @param imageView
+     * @param width
+     * @param height
+     */
+    private void loadPhoto(ImageView imageView, int width, int height)
+    {
         ImageView tempImageView = imageView;
-
 
         AlertDialog.Builder imageDialog = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
@@ -250,5 +323,14 @@ public class ChatFragment extends ListFragment {
 
         imageDialog.create();
         imageDialog.show();
+    }
+
+    /**
+     *
+     * @param song
+     */
+    private void loadSong(Song song)
+    {
+
     }
 }

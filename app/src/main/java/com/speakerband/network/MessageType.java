@@ -5,5 +5,7 @@ package com.speakerband.network;
  */
 public enum MessageType {
     TEXT,
-    IMAGE
+    IMAGE,
+    //cancion
+    SONG
 }

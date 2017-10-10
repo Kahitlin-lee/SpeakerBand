@@ -9,6 +9,7 @@
     <string name="cover_art">Carátula</string>
     <string name="close_notification">Cerrar notificación</string>
     <string name="next_song">Next track</string>
+    <string name="pass_to_list">Añadir a la lista de reproduccion</string>
     <string name="play_pause">Reproducir/Pausar</string>
     <string name="previous_song">Previous track</string>
 

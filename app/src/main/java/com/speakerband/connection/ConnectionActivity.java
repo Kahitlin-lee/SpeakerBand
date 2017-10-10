@@ -31,8 +31,8 @@ import edu.rit.se.wifibuddy.WifiDirectHandler;
  * Contains WifiDirectHandler, which is a service
  * MainActivity has a Communication BroadcastReceiver to handle Intents fired from WifiDirectHandler.
  */
-public class ConnectionActivity extends AppCompatActivity implements WiFiDirectHandlerAccessor {
-
+public class ConnectionActivity extends AppCompatActivity implements WiFiDirectHandlerAccessor
+{
     private WifiDirectHandler wifiDirectHandler;
     private boolean wifiDirectHandlerBound = false;
     private ChatFragment chatFragment = null;
@@ -260,6 +260,14 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         }
     }
 
+    /**
+     * le llega la foto
+     * Con este metodo se coge la info que manda del activity
+     * ChatFragmen
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "Image captured");
@@ -274,7 +282,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
      * BroadcastReceiver used to receive Intents fired from the WifiDirectHandler when P2P events occur
      * Used to update the UI and receive communication messages
      */
-    public class CommunicationReceiver extends BroadcastReceiver {
+    public class CommunicationReceiver extends BroadcastReceiver
+    {
 
         private static final String TAG = WifiDirectHandler.TAG + "CommReceiver";
 

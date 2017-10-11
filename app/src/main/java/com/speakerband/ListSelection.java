@@ -1,7 +1,7 @@
 package com.speakerband;
 
+
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by g_electra on 9/10/17.
@@ -10,4 +10,6 @@ import java.util.List;
 public class ListSelection
 {
     public static ArrayList<Song> listSelection = new ArrayList<Song>();
+    public static ArrayList<Song> listSelectionCliente = new ArrayList<>();
+
 }

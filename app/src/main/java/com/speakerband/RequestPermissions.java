@@ -60,7 +60,7 @@ public class RequestPermissions
 
     /**
      * Inicia un diálogo de solicitud de permiso si es necesario
-     *Este método funciona de manera asincrónica: realiza la devolución inmediatamente y, cuando el
+     * Este método funciona de manera asincrónica: realiza la devolución inmediatamente y, cuando el
      *  usuario responde al cuadro de diálogo, el sistema llama al método callback de la app con los resultados
      * @param activity El contexto de las actividades a utilizar para la verificación de permisos
      */
@@ -68,7 +68,6 @@ public class RequestPermissions
     public void requestPermissions(Activity activity, Intent callbackIntent)
     {
         activity.requestPermissions( NEEDED_PERMISSIONS, 1);
-//        ActivityCompat.requestPermissions(activity, NEEDED_PERMISSIONS, 1);
     }
 
     /**

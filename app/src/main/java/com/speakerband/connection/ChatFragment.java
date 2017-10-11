@@ -2,13 +2,16 @@ package com.speakerband.connection;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
 import android.support.v7.widget.Toolbar;
@@ -28,25 +31,33 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.speakerband.MainActivity;
+import com.speakerband.MusicService.*;
+import com.speakerband.MusicService;
 import com.speakerband.R;
 import com.speakerband.Song;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
+import static com.speakerband.ListSelection.*;
 
 import org.apache.commons.lang3.SerializationUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import edu.rit.se.wifibuddy.CommunicationManager;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
 
-import static com.speakerband.ListSelection.listSelection;
-import static com.speakerband.MainActivity.getSongList;
 
 /**
- * Este fragmento gestiona la interfaz de usuario relacionada con el chat, que incluye una vista de lista de mensajes
- * y un campo de entrada de mensaje con un botón de envío.
+ *  Este fragmento gestiona la interfaz de usuario relacionada con el chat,
+ *  que incluye una vista de lista de mensajes
+ *  y un campo de entrada de mensaje con un botón de envío.
+ *  aquí está la movida para enviar cosas
  */
 public class ChatFragment extends ListFragment {
 
@@ -108,6 +119,7 @@ public class ChatFragment extends ListFragment {
         messagesListView.setStackFromBottom(true);
 
         //Evento del boton enviar de el chat
+        //1º lugar donde pasa al mandar el texto con esto ya llego al cliente y lo pienta
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -135,9 +147,11 @@ public class ChatFragment extends ListFragment {
             }
         });
 
-        //evento del voton que saca la foto y la envia
+        //evento del boton que saca la foto y la envia
+        //1º lugar por dodne pasa para ssacar la foto y enviearla
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
+            // la accion de tomar la foto
             public void onClick(View v) {
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (takePictureIntent.resolveActivity(getContext().getPackageManager()) != null) {
@@ -152,7 +166,7 @@ public class ChatFragment extends ListFragment {
         songButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                pushSong();
             }
         });
 
@@ -166,12 +180,13 @@ public class ChatFragment extends ListFragment {
     }
 
     /**
-     * Coge
+     * deserializa lo que llegue
+     * 1º lugar donde pasa cuaando llega la foto
      * @param readMessage
      */
+    //TODO cambiarle el nombre a este metodo por pullMessage.
     public void pushMessage(byte[] readMessage)
     {
-        //deserializa lo que llegue
         Message message = SerializationUtils.deserialize(readMessage);
         Bitmap bitmap;
         switch(message.messageType) {
@@ -192,9 +207,14 @@ public class ChatFragment extends ListFragment {
             //cancion
             case SONG:
                 Log.i(TAG, "Song");
-                //pushSong();
+                ByteArrayInputStream in = new ByteArrayInputStream(message.message);
+                try {
+                    ObjectInputStream is = new ObjectInputStream(in);
+                    loadSong(is);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
-
         }
     }
 
@@ -211,7 +231,8 @@ public class ChatFragment extends ListFragment {
     }
 
     /**
-     * Envia la imagen
+     * 3º lugar por donde pasa para enviar la foto
+     * Envia la imagen al cliente
      * Este metodo se implementa en ConnectionActivity
      * @param image
      */
@@ -220,6 +241,7 @@ public class ChatFragment extends ListFragment {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] byteArray = stream.toByteArray();
+        //indica que tipo de mensaje es
         Message message = new Message(MessageType.IMAGE, byteArray);
         CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
         Log.i(TAG, "Attempting to send image");
@@ -229,28 +251,39 @@ public class ChatFragment extends ListFragment {
     /**
      * Envia la cancion
      */
-    public void pushSong(Song song)
+    public void pushSong()
     {
         //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        //recorrerlo he ir enviando cancion a cancion
+        for(Song s : listSelection)
+        {
+            //convertir la cancion en bytes
+            try {
+                ObjectOutputStream os = new ObjectOutputStream(stream);
+                os.writeObject(s);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-
-
-        //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
-        //toByteArray(Crea una matriz de bytes recién asignada.
-        // en los 3 casos lo pasa a un array de bytes
-        byte[] byteArraySong = stream.toByteArray();
-        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los 3 casos
-        Message message = new Message(MessageType.SONG, byteArraySong);
-        //esto lo hace en los 3 casos
-        CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
-        //lo serializa, esto tambien en los 3 casos
-        communicationManager.write(SerializationUtils.serialize(message));
+            //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
+            //toByteArray(Crea una matriz de bytes recién asignada.
+            // en los 3 casos lo pasa a un array de bytes
+            byte[] byteArraySong = stream.toByteArray();
+            //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los 3 casos
+            Message message = new Message(MessageType.SONG, byteArraySong);
+            //esto lo hace en los 3 casos
+            CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
+            //lo serializa, esto tambien en los 3 casos
+            communicationManager.write(SerializationUtils.serialize(message));
+        }
     }
 
     /**
      * ArrayAdapter para administrar mensajes de chat.
      * Solo lo utiliza para los mensajes de texto
+     * //2º lugar donde pasa al mandar el mensaje y recibir mensaje
+     * mas bien es cuando lo pienta en en movil
      */
     public class ChatMessageAdapter extends ArrayAdapter<String>
     {
@@ -339,13 +372,56 @@ public class ChatFragment extends ListFragment {
         imageDialog.show();
     }
 
+    private MusicService musicService;
+    private boolean musicIsConnected = false;
+
+
+    /**
+     * Declaración e inicialización del objeto que representa al servicio
+     * que correrá en background para la reproducción de los audios. Al instanciarlo,
+     * sobreescribimos sus dos principales métodos para su inicialización.
+     */
+    private ServiceConnection musicConnection = new ServiceConnection()
+    {
+        /**
+         * Metodo de cuando el servicio esta conectado
+         * @param name
+         * @param service
+         */
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
+            MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
+            //obtenemos el servicio
+            musicService = binder.getService();
+            musicIsConnected = true;
+        }
+
+        /**
+         * Metodo por si nos desconectamos el servicio
+         * @param name
+         */
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            //TODO
+            musicIsConnected = false;
+        }
+    };
+
     /**
      * En este metodo es donde querria que se coja la cacion y la sume a la lista
      * de reproduccion del cliente
-     * @param song
      */
-    private void loadSong(Song song)
+    private void loadSong(ObjectInputStream is)
     {
-
+        try {
+            Song song = (Song)is.readObject();
+            listSelection.add(song);
+        } catch (IOException e) {
+            e.printStackTrace();//writeabortemexeption
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
+
 }

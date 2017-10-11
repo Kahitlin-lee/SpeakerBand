@@ -4,12 +4,16 @@ package com.speakerband;
  * Created by g_electra on 26/9/17.
  */
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Song
+/**
+ * He hecho la clase Serializable de caso contrario saltaria la NotSerializableException
+ */
+public class Song implements Serializable
 {
-    private List<String> songs;
-    // Dentro de la declaración de la clase, agrega tres variables de instancia para los datos que deseamos guardar de cada pista
+    // Dentro de la declaración de la clase, agrega tres variables de instancia para
+    // los datos que deseamos guardar de cada pista
     private long id;
     private String title;
     private String  album;
@@ -29,6 +33,9 @@ public class Song
         album = songAlbum;
         artist = songArtist;
     }
+
+
+
 
     //agrega métodos get para estas variables de instancia:
     /**

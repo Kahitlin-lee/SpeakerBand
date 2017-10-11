@@ -42,7 +42,6 @@ public class MusicService extends Service implements
     private int songPosition;
     //lista de canciones, array con las canciones
     private List<Song> songs;
-
     //
     private String songTitle = "";
     //variables para la modalidad aleatoria
@@ -94,7 +93,6 @@ public class MusicService extends Service implements
         intentFilter.addAction(BROADCAST_PLAYBACK_STOP);
         intentFilter.addAction(BROADCAST_PLAYBACK_PAUSE);
         registerReceiver(broadcastReceiver, intentFilter);
-
     }
 
     /**
@@ -102,7 +100,7 @@ public class MusicService extends Service implements
      */
     public class MusicBinder extends Binder
     {
-        MusicService getService()
+        public MusicService getService()
         {
             return MusicService.this;
         }
@@ -239,7 +237,7 @@ public class MusicService extends Service implements
     }
 
     //__
-    /*
+
     /**
      * Mostrar una notificación mientras este servicio se está ejecutando.
      */

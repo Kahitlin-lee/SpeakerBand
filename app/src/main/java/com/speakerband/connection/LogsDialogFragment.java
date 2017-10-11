@@ -21,8 +21,8 @@ import edu.rit.se.wifibuddy.WifiDirectHandler;
 /**
  * DialogFragment that shows the WifiDirectHandler log messages
  */
-public class LogsDialogFragment extends DialogFragment {
-
+public class LogsDialogFragment extends DialogFragment
+{
     private StringBuilder log = new StringBuilder();
     private static final String TAG = WifiDirectHandler.TAG + "LogsDialog";
 

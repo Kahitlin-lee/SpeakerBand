@@ -261,9 +261,11 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     }
 
     /**
-     * le llega la foto
+     * le llega la foto desde el otro activity
      * Con este metodo se coge la info que manda del activity
      * ChatFragmen
+     * 2º lugar por donde pasa para enviar la foto
+     * 4º despues una vez la foto llega al cliente vuelve a pasar por aqui
      * @param requestCode
      * @param resultCode
      * @param data
@@ -306,10 +308,12 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 // A message from the Communication Manager has been received
                 Log.i(TAG, "Message received");
                 if(chatFragment != null) {
+                    //2º lugar donde pasa cuando llega la foto
                     chatFragment.pushMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY));
                 }
             } else if (intent.getAction().equals(WifiDirectHandler.Action.WIFI_STATE_CHANGED)) {
-                // Wi-Fi has been enabled or disabled
+                //3º lugar donde pasa cuando llega la foto, depues de esto la muestra
+                // Wi-Fi ha sido activado o desactivado
                 Log.i(TAG, "Wi-Fi state changed");
                 mainFragment.handleWifiStateChanged();
             }

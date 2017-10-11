@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
@@ -24,9 +23,6 @@ import android.widget.MediaController.MediaPlayerControl;
 
 import com.speakerband.connection.ConnectionActivity;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -82,10 +78,18 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //registerForContextMenu(songView);
         //para probar mandar una canciong
 
+        //TODO borrar estas 4 lineas, ya que lo que estoy haciendo ahora es meterlas a piñon
+        //y la idea es que sea el array real de seleccionadas
+        // Una vez tenga resuelto el cambio a Recyclerview y el longclick
+        Song songOne = songList.get(0);
+        Song songTwo = songList.get(1);
+        listSelection.add(songOne);
+        listSelection.add(songTwo);
+
     }
 
     /**
-     *
+     * Tabs de la app
      */
     private void tabs()
     {
@@ -131,10 +135,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     }
                 }
         );
-
-        //ViewPager viewPager;
-        //viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabs));
-
     }
 
     /**
@@ -172,7 +172,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     };
 
 
-    //Metodos del ciclo de vida de la aplicacon
+    //Metodos del ciclo de vida de la aplicacon que no me gusta ponerlos asi todos juntos pero
+    //de moemento asi se quedaran
     /**
      * Metodo Llamado después onCreate(Bundle)- o después de onRestart()
      * cuando la actividad se había detenido, pero ahora se muestra nuevamente al usuario.
@@ -195,7 +196,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      *
      */
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         if (paused) {
             setController();
@@ -225,8 +227,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         super.onDestroy();
     }
 
-    //---Metodos de la reproduccion junto con los anteriores
-
+    //---Metodos de la reproduccion
     /**
      * Metodo que genera la accion cuando se pulsa la cancion
      * para reproducirla
@@ -241,7 +242,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             setController();
             playbackPaused = false;
         }
-
         controller.show(0);
     }
 
@@ -266,7 +266,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     /**
-     * Una vez aceptados los permisos este metodo es el encargado de pintar la aplicacion
+     * Pinta la pestaña ordenada por nombre de artistas
+     * correspondiente a la segunda pestaña
      */
     public void drawScreenArtist()
     {
@@ -283,54 +284,22 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     /**
-     * Una vez aceptados los permisos este metodo es el encargado de pintar la aplicacion
+     * Pinta el tab en el que figuran las canciones seleccionadas
+     * para reproducirlas en los otros dispositivos
+     *
      */
     public void drawScreenSelection()
     {
-        //todo borrar estas 2 lineas
-        Song songL = songList.get(0);
-        listSelection.add(songL);
+        songAdt = new SongAdapter(this, listSelection);
+        songView.setAdapter(songAdt);
 
-//        if(!listSelection.isEmpty()) {
-            //listSelection = getSongList(this);
-            songAdt = new SongAdapter(this, listSelection);
-            songView.setAdapter(songAdt);
+        //ordenaremos los datos para que las canciones se presenten alfabéticamente por Artista
+        sortByArtist((ArrayList) listSelection);
 
-            //ordenaremos los datos para que las canciones se presenten alfabéticamente por Artista
-            sortByArtist((ArrayList) listSelection);
-
-            //Actualizamos el Servicio con toda la lista de canciones
-            if (musicService != null)
-                musicService.setList(listSelection);
- //       }
-        //Intento crear una carpeta interna para que la use mi app y asi enviarlo mejor de un
-        //dispositivo a otro
-//        File mydir = context.getDir("mydir", Context.MODE_PRIVATE); //Creating an internal dir;
-//        File fileWithinMyDir = new File(mydir, "myfile"); //Getting a file within the dir.
-//        try {
-//            FileOutputStream out = new FileOutputStream(fileWithinMyDir); //Use the stream as usual to write into the file
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-       // }
+        //Actualizamos el Servicio con toda la lista de canciones
+        if (musicService != null)
+            musicService.setList(listSelection);
     }
-
-    /**
-     *
-     */
-//    private void initActionButton()
-//    {
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener()
-//        {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//
-//
-//            }
-//        });
-//    }
 
     /**
      * Llamado por Activity después de que el usuario interactue con la solicitud de permiso
@@ -375,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
-        //instancia de Cursor , sando la instancia de ContentResolver para buscar los archivos de música
+        //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
 
         //iterar los resultados, primero chequeando que tenemos datos válidos:

@@ -18,8 +18,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.MediaController.MediaPlayerControl;
+import android.widget.Toast;
 
 import com.speakerband.connection.ConnectionActivity;
 
@@ -256,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         songList = getSongList(this);
         songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
+        songView.setOnItemLongClickListener(onSongLongClickListener);
 
         //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
         sortByName((ArrayList) songList);
@@ -393,6 +396,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * @return
      */
     //TODO no puedo perder mas timepo en esto, preguntar a los chicos o ver otro dia
+    private AdapterView.OnItemLongClickListener onSongLongClickListener = new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            Song song = (Song) view.getTag();
+            //TODO hacer lo que sea con la canción del long press
+            Toast.makeText(MainActivity.this,song.getTITLE(),Toast.LENGTH_SHORT).show();
+            return true;
+        }
+    };
 //    @Override
 //    public void onCreateContextMenu(ContextMenu menu, View v,
 //                                                   ContextMenu.ContextMenuInfo menuInfo)

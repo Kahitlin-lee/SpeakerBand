@@ -14,12 +14,12 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.MediaController.MediaPlayerControl;
 import android.widget.Toast;
 
@@ -37,8 +37,14 @@ import static com.speakerband.ListSelection.*;
  */
 public class MainActivity extends AppCompatActivity implements MediaPlayerControl
 {
-    //TODO cambiar por RecyclerView
-    ListView songView;
+    //RecyclerView
+    private RecyclerView recyclerView;
+    //Adaptador: una subclase de RecyclerView.Adapterresponsables de proporcionar
+    //vistas que representan elementos en un conjunto de datos.
+    private RecyclerView.Adapter mAdapter;
+    //es obligatorio usarlo pero no se bien como funciona
+    private RecyclerView.LayoutManager mLayoutManager;
+
     private RequestPermissions requerirPermisos;
     //--
     private MusicService musicService;
@@ -49,11 +55,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private MusicController controller;
     //variables pause y volver atras
     private boolean paused = false, playbackPaused = false;
-    //
+    //Array que utilizaremospara almacenar la lista de canciones
     private List<Song> songList;
-    SongAdapter songAdt;
     //Pestañas
     TabLayout tabs;
+    //Variable auxiliar
+    Song song;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -72,22 +79,77 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         tabs();
 
         //Pinta la aplicacion
-        drawScreenSongs();
+        initRecyclerView(0);
+
         setController();
-        //TODO hacer que tire el long clik para q salga un menu para que se
-        // agregue a la lista de reproduccion para enviar
-        //songView.setAdapter(songAdt);
-        //registerForContextMenu(songView);
-        //para probar mandar una canciong
+    }
 
-        //TODO borrar estas 4 lineas, ya que lo que estoy haciendo ahora es meterlas a piñon
-        //y la idea es que sea el array real de seleccionadas
-        // Una vez tenga resuelto el cambio a Recyclerview y el longclick
-        Song songOne = songList.get(0);
-        Song songTwo = songList.get(1);
-        listSelection.add(songOne);
-        listSelection.add(songTwo);
+    /**
+     * Pinta el RecyclerView con la lista de canciones dependiendo de la pestaña
+     * en la que se ubica el usuario.
+     * @param typeList este parametro viene del metodo que se usa para elegisr la tab
+     *                 donde esta ubicado el usuario, dependiendo de esta es la informacion
+     *                 y el orden en que se muestra
+     */
+    private void initRecyclerView(int typeList)
+    {
+        //Obtengo la lista de canciones del dispositivo
+        songList = getSongList(this);
+        if(typeList == 1)
+            //=rdenaremos los datos para que las canciones se presenten alfabéticamente por Artista
+            sortByName((ArrayList) songList);
+        if(typeList == 1)
+            //ordenaremos los datos para que las canciones se presenten alfabéticamente por Artista
+            sortByArtist((ArrayList) songList);
+        if(typeList == 2)
+            //la tercera pestaña solo coge las canciones que estan destinadas a luego ser reproducidas en
+            //todos los dispositivos
+            songList = listSelection;
 
+        if (songList.size() >= 0)
+        {
+            //Actualizamos el Servicio con toda la lista de canciones
+            if(musicService != null)
+                musicService.setList(songList);
+
+            recyclerView = (RecyclerView) findViewById(R.id.rv);
+            recyclerView.setAdapter(new RecyclerView_Adapter(songList, getApplication(), new RecyclerViewOnItemClickListener()
+            {
+                /**
+                 *
+                 * @param v
+                 * @param position
+                 */
+                @Override
+                public void onClick(View v, int position)
+                {
+                    musicService.setSong(songList.get(position));
+                    musicService.playSong();
+                    if(playbackPaused)
+                    {
+                        setController();
+                        playbackPaused = false;
+                    }
+                    controller.show(0);
+                }
+
+                /**
+                 *
+                 * @param v
+                 * @param position
+                 */
+                @Override
+                public void onLongClick(View v, int position)
+                {
+                    song = songList.get(position);
+                    listSelection.add(song);
+                    Toast.makeText(MainActivity.this,R.string.song_add , Toast.LENGTH_SHORT).show();
+                }
+
+
+            }));
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        }
     }
 
     /**
@@ -105,19 +167,22 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         tabs.setTabMode(TabLayout.MODE_SCROLLABLE);
 
         tabs.addOnTabSelectedListener(
-                new TabLayout.OnTabSelectedListener() {
+                new TabLayout.OnTabSelectedListener()
+                {
                     @Override
-                    public void onTabSelected(TabLayout.Tab tab) {
+                    public void onTabSelected(TabLayout.Tab tab)
+                    {
                         int position = tab.getPosition();
-                        switch (position) {
+                        switch (position)
+                        {
                             case 0:
-                                drawScreenSongs();
+                                initRecyclerView(0);
                                 break;
                             case 1:
-                                drawScreenArtist();
+                                initRecyclerView(1);
                                 break;
                             case 2:
-                                drawScreenSelection();
+                                initRecyclerView(2);
                                 break;
                             case 3:
                                 Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
@@ -229,81 +294,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         super.onDestroy();
     }
 
-    //---Metodos de la reproduccion
-    /**
-     * Metodo que genera la accion cuando se pulsa la cancion
-     * para reproducirla
-     * @param view
-     */
-    public void songPicked(View view)
-    {
-        musicService.setSong((Song)view.getTag());
-        musicService.playSong();
-        if(playbackPaused)
-        {
-            setController();
-            playbackPaused = false;
-        }
-        controller.show(0);
-    }
-
-    //Metodosj usados para administrar los permisos de la api mayores a las 26
-    /**
-     * Una vez aceptados los permisos este metodo es el encargado de pintar la aplicacion
-     */
-    public void drawScreenSongs()
-    {
-        //initActionButton();
-        songView = (ListView) findViewById(R.id.song_list);
-        songList = getSongList(this);
-        songAdt = new SongAdapter(this, songList);
-        songView.setAdapter(songAdt);
-        songView.setOnItemLongClickListener(onSongLongClickListener);
-
-        //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
-        sortByName((ArrayList) songList);
-
-        //Actualizamos el Servicio con toda la lista de canciones
-        if(musicService != null)
-            musicService.setList(songList);
-    }
-
-    /**
-     * Pinta la pestaña ordenada por nombre de artistas
-     * correspondiente a la segunda pestaña
-     */
-    public void drawScreenArtist()
-    {
-        songList = getSongList(this);
-        songAdt = new SongAdapter(this, songList);
-        songView.setAdapter(songAdt);
-
-        //ordenaremos los datos para que las canciones se presenten alfabéticamente por Artista
-        sortByArtist((ArrayList) songList);
-
-        //Actualizamos el Servicio con toda la lista de canciones
-        if(musicService != null)
-            musicService.setList(songList);
-    }
-
-    /**
-     * Pinta el tab en el que figuran las canciones seleccionadas
-     * para reproducirlas en los otros dispositivos
-     *
-     */
-    public void drawScreenSelection()
-    {
-        songAdt = new SongAdapter(this, listSelection);
-        songView.setAdapter(songAdt);
-
-        //ordenaremos los datos para que las canciones se presenten alfabéticamente por Artista
-        sortByArtist((ArrayList) listSelection);
-
-        //Actualizamos el Servicio con toda la lista de canciones
-        if (musicService != null)
-            musicService.setList(listSelection);
-    }
-
     /**
      * Llamado por Activity después de que el usuario interactue con la solicitud de permiso
      * Lanzará la main activity si todos los permisos se concedieron, salidas de lo contrario
@@ -326,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         if (grantedPermissions == grantResults.length)
         {
             requerirPermisos.eliminarDialogoPermisos();
-            drawScreenSongs();
+            initRecyclerView(0);
         }
     }
 
@@ -375,10 +365,17 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             while (musicCursor.moveToNext());
 
         }
+        sortByName((ArrayList) list);
         return list;
     }
 
     //---------------
+
+    /**
+     *
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -388,59 +385,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     /**
-     * Menu que se despliega con el long click
-     * proporcionaremos la implementación de onCreateContextMenu.
-     * Aquí quiero asegurarse de que el evento proviene de la ListView y si es así,
-     * quiero determinar en qué elemento en el ListView el usuario hizo clic de largo.
-     * @param
+     *
+     * @param item
      * @return
      */
-    //TODO no puedo perder mas timepo en esto, preguntar a los chicos o ver otro dia
-    private AdapterView.OnItemLongClickListener onSongLongClickListener = new AdapterView.OnItemLongClickListener() {
-        @Override
-        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-            Song song = (Song) view.getTag();
-            //TODO hacer lo que sea con la canción del long press
-            Toast.makeText(MainActivity.this,song.getTITLE(),Toast.LENGTH_SHORT).show();
-            return true;
-        }
-    };
-//    @Override
-//    public void onCreateContextMenu(ContextMenu menu, View v,
-//                                                   ContextMenu.ContextMenuInfo menuInfo)
-//    {
-//        super.onCreateContextMenu(menu, v, menuInfo);
-//        MenuInflater inflater = getMenuInflater();
-//        if(v.getId() == R.id.song_list) {
-//            AdapterView.AdapterContextMenuInfo info =
-//                    (AdapterView.AdapterContextMenuInfo) menuInfo;
-//
-//            menu.setHeaderTitle(
-//                    songView.getAdapter().getItem(info.position).toString());
-//
-//            inflater.inflate(R.menu.menu_long_click, menu);
-//        }
-//    }
-//
-//    /**
-//     *
-//     * @param item
-//     * @return
-//     */
-//    @Override
-//    public boolean onContextItemSelected (MenuItem item)
-//    {
-//        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
-//                .getMenuInfo();
-//
-//        switch (item.getItemId()) {
-//            case R.id.pass_list:
-//            //-------
-//                return true;
-//        }
-//        return false;
-//    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {

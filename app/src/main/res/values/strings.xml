@@ -12,6 +12,7 @@
     <string name="pass_to_list">Añadir a la lista de reproduccion</string>
     <string name="play_pause">Reproducir/Pausar</string>
     <string name="previous_song">Previous track</string>
+    <string name="song_add">Cacion agregada a la lista de reproducccion</string>
 
     <!-- Todos estos estilos son importados del Wifi-Direct -->
     <!-- Titles -->

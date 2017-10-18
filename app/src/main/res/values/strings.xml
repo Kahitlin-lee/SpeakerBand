@@ -3,7 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="titleShuffle">Shuffle</string>
     <string name="titleEnd">END</string>
-    <string name="permission_menssage">SpeakerBand  necesita permisos de lectura para mostrar tu biblioteca musical en la aplicaion</string>
+    <string name="permission_menssage">SpeakerBand necesita permisos de lectura para mostrar tu biblioteca musical en la aplicaion</string>
 
     <string name="remote_service_started">Musica</string>
     <string name="cover_art">Carátula</string>
@@ -13,6 +13,9 @@
     <string name="play_pause">Reproducir/Pausar</string>
     <string name="previous_song">Previous track</string>
     <string name="song_add">Cacion agregada a la lista de reproducccion</string>
+
+    <string name="list_selection_empty">Para agregar una cancion a la lista que quiere compartir, haga un click largo sobre la cancion elegida en sus listas de canciones</string>
+    <string name="list_empty">No tiene musica en su dispositivo</string>
 
     <!-- Todos estos estilos son importados del Wifi-Direct -->
     <!-- Titles -->

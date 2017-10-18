@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by Valdio Veliu on 16-07-08.
+ * Created by Catalina Saavedra
  */
 public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adapter.ViewHolder>
 {
@@ -87,6 +87,9 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
     }
 
 
+    /**
+     * Clase ViewHolder
+     */
     class ViewHolder  extends RecyclerView.ViewHolder implements View
             .OnClickListener, View.OnLongClickListener
     {
@@ -103,35 +106,24 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
 
         }
 
+        /**
+         * listener para cada elemento de una colección, con click
+         * @param v
+         */
         public void onClick(View v)
-        {
+        {//getAdapterPosition() que devolverá la posición del item asociado al ViewHolder
             recyclerViewOnItemClickListener.onClick(v, getAdapterPosition());
         }
 
+        /**
+         *  listener para cada elemento de una colección, con longClick
+         * @param v
+         * @return
+         */
         public boolean onLongClick(View v)
-        {
+        {//getAdapterPosition() que devolverá la posición del item asociado al ViewHolder
             recyclerViewOnItemClickListener.onLongClick(v, getAdapterPosition());
             return true;
         }
-
-        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-            menu.setHeaderTitle("Select Action");
-            MenuItem edit = menu.add(Menu.NONE,1,1,"Agregar a la lista de reproduccion");
-
-            edit.setOnMenuItemClickListener(onChange);
-        }
-        private final MenuItem.OnMenuItemClickListener onChange = new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
-                    case 1:
-                        Toast.makeText(context,"Edit", Toast.LENGTH_LONG).show();
-                        return true;
-
-                }
-                return false;
-            }
-        };
-
     }
 }

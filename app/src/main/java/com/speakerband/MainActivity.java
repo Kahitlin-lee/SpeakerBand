@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.MediaController.MediaPlayerControl;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.speakerband.connection.ConnectionActivity;
@@ -39,11 +40,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 {
     //RecyclerView
     private RecyclerView recyclerView;
-    //Adaptador: una subclase de RecyclerView.Adapterresponsables de proporcionar
-    //vistas que representan elementos en un conjunto de datos.
-    private RecyclerView.Adapter mAdapter;
-    //es obligatorio usarlo pero no se bien como funciona
-    private RecyclerView.LayoutManager mLayoutManager;
 
     private RequestPermissions requerirPermisos;
     //--
@@ -58,9 +54,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     //Array que utilizaremospara almacenar la lista de canciones
     private List<Song> songList;
     //Pestañas
-    TabLayout tabs;
+    private TabLayout tabs;
     //Variable auxiliar
-    Song song;
+    private Song song;
+    //texto que se mostrara si la lista de canciones seleccionada esta vacia
+    private TextView listSelectionEmpty;
+    //texto que se mostrara si la lista de canciones esta vacia
+    private TextView listEmpty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -70,6 +70,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //variables que se ocultan y se muestran dependiendo de si hay cancioones en las listas o no
+        listSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
+        listSelectionEmpty.setVisibility(View.GONE);
+        listEmpty = (TextView) findViewById(R.id.list_empty);
+        listEmpty.setVisibility(View.GONE);
+
         //initActionButton();
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
@@ -78,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Tabs
         tabs();
 
-        //Pinta la aplicacion
+        //Pinta la aplicacion llamando al metodo del recyclerView
         initRecyclerView(0);
 
         setController();
@@ -145,10 +151,26 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     listSelection.add(song);
                     Toast.makeText(MainActivity.this,R.string.song_add , Toast.LENGTH_SHORT).show();
                 }
-
-
             }));
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+            //En el caso de que se posicione el usuario en la pestaña de lista a reproducir en todos los dispositivos
+            // y la lista este vacia el texto se hara visible
+            if (songList.size() == 0 && typeList == 2)
+            {
+                listSelectionEmpty.setVisibility(View.VISIBLE);
+                listEmpty.setVisibility(View.GONE);
+            } //se muestra si no hay musica en el dispositivo
+            else if (songList.size() == 0 && (typeList == 1 || typeList == 0))
+            {
+                listEmpty.setVisibility(View.VISIBLE);
+                listSelectionEmpty.setVisibility(View.GONE);
+            }//no se muestra mas si hay musica
+            else if(songList.size() >= 0)
+            {
+                listSelectionEmpty.setVisibility(View.GONE);
+                listEmpty.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -175,13 +197,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                         int position = tab.getPosition();
                         switch (position)
                         {
-                            case 0:
+                            case 0://lista de canciones del dispositivo mostrada por nmbre de cancion
                                 initRecyclerView(0);
                                 break;
-                            case 1:
+                            case 1://lista de canciones del dispositivo mostrada por nmbre de artista/grupo
                                 initRecyclerView(1);
                                 break;
-                            case 2:
+                            case 2://lista de canciones que se esperan pasar a los otros dispositivos
                                 initRecyclerView(2);
                                 break;
                             case 3:

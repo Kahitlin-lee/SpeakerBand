@@ -59,7 +59,8 @@ import edu.rit.se.wifibuddy.WifiDirectHandler;
  *  y un campo de entrada de mensaje con un botón de envío.
  *  aquí está la movida para enviar cosas
  */
-public class ChatFragment extends ListFragment {
+public class ChatFragment extends ListFragment
+{
 
     private EditText textMessageEditText;
     private ChatMessageAdapter adapter = null;
@@ -72,6 +73,9 @@ public class ChatFragment extends ListFragment {
     private Button sendButton;
     private ImageButton cameraButton;
     private ImageButton songButton;
+
+    private MusicService musicService;
+    private boolean musicIsConnected = false;
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
@@ -208,7 +212,8 @@ public class ChatFragment extends ListFragment {
             case SONG:
                 Log.i(TAG, "Song");
                 ByteArrayInputStream in = new ByteArrayInputStream(message.message);
-                try {
+                try
+                {
                     ObjectInputStream is = new ObjectInputStream(in);
                     loadSong(is);
                 } catch (IOException e) {
@@ -253,11 +258,11 @@ public class ChatFragment extends ListFragment {
      */
     public void pushSong()
     {
-        //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
         //recorrerlo he ir enviando cancion a cancion
         for(Song s : listSelection)
         {
+            //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
             //convertir la cancion en bytes
             try {
                 ObjectOutputStream os = new ObjectOutputStream(stream);
@@ -371,10 +376,6 @@ public class ChatFragment extends ListFragment {
         imageDialog.create();
         imageDialog.show();
     }
-
-    private MusicService musicService;
-    private boolean musicIsConnected = false;
-
 
     /**
      * Declaración e inicialización del objeto que representa al servicio

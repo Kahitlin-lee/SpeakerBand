@@ -21,6 +21,28 @@
             android:id="@+id/rv"
         />
 
+        <TextView
+            android:id="@+id/list_selection_empty"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorAccent"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:text="@string/list_selection_empty"
+        />
+
+        <TextView
+            android:id="@+id/list_empty"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorAccent"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:text="@string/list_empty"
+        />
+        <!-- android:visibility="gone" -->
+
+
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="fill_parent"

@@ -18,8 +18,8 @@ import edu.rit.se.wifibuddy.DnsSdTxtRecord;
 /**
  *
  */
-class AvailableServicesListViewAdapter extends BaseAdapter {
-
+class AvailableServicesListViewAdapter extends BaseAdapter
+{
     private List<DnsSdService> serviceList;
     private final ConnectionActivity context;
 

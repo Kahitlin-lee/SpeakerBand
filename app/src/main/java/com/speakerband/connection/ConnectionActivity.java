@@ -27,9 +27,10 @@ import edu.rit.se.wifibuddy.DnsSdService;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
 
 /**
- * The main Activity of the application,  que es un contenedor para Fragment y la ActionBar.
- * Contains WifiDirectHandler, que es un service
+ * Actividad que  que es un contenedor para Fragment y la ActionBar.
+ * Contiene WifiDirectHandler, que es un service
  * MainActivity tiene Communication BroadcastReceiver to handle Intents diparado desde WifiDirectHandler.
+ * Es el activity que inicializa la conexion entre los moviles
  */
 public class ConnectionActivity extends AppCompatActivity implements WiFiDirectHandlerAccessor
 {
@@ -47,7 +48,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
      * intents fired in WifiDirectHandler, like Service Connected and Messaged Received.
      */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "Creating MainActivity");
         setContentView(R.layout.activity_main_connection);
@@ -69,7 +71,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
      * Configura CommunicationReceiver para recibir intents disparados de WifiDirectHandler
      * Se utiliza para actualizar la interfaz de usuario y recibir mensajes de comunicación
      */
-    private void registerCommunicationReceiver() {
+    private void registerCommunicationReceiver()
+    {
         CommunicationReceiver communicationReceiver = new CommunicationReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(WifiDirectHandler.Action.SERVICE_CONNECTED);
@@ -94,7 +97,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
      * @param item Item selected
      */
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
         switch (item.getItemId()) {
             case R.id.action_view_logs:
                 // View Logs MenuItem tapped
@@ -115,7 +119,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     // TODO: BRETT, add JavaDoc
     // Note: This is used to run WifiDirectHandler as a Service instead of being coupled to an
     //          Activity. This is NOT a connection to a P2P service being broadcast from a device
-    private ServiceConnection wifiServiceConnection = new ServiceConnection() {
+    private ServiceConnection wifiServiceConnection = new ServiceConnection()
+    {
 
         /**
          * Called when a connection to the Service has been established, with the IBinder of the
@@ -134,7 +139,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             wifiDirectHandlerBound = true;
             Log.i(TAG, "WifiDirectHandler service bound");
 
-            // Add MainFragment to the 'fragment_container' when wifiDirectHandler is bound
+            // Agregar MainFragment al 'fragment_container' cuando wifiDirectHandler está vinculado
             mainFragment = new MainFragment();
             replaceFragment(mainFragment);
 
@@ -159,7 +164,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
      * Replaces a Fragment in the 'fragment_container'
      * @param fragment Fragment to add
      */
-    public void replaceFragment(Fragment fragment) {
+    public void replaceFragment(Fragment fragment)
+    {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.addToBackStack(null);
@@ -271,13 +277,12 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
      * @param data
      */
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
         Log.i(TAG, "Image captured");
-//        if (requestCode == 1 && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             chatFragment.pushImage(imageBitmap);
-//        }
     }
 
     /**
@@ -286,9 +291,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
      */
     public class CommunicationReceiver extends BroadcastReceiver
     {
-
         private static final String TAG = WifiDirectHandler.TAG + "CommReceiver";
-
         @Override
         public void onReceive(Context context, Intent intent) {
             // Get the intent sent by WifiDirectHandler when a service is found

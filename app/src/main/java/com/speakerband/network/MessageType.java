@@ -7,5 +7,7 @@ public enum MessageType {
     TEXT,
     IMAGE,
     //cancion
-    SONG
+    SONG,
+    //Señal para que re reproduzcan las canciones
+    PLAY
 }

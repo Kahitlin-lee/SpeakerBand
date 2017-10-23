@@ -17,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.speakerband.connection.ConnectionActivity;
+import com.speakerband.connection.MainFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     private RequestPermissions requerirPermisos;
     //--
-    private MusicService musicService;
+    public static MusicService musicService;
     private Intent playIntent;
     //--
     private boolean musicIsConnected = false;
@@ -61,6 +63,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private TextView listSelectionEmpty;
     //texto que se mostrara si la lista de canciones esta vacia
     private TextView listEmpty;
+    //variables para hacer visible o invisible los conten/fragment dependiendo de la tab seleccionada
+    View content_main_recycler;
+    View conection_fragment_main;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -70,13 +75,19 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //relaciono las view de los content con los diferentes layout que contiene el layout principal de la app
+        content_main_recycler = (View) findViewById(R.id.content_main);
+        conection_fragment_main = (View) findViewById(R.id.conection_fragment_main);
+        //que el layout de la conexion principal no se vea
+        conection_fragment_main.setVisibility(View.GONE);
+
+
         //variables que se ocultan y se muestran dependiendo de si hay cancioones en las listas o no
         listSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
         listSelectionEmpty.setVisibility(View.GONE);
         listEmpty = (TextView) findViewById(R.id.list_empty);
         listEmpty.setVisibility(View.GONE);
 
-        //initActionButton();
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
         requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
@@ -99,6 +110,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     private void initRecyclerView(int typeList)
     {
+        //Hago visible en content de el recyclerView y no visible el de la conexion
+        content_main_recycler.setVisibility(View.VISIBLE);
+        conection_fragment_main.setVisibility(View.GONE);
         //Obtengo la lista de canciones del dispositivo
         songList = getSongList(this);
         if(typeList == 1)
@@ -129,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 @Override
                 public void onClick(View v, int position)
                 {
+                    songPlaying = songList.get(position);
                     musicService.setSong(songList.get(position));
                     musicService.playSong();
                     if(playbackPaused)
@@ -207,8 +222,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                                 initRecyclerView(2);
                                 break;
                             case 3:
-                                Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
-                                startActivity(intent);
+                                startActivity(new Intent(MainActivity.this, ConnectionActivity.class));
+                                //Hago visible en content de el conexion y no visible el de la recyclerView
+                                content_main_recycler.setVisibility(View.GONE);
+                                conection_fragment_main.setVisibility(View.VISIBLE);
+
+//                                Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
+//                                startActivity(intent);
+
                                 break;
                         }
                     }

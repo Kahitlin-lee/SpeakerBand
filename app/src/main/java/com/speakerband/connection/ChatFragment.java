@@ -30,6 +30,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.speakerband.MainActivity;
 import com.speakerband.MusicService.*;
@@ -39,6 +40,7 @@ import com.speakerband.Song;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 import static com.speakerband.ListSelection.*;
+import static com.speakerband.MainActivity.musicService;
 
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -73,9 +75,7 @@ public class ChatFragment extends ListFragment
     private Button sendButton;
     private ImageButton cameraButton;
     private ImageButton songButton;
-
-    private MusicService musicService;
-    private boolean musicIsConnected = false;
+    private ImageButton playButton;
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
@@ -96,10 +96,11 @@ public class ChatFragment extends ListFragment
         cameraButton = (ImageButton) view.findViewById(R.id.cameraButton);
         //Agrego y anlazo el boton para pasar una cancion
         songButton = (ImageButton) view.findViewById(R.id.songButton);
+        playButton = (ImageButton) view.findViewById(R.id.play);
 
         textMessageEditText = (EditText) view.findViewById(R.id.textMessageEditText);
-        textMessageEditText.addTextChangedListener(new TextWatcher() {
-
+        textMessageEditText.addTextChangedListener(new TextWatcher()
+        {
             @Override
             public void afterTextChanged(Editable s) {}
 
@@ -174,6 +175,14 @@ public class ChatFragment extends ListFragment
             }
         });
 
+        //evento del boton  enviar una cancion
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playSign();
+            }
+        });
+
         toolbar = (Toolbar) getActivity().findViewById(R.id.mainToolbar);
 
         return view;
@@ -185,7 +194,7 @@ public class ChatFragment extends ListFragment
 
     /**
      * deserializa lo que llegue
-     * 1º lugar donde pasa cuaando llega la foto
+     * 1º lugar donde pasa cuando llega la foto
      * @param readMessage
      */
     //TODO cambiarle el nombre a este metodo por pullMessage.
@@ -216,6 +225,18 @@ public class ChatFragment extends ListFragment
                 {
                     ObjectInputStream is = new ObjectInputStream(in);
                     loadSong(is);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case PLAY:
+                Log.i(TAG, "Play sing");
+                //aca esta cogiendo el mensaje
+                in = new ByteArrayInputStream(message.message);
+                try
+                {
+                    ObjectInputStream is = new ObjectInputStream(in);
+                    play(is);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -285,9 +306,43 @@ public class ChatFragment extends ListFragment
     }
 
     /**
+     * Envia la
+     */
+    public void playSign()
+    {
+        //recorrerlo he ir enviando cancion a cancion
+        for(Song s : listSelection)
+        {
+            if (s.equals(songPlaying))
+            {
+                //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                //convertir la cancion en bytes
+                try {
+                    ObjectOutputStream os = new ObjectOutputStream(stream);
+                    os.writeObject(s);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
+                //toByteArray(Crea una matriz de bytes recién asignada.
+                // en los 3 casos lo pasa a un array de bytes
+                byte[] byteArraySong = stream.toByteArray();
+                //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los 3 casos
+                Message message = new Message(MessageType.PLAY, byteArraySong);
+                //esto lo hace en los 3 casos
+                CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
+                //lo serializa, esto tambien en los 3 casos
+                communicationManager.write(SerializationUtils.serialize(message));
+            }
+        }
+    }
+
+    /**
      * ArrayAdapter para administrar mensajes de chat.
      * Solo lo utiliza para los mensajes de texto
-     * //2º lugar donde pasa al mandar el mensaje y recibir mensaje
+     * 2º lugar donde pasa al mandar el mensaje y recibir mensaje
      * mas bien es cuando lo pienta en en movil
      */
     public class ChatMessageAdapter extends ArrayAdapter<String>
@@ -378,38 +433,6 @@ public class ChatFragment extends ListFragment
     }
 
     /**
-     * Declaración e inicialización del objeto que representa al servicio
-     * que correrá en background para la reproducción de los audios. Al instanciarlo,
-     * sobreescribimos sus dos principales métodos para su inicialización.
-     */
-    private ServiceConnection musicConnection = new ServiceConnection()
-    {
-        /**
-         * Metodo de cuando el servicio esta conectado
-         * @param name
-         * @param service
-         */
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service)
-        {
-            MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
-            //obtenemos el servicio
-            musicService = binder.getService();
-            musicIsConnected = true;
-        }
-
-        /**
-         * Metodo por si nos desconectamos el servicio
-         * @param name
-         */
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            //TODO
-            musicIsConnected = false;
-        }
-    };
-
-    /**
      * En este metodo es donde querria que se coja la cacion y la sume a la lista
      * de reproduccion del cliente
      */
@@ -424,5 +447,19 @@ public class ChatFragment extends ListFragment
             e.printStackTrace();
         }
     }
+
+    private void play(ObjectInputStream is)
+    {
+        try {
+            Song song = (Song)is.readObject();
+            musicService.setSong(song);
+            musicService.playSong();
+        } catch (IOException e) {
+            e.printStackTrace();//writeabortemexeption
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }

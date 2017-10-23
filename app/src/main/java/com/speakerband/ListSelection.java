@@ -12,4 +12,5 @@ import java.util.ArrayList;
 public class ListSelection
 {
     public static ArrayList<Song> listSelection = new ArrayList<Song>();
+    public static Song songPlaying ;
 }

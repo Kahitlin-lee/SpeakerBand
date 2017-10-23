@@ -19,10 +19,11 @@ import java.util.HashMap;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
 
 /**
- * The Main Fragment of the application, which contains the Switches and Buttons to perform P2P tasks
+ * EL  Fragment principal de la aplicación, que contiene los interruptores
+ * y botones para realizar tareas P2P
  */
-public class MainFragment extends Fragment {
-
+public class MainFragment extends Fragment
+{
     private WiFiDirectHandlerAccessor wifiDirectHandlerAccessor;
     private Switch toggleWifiSwitch;
     private Switch serviceRegistrationSwitch;
@@ -34,31 +35,34 @@ public class MainFragment extends Fragment {
     private static final String TAG = WifiDirectHandler.TAG + "MainFragment";
 
     /**
-     * Sets the layout for the UI, initializes the Buttons and Switches, and returns the View
+     * Establece el diseño de la interfaz de usuario,
+     * inicializa los botones e interruptores y devuelve la vista
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Sets the Layout for the UI
+                             Bundle savedInstanceState)
+    {
+        // Establece el diseño para la interfaz de usuario
         final View view = inflater.inflate(R.layout.fragment_main, container, false);
 
-        // Initialize Switches
+        // Inicializa Switches
         toggleWifiSwitch = (Switch) view.findViewById(R.id.toggleWifiSwitch);
         serviceRegistrationSwitch = (Switch) view.findViewById(R.id.serviceRegistrationSwitch);
         noPromptServiceRegistrationSwitch = (Switch) view.findViewById(R.id.noPromptServiceRegistrationSwitch);
 
-        // Initialize Discover Services Button
+        // Inicializa Discover Services Button
         discoverServicesButton = (Button) view.findViewById(R.id.discoverServicesButton);
 
         updateToggles();
 
-        // Set Toggle Listener for Wi-Fi Switch
+        // Set Toggle escuchador para Wi-Fi Switch
         toggleWifiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             /**
-             * Enable or disable Wi-Fi when Switch is toggled
+             * Habilitar o deshabilitar Wi-Fi cuando el interruptor está conmutado
              */
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
                 Log.i(TAG, "\nWi-Fi Switch Toggled");
                 if(isChecked) {
                     // Enable Wi-Fi, enable all switches and buttons
@@ -70,7 +74,7 @@ public class MainFragment extends Fragment {
             }
         });
 
-        // Set Toggle Listener for Service Registration Switch
+        // Establezca Toggle Listener para Service Registration Switch
         serviceRegistrationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             /**
              * Add or Remove a Local Service when Switch is toggled
@@ -79,8 +83,9 @@ public class MainFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.i(TAG, "\nService Registration Switch Toggled");
                 if (isChecked) {
-                    // Add local service
-                    if (getHandler().getWifiP2pServiceInfo() == null) {
+                    // agrega local service
+                    if (getHandler().getWifiP2pServiceInfo() == null)
+                    {
                         HashMap<String, String> record = new HashMap<>();
                         record.put("Name", getHandler().getThisDevice().deviceName);
                         record.put("Address", getHandler().getThisDevice().deviceAddress);
@@ -90,40 +95,14 @@ public class MainFragment extends Fragment {
                         Log.w(TAG, "Service already added");
                     }
                 } else {
-                    // Remove local service
+                    // Elimina local service
                     getHandler().removeService();
                     noPromptServiceRegistrationSwitch.setEnabled(true);
                 }
             }
         });
 
-//        // Set Toggle Listener for No-Prompt Service Registration Switch
-//        noPromptServiceRegistrationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            /**
-//             * Add or Remove a No-Prompt Local Service when Switch is toggled
-//             */
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                Log.i(TAG, "\nNo-Prompt Service Registration Switch Toggled");
-//                if (isChecked) {
-//                    // Add no-prompt local service
-//                    ServiceData serviceData = new ServiceData(
-//                            "Wi-Fi Direct Handler",         // Name
-//                            4545,                           // Port
-//                            new HashMap<String, String>(),  // Record
-//                            ServiceType.PRESENCE_TCP        // Type
-//                    );
-//                    getHandler().startAddingNoPromptService(serviceData);
-//                    serviceRegistrationSwitch.setEnabled(false);
-//                } else {
-//                    // Remove no-prompt local service
-//                    getHandler().removeService();
-//                    serviceRegistrationSwitch.setEnabled(true);
-//                }
-//            }
-//        });
-
-        // Set Click Listener for Discover Services Button
+        // Establecer el Oyente Click para el botón Discover Services
         discoverServicesButton.setOnClickListener(new View.OnClickListener() {
             /**
              * Show AvailableServicesFragment when Discover Services Button is clicked
@@ -144,7 +123,7 @@ public class MainFragment extends Fragment {
     }
 
     /**
-     * Sets the Main Activity instance
+     * Establece la instancia de la actividad principal
      */
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {

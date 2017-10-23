@@ -1,34 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_marginTop="?attr/actionBarSize"
-    android:paddingBottom="70sp" >
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.speakerband.MainActivity"
+    tools:showIn="@layout/activity_main"
+    android:id="@+id/conection_fragment_main"
+    >
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="?attr/actionBarSize"
+            android:paddingBottom="70sp"
+            tools:context="com.speakerband.MainActivity"
+            tools:showIn="@layout/activity_main"
+            >
+            <Switch
+                style="@style/styleSwitchDefault"
+                android:id="@+id/toggleWifiSwitch"
+                android:text="@string/action_toggle_wifi" />
 
-    <Switch
-        style="@style/styleSwitchDefault"
-        android:id="@+id/toggleWifiSwitch"
-        android:text="@string/action_toggle_wifi" />
+            <Switch
+                style="@style/styleSwitchDefault"
+                android:id="@+id/serviceRegistrationSwitch"
+                android:text="@string/action_register_service"
+                android:checked="false"
+                android:enabled="false" />
+            <Switch
+                style="@style/styleSwitchDefault"
+                android:id="@+id/noPromptServiceRegistrationSwitch"
+                android:text="@string/action_register_no_prompt"
+                android:checked="false"
+                android:enabled="false"
+                android:visibility="invisible" />
 
-    <Switch
-        style="@style/styleSwitchDefault"
-        android:id="@+id/serviceRegistrationSwitch"
-        android:text="@string/action_register_service"
-        android:checked="false"
-        android:enabled="false" />
-    <Switch
-        style="@style/styleSwitchDefault"
-        android:id="@+id/noPromptServiceRegistrationSwitch"
-        android:text="@string/action_register_no_prompt"
-        android:checked="false"
-        android:enabled="false"
-        android:visibility="invisible" />
-
-    <Button
-        style="@style/styleButtonDefault"
-        android:text="@string/action_discover_services"
-        android:id="@+id/discoverServicesButton"
-        android:enabled="false" />
-</LinearLayout>
+            <Button
+                style="@style/styleButtonDefault"
+                android:text="@string/action_discover_services"
+                android:id="@+id/discoverServicesButton"
+                android:enabled="false" />
+        </LinearLayout>
+</android.support.constraint.ConstraintLayout>

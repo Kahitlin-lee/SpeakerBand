@@ -17,7 +17,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,13 +57,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private TabLayout tabs;
     //Variable auxiliar
     private Song song;
-    //texto que se mostrara si la lista de canciones seleccionada esta vacia
+    //Texto que se mostrara si la lista de canciones seleccionada esta vacia
     private TextView listSelectionEmpty;
-    //texto que se mostrara si la lista de canciones esta vacia
+    //Texto que se mostrara si la lista de canciones esta vacia
     private TextView listEmpty;
-
-    View content;
-    View conection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -73,11 +69,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-//        content = (View) findViewById(R.id.content_main);
-//        conection = (View) findViewById(R.id.conection);
-//        conection.setVisibility(View.GONE);
-
 
         //variables que se ocultan y se muestran dependiendo de si hay cancioones en las listas o no
         listSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
@@ -95,13 +86,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Pinta la aplicacion llamando al metodo del recyclerView
         initRecyclerView(0);
 
+        //Metodo de ayuda para configurar el controlador
         setController();
     }
 
     /**
      * Pinta el RecyclerView con la lista de canciones dependiendo de la pestaña
      * en la que se ubica el usuario.
-     * @param typeList este parametro viene del metodo que se usa para elegisr la tab
+     * @param typeList este parametro viene del metodo que se usa para elegir la tab
      *                 donde esta ubicado el usuario, dependiendo de esta es la informacion
      *                 y el orden en que se muestra
      */
@@ -109,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     {
         //Obtengo la lista de canciones del dispositivo
         songList = getSongList(this);
+
+        //DEpendiendo de la tab donde esta ubicado el usuario rellenara y/o ordenara las listas
+        //de canciones con valores diferentes
         if(typeList == 1)
             //=rdenaremos los datos para que las canciones se presenten alfabéticamente por Artista
             sortByName((ArrayList) songList);
@@ -120,6 +115,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             //todos los dispositivos
             songList = listSelection;
 
+
+        //Si la lista de canciones no esta vacia
         if (songList.size() >= 0)
         {
             //Actualizamos el Servicio con toda la lista de canciones
@@ -130,23 +127,22 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             recyclerView.setAdapter(new RecyclerView_Adapter(songList, getApplication(), new RecyclerViewOnItemClickListener()
             {
                 /**
-                 *
+                 * Click siempre para reproducir la cancion
                  * @param v
                  * @param position
                  */
                 @Override
                 public void onClick(View v, int position)
                 {
-                    //esta variable solo la estoy metiendo a machete para probar la reproduccion
-                    //si no se agrega nada a la lista pa reproducir es nulo
-                    songPlaying = songList.get(position);
                     musicService.setSong(songList.get(position));
+                    //Dependiendo de el valor de isInternalUri hara play sobre la memoria interna o externa
                     musicService.playSong();
+                    //lo pausa si esta a play y lo pone a play si esta pausado
                     if(playbackPaused)
                     {
                         setController();
                         playbackPaused = false;
-                    }
+                    }//muestra los controles de reproduccion
                     controller.show(0);
                 }
 
@@ -163,10 +159,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     Toast.makeText(MainActivity.this,R.string.song_add , Toast.LENGTH_SHORT).show();
                 }
             }));
+            //indicamos tipo de layout para el recyclerView
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-            //En el caso de que se posicione el usuario en la pestaña de lista a reproducir en todos los dispositivos
-            // y la lista este vacia el texto se hara visible
+            //Dependiendo de donde se  posicione el usuario, quiere decir dependiendo de la tab
+            // demla lista a reproducir o p¡solo paramostrar
+            // y dependeindo de si la lista esta vacia  se  hara visible un texto  explicativo.
             if (songList.size() == 0 && typeList == 2)
             {
                 listSelectionEmpty.setVisibility(View.VISIBLE);
@@ -357,7 +355,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     //Metodos que obtienen la musica local del movil y la muestra
     /**
-     * método auxiliar para obtener la información del archivo de audio:
+     * Método auxiliar para obtener la información del archivo de audio:
+     * Obtiene la lista de todas las canciones que estan en el dispositivo
      */
     public static List<Song> getSongList(Context context)
     {
@@ -371,6 +370,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         ContentResolver musicResolver = context.getContentResolver();
         //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
 
         //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
@@ -387,6 +387,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     (MediaStore.Audio.Media.ALBUM);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
+            int uriDataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
 
             //add songs a la lista
             do
@@ -395,12 +396,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisAlbum = musicCursor.getString(albumColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
-                list.add(new Song(thisId, thisTitle, thisAlbum, thisArtist));
+                String thisUri = musicCursor.getString(uriDataColumn);
+                list.add(new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri));
             }
             while (musicCursor.moveToNext());
-
-        }
-        sortByName((ArrayList) list);
+        }//Por defecto lo ordena por nombre de cancion
+        sortByName(list);
         return list;
     }
 
@@ -615,7 +616,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
         Collections.sort(sl, new Comparator<Song>() {
             public int compare(Song a, Song b) {
-                return a.getTITLE().compareTo(b.getTITLE());
+                return a.getTitle().compareTo(b.getTitle());
             }
         });
         return sl;
@@ -631,7 +632,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
         Collections.sort(sl, new Comparator<Song>() {
             public int compare(Song a, Song b) {
-                return a.getARTIST().compareTo(b.getARTIST());
+                return a.getArtist().compareTo(b.getArtist());
             }
         });
         return sl;

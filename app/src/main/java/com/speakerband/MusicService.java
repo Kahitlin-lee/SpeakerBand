@@ -12,13 +12,12 @@ import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.content.ContentUris;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
@@ -159,23 +158,39 @@ public class MusicService extends Service implements
      */
     public void playSong()
     {
+        Uri trackUri;
         //es necesario restablecer el MediaPlayer ya que también se usara cuando el usuario
         //esté reproduciendo las canciones.
         mediaPlayer.reset();
         //obtengo el  id de la cancion
-        long currSong = song.getID();
-        // String titlle = song.getTITLE();
+        long currSong = song.getId();
         //cambio uri
-        Uri trackUri = ContentUris.withAppendedId(
+        //TODO Como la uri esta cogiendo una cancion que existe en mi movil esto hace que pete cuando
+        //estoy reproduciendo una cancion en otro dispositivo ya que este se pasa como objeto
+        //pero no esta en el movil fisicamente, por lo que la solucion que veo es meter la cancion
+        //dentro del dispositivo. Lo que quiere decir q no estoy transfiriendo un archivo
+        //sino que lo que trasfiero es un objeto song
+
+        trackUri= ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currSong);
+
         try
         {
             mediaPlayer.setDataSource(getApplicationContext(), trackUri);
             //Prepara el reproductor para su reproducción, de forma asíncrona
             mediaPlayer.prepareAsync();
-        }
-        catch(Exception e){
+
+        } catch (IOException ex) {
+            Log.d("", "create failed:", ex);
+        // fall through
+        } catch (IllegalArgumentException ex) {
+            Log.d("", "create failed:", ex);
+            // fall through
+        } catch (SecurityException ex) {
+            Log.d("", "create failed:", ex);
+            // fall through
+        } catch(Exception e){
             Log.e("MUSIC SERVICE", "Error al establecer la fuente de datos", e);
         }
     }
@@ -212,7 +227,8 @@ public class MusicService extends Service implements
      * @return
      */
     @Override
-    public boolean onError(MediaPlayer mp, int i, int i1) {
+    public boolean onError(MediaPlayer mp, int i, int i1)
+    {
         mp.reset();
         return false;
     }
@@ -243,8 +259,8 @@ public class MusicService extends Service implements
      */
     private void showNotification()
     {
-        songTitle = song.getTITLE();
-        String songArtist = song.getARTIST();
+        songTitle = song.getTitle();
+        String songArtist = song.getArtist();
         // Usaremos el mismo texto para el ticker y la expandir la notificacion
         CharSequence text = songTitle + ", " + songArtist;
         //Se utiliza una PendingIntent para especificar la acción que debe realizarse una vez que el usuario seleccione la notificación.
@@ -279,7 +295,6 @@ public class MusicService extends Service implements
     {
         nm.notify(id, notification);
     }
-
 
     /**
      *
@@ -319,6 +334,7 @@ public class MusicService extends Service implements
     public boolean isPng(){
         return mediaPlayer.isPlaying();
     }
+
     /**
      *
      */
@@ -354,6 +370,7 @@ public class MusicService extends Service implements
         songPosition--;
         if(songPosition >= 0)
             song = songs.get(songPosition);
+        //lo pongo a falso ya que el unico que podra manejar esto es el lider
         playSong();
     }
 
@@ -380,6 +397,7 @@ public class MusicService extends Service implements
                 songPosition = 0;
         }
         song = songs.get(songPosition);
+        //lo pongo a falso ya que el unico que podra manejar esto es el lider
         playSong();
     }
 
@@ -403,5 +421,4 @@ public class MusicService extends Service implements
         nm.cancel(NOTIFY_ID);
         mediaPlayer.stop();
     }
-
 }

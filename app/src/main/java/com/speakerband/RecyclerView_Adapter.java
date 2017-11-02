@@ -2,14 +2,10 @@ package com.speakerband;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Collections;
 import java.util.List;
@@ -60,9 +56,9 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
         //cogemos la cancion en su posición
         Song song = list.get(position);
         //el titulo de la cancion
-        holder.title.setText(song.getTITLE());
+        holder.title.setText(song.getTitle());
         //nombre del grupo o artista
-        holder.artist.setText(song.getARTIST());
+        holder.artist.setText(song.getArtist());
     }
 
     /**

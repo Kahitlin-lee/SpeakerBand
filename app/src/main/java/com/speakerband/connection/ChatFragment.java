@@ -2,16 +2,14 @@ package com.speakerband.connection;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
-import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
 import android.support.v7.widget.Toolbar;
@@ -30,29 +28,29 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.speakerband.MainActivity;
-import com.speakerband.MusicService.*;
-import com.speakerband.MusicService;
 import com.speakerband.R;
 import com.speakerband.Song;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 import static com.speakerband.ListSelection.*;
-import static com.speakerband.MainActivity.musicService;
 
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import edu.rit.se.wifibuddy.CommunicationManager;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
+
 
 
 /**
@@ -63,7 +61,6 @@ import edu.rit.se.wifibuddy.WifiDirectHandler;
  */
 public class ChatFragment extends ListFragment
 {
-
     private EditText textMessageEditText;
     private ChatMessageAdapter adapter = null;
     private List<String> items = new ArrayList<>();
@@ -87,7 +84,8 @@ public class ChatFragment extends ListFragment
      * @return
      */
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
 
         sendButton = (Button) view.findViewById(R.id.sendButton);
@@ -128,8 +126,12 @@ public class ChatFragment extends ListFragment
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
+
                 Log.i(WifiDirectHandler.TAG, "Send button tapped");
+
+                //TODO probar hacer esta variable de clase
                 CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
+
                 if (communicationManager != null && !textMessageEditText.toString().equals(""))
                 {
                     String message = textMessageEditText.getText().toString();
@@ -138,11 +140,15 @@ public class ChatFragment extends ListFragment
                     byte[] messageBytes = (author + ": " + message).getBytes();
                     Message finalMessage = new Message(MessageType.TEXT, messageBytes);
                     communicationManager.write(SerializationUtils.serialize(finalMessage));
-                } else {
+                }
+                else {
                     Log.e(TAG, "Communication Manager is null");
                 }
+
                 String message = textMessageEditText.getText().toString();
-                if (!message.equals("")) {
+
+                if (!message.equals(""))
+                {
                     pushMessage("Me: " + message);
                     messages.add(message);
                     Log.i(TAG, "Message: " + message);
@@ -171,7 +177,8 @@ public class ChatFragment extends ListFragment
         songButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pushSong();
+                //pushSong();
+                pushSongPath();
             }
         });
 
@@ -196,13 +203,17 @@ public class ChatFragment extends ListFragment
      * deserializa lo que llegue
      * 1º lugar donde pasa cuando llega la foto
      * @param readMessage
+     * @param context
      */
-    //TODO cambiarle el nombre a este metodo por pullMessage.
-    public void pushMessage(byte[] readMessage)
+    //TODO cambiarle el nombre a este metodo por pullMessage., aqui agregue en parametro context pero esto me puede dar mucho problema
+    public void pushMessage(byte[] readMessage, Context context)
     {
         Message message = SerializationUtils.deserialize(readMessage);
         Bitmap bitmap;
-        switch(message.messageType) {
+        ByteArrayInputStream in;
+
+        switch(message.messageType)
+        {
             case TEXT:
                 Log.i(TAG, "Text message received");
                 //aca esta cogiendo el mensaje
@@ -218,28 +229,31 @@ public class ChatFragment extends ListFragment
                 loadPhoto(imageView, bitmap.getWidth(), bitmap.getHeight());
                 break;
             //cancion
-            case SONG:
-                Log.i(TAG, "Song");
-                ByteArrayInputStream in = new ByteArrayInputStream(message.message);
+            case SONG_START:
+                Log.i(TAG, "SongPath");
                 try
                 {
+                    in = new ByteArrayInputStream(message.message);
+                    ObjectInputStream is = new ObjectInputStream(in);
+                    loadSongPath(is );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                break;
+            case SONG:
+                Log.i(TAG, "Song");
+                try
+                {
+                    in = new ByteArrayInputStream(message.message);
                     ObjectInputStream is = new ObjectInputStream(in);
                     loadSong(is);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
-            case PLAY:
-                Log.i(TAG, "Play sing");
-                //aca esta cogiendo el mensaje
-                in = new ByteArrayInputStream(message.message);
-                try
-                {
-                    ObjectInputStream is = new ObjectInputStream(in);
-                    play(is);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            case SONG_END:
+                writeSong();
                 break;
         }
     }
@@ -277,36 +291,96 @@ public class ChatFragment extends ListFragment
     /**
      * Envia la cancion
      */
-    public void pushSong()
+    public void pushSongPath()
     {
         //recorrerlo he ir enviando cancion a cancion
-        for(Song s : listSelection)
+        for(Song song : listSelection)
         {
-            //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            //convertir la cancion en bytes
-            try {
-                ObjectOutputStream os = new ObjectOutputStream(stream);
-                os.writeObject(s);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            song.convertMusicFileToString();
 
-            //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
-            //toByteArray(Crea una matriz de bytes recién asignada.
-            // en los 3 casos lo pasa a un array de bytes
-            byte[] byteArraySong = stream.toByteArray();
-            //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los 3 casos
-            Message message = new Message(MessageType.SONG, byteArraySong);
-            //esto lo hace en los 3 casos
-            CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
-            //lo serializa, esto tambien en los 3 casos
-            communicationManager.write(SerializationUtils.serialize(message));
+            //Vamos a ver cuantas veces dividimos el vector de arrays:
+            List<byte[]> partes = divideArray(song.getSongBytes(), 512);
+
+            byte[] byteArraySong = null;
+
+            for(int i=0; i < partes.size(); i++)
+            {
+                song.setSongBytes(partes.get(i));
+                //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
+                //toByteArray(Crea una matriz de bytes recién asignada.
+                // en los 3 casos lo pasa a un array de bytes
+                byteArraySong = convertirObjetoArrayBytes (song);
+
+                if (i == 0)  //Primera vez
+                {
+                    enviarMensaje(MessageType.SONG_START, byteArraySong);
+                }
+                else {
+                    enviarMensaje(MessageType.SONG , byteArraySong);
+                }
+
+            }
+            enviarMensaje(MessageType.SONG_END , byteArraySong);  // No nos importa el contenido, solo el mensaje de terminacion.
         }
     }
 
     /**
-     * Envia la
+     *
+     * @param tipo
+     * @param contenido
+     */
+    public void enviarMensaje (MessageType tipo, byte[] contenido)
+    {
+        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los 3 casos
+        Message message = new Message(tipo , contenido);
+        //esto lo hace en los 3 casos
+        CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
+        //lo serializa, esto tambien en los 3 casos
+        communicationManager.write(SerializationUtils.serialize(message));
+    }
+
+    /**
+     * Metodo que convierte cualquier objeto en un array de bytes
+     * @param object
+     * @return
+     */
+    public byte[] convertirObjetoArrayBytes (Object object)
+    {
+        //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        //convertir la cancion en bytes
+        try
+        {
+            ObjectOutputStream os = new ObjectOutputStream(stream);
+            os.writeObject(object);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return stream.toByteArray();
+    }
+
+    /**
+     *
+     * @param source
+     * @param chunksize
+     * @return
+     */
+    public static List<byte[]> divideArray(byte[] source, int chunksize)
+    {
+        List<byte[]> result = new ArrayList<byte[]>();
+        int start = 0;
+        while (start < source.length)
+        {
+            int end = Math.min(source.length, start + chunksize);
+            result.add(Arrays.copyOfRange(source, start, end));
+            start += chunksize;
+        }
+        return result;
+    }
+
+    /**
+     * Envia la cancion que se tiene q poner a  play
+     * TOdavia no hace nada
      */
     public void playSign()
     {
@@ -347,14 +421,17 @@ public class ChatFragment extends ListFragment
      */
     public class ChatMessageAdapter extends ArrayAdapter<String>
     {
-        public ChatMessageAdapter(Context context, int textViewResourceId, List<String> items) {
+        public ChatMessageAdapter(Context context, int textViewResourceId, List<String> items)
+        {
             super(context, textViewResourceId, items);
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
             View v = convertView;
-            if (v == null) {
+            if (v == null)
+            {
                 LayoutInflater vi = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 v = vi.inflate(android.R.layout.simple_list_item_1, null);
             }
@@ -393,7 +470,8 @@ public class ChatFragment extends ListFragment
      * This is called when the Fragment is opened and is attached to MainActivity
      */
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(Context context)
+    {
         super.onAttach(context);
         try {
             handlerAccessor = ((WiFiDirectHandlerAccessor) getActivity());
@@ -432,15 +510,24 @@ public class ChatFragment extends ListFragment
         imageDialog.show();
     }
 
+    //Variable para los metodos para enviar alchivo a trozos uasadas en los metodos loadSongPath,
+    // loadSong, writeSong,
+    private Song _song;
+    private ArrayList<byte[]> arrayTrozos;
+
     /**
-     * En este metodo es donde querria que se coja la cacion y la sume a la lista
-     * de reproduccion del cliente
+     *
+     * @param is
+     * @throws IOException
      */
-    private void loadSong(ObjectInputStream is)
+    private void loadSongPath(ObjectInputStream is ) throws IOException
     {
-        try {
-            Song song = (Song)is.readObject();
-            listSelection.add(song);
+        try
+        {
+            _song = (Song)is.readObject();
+            arrayTrozos = new ArrayList<byte[]>();
+            //arrayTrozos.add(_song.getSongBytes());   // Escribimos el primer trozo.
+
         } catch (IOException e) {
             e.printStackTrace();//writeabortemexeption
         } catch (ClassNotFoundException e) {
@@ -448,18 +535,106 @@ public class ChatFragment extends ListFragment
         }
     }
 
-    private void play(ObjectInputStream is)
+    /**
+     * En este metodo es donde querria que se coja la cacion y la sume a la lista
+     * de reproduccion del cliente
+     */
+    private void loadSong(ObjectInputStream is)
     {
-        try {
-            Song song = (Song)is.readObject();
-            musicService.setSong(song);
-            musicService.playSong();
+        try
+        {
+            Song songTemp = (Song)is.readObject();
+            arrayTrozos.add(songTemp.getSongBytes());
+
         } catch (IOException e) {
             e.printStackTrace();//writeabortemexeption
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
+
+    private void writeSong()
+    {
+        try
+        {
+            //Unimos todos los trozos de arrays
+            //Concatenamos Arrays:
+            for (byte[] trozito : arrayTrozos )
+            {
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                outputStream.write(_song.getSongBytes());
+                outputStream.write(trozito);
+                _song.setSongBytes(outputStream.toByteArray());
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        _song.setUri(writeSongOnExternalMemory(_song));
+        listSelection.add(_song);
+    }
+
+    /**
+     * Metodo que escribe un archivo de musica en la memoria externa
+     * TODO mejorar esta explicaicon del metodo
+     * @param song
+     * @return
+     */
+    private String writeSongOnExternalMemory(Song song)
+    {
+        //ContextWrapper contextWrapper = new ContextWrapper(getActivity());
+        //File directory = contextWrapper.getDir(getActivity().getFilesDir().getName(), Context.MODE_PRIVATE);
+        File file =  new File(Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+                + song.getTitleWithExtension());
+        FileOutputStream fileOutputStream = null; // save
+
+        // Get length of file in bytes
+        long fileSizeInBytes = file.length();
+        // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+        long fileSizeInKB = fileSizeInBytes / 1024;
+        // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+        long fileSizeInMB = fileSizeInKB / 1024;
+
+        try
+        {
+            fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(song.getSongBytes());
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Get length of file in bytes
+         fileSizeInBytes = file.length();
+        // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+         fileSizeInKB = fileSizeInBytes / 1024;
+        // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+         fileSizeInMB = fileSizeInKB / 1024;
+
+        return file.getAbsolutePath();
+    }
+
+
+
+//    private void play(ObjectInputStream is)
+//    {
+//        try
+//        {
+//            Song song = (Song)is.readObject();
+//            musicService.setSong(song);
+//            musicService.playSong();
+//        } catch (IOException e) {
+//            e.printStackTrace();//writeabortemexeption
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 
 }

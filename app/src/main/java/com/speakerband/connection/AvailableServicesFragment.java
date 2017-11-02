@@ -28,8 +28,8 @@ import edu.rit.se.wifibuddy.WifiDirectHandler;
 /**
  * ListFragment that shows a list of available discovered services
  */
-public class AvailableServicesFragment extends Fragment{
-
+public class AvailableServicesFragment extends Fragment
+{
     private WiFiDirectHandlerAccessor wifiDirectHandlerAccessor;
     private List<DnsSdService> services = new ArrayList<>();
     private AvailableServicesListViewAdapter servicesListAdapter;

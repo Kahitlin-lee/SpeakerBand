@@ -87,7 +87,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
      * Agrega al  Main Menu de ActionBar
      */
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         getMenuInflater().inflate(R.menu.main_menu_connection, menu);
         return true;
     }
@@ -267,9 +268,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     }
 
     /**
-     * le llega la foto desde el otro activity
-     * Con este metodo se coge la info que manda del activity
-     * ChatFragmen
+     * Le llega la foto desde el otro activity
+     * Con este metodo se coge la info que manda del activity ChatFragment
      * 2º lugar por donde pasa para enviar la foto
      * 4º despues una vez la foto llega al cliente vuelve a pasar por aqui
      * @param requestCode
@@ -312,7 +312,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 Log.i(TAG, "Message received");
                 if(chatFragment != null) {
                     //2º lugar donde pasa cuando llega la foto
-                    chatFragment.pushMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY));
+                    chatFragment.pushMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY), context);
                 }
             } else if (intent.getAction().equals(WifiDirectHandler.Action.WIFI_STATE_CHANGED)) {
                 //3º lugar donde pasa cuando llega la foto, depues de esto la muestra

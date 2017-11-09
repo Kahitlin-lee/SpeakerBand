@@ -108,41 +108,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 musicService.setList(songList);
 
             RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
-            recyclerView.setAdapter(new RecyclerView_Adapter(songList, getApplication(), new RecyclerViewOnItemClickListener()
-            {
-                /**
-                 * Click siempre para reproducir la cancion
-                 * @param v
-                 * @param position
-                 */
-                @Override
-                public void onClick(View v, int position)
-                {
-                    musicService.setSong(songList.get(position));
-                    //Dependiendo de el valor de isInternalUri hara play sobre la memoria interna o externa
-                    musicService.playSong();
-                    //lo pausa si esta a play y lo pone a play si esta pausado
-                    if(playbackPaused)
-                    {
-                        setController();
-                        playbackPaused = false;
-                    }//muestra los controles de reproduccion
-                    controller.show(0);
-                }
-
-                /**
-                 *
-                 * @param v
-                 * @param position
-                 */
-                @Override
-                public void onLongClick(View v, int position)
-                {
-                    song = songList.get(position);
-                    listSelection.add(song);
-                    Toast.makeText(MainActivity.this,R.string.song_add , Toast.LENGTH_SHORT).show();
-                }
-            }));
+            recyclerView.setAdapter(new RecyclerView_Adapter(songList, getApplication(), listItemClickListener));
             //indicamos tipo de layout para el recyclerView
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -166,6 +132,42 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             }
         }
     }
+
+    private RecyclerViewOnItemClickListener listItemClickListener = new RecyclerViewOnItemClickListener()
+    {
+        /**
+         * Click siempre para reproducir la cancion
+         * @param v
+         * @param position
+         */
+        @Override
+        public void onClick(View v, int position)
+        {
+            musicService.setSong(songList.get(position));
+            //Dependiendo de el valor de isInternalUri hara play sobre la memoria interna o externa
+            musicService.playSong();
+            //lo pausa si esta a play y lo pone a play si esta pausado
+            if(playbackPaused)
+            {
+                setController();
+                playbackPaused = false;
+            }//muestra los controles de reproduccion
+            controller.show(0);
+        }
+
+        /**
+         *
+         * @param v
+         * @param position
+         */
+        @Override
+        public void onLongClick(View v, int position)
+        {
+            song = songList.get(position);
+            listSelection.add(song);
+            Toast.makeText(MainActivity.this,R.string.song_add , Toast.LENGTH_SHORT).show();
+        }
+    };
 
     /**
      * Tabs de la app

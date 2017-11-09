@@ -185,24 +185,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     @Override
                     public void onTabSelected(TabLayout.Tab tab)
                     {
-                        int position = tab.getPosition();
-                        switch (position)
-                        {
-                            case 0://lista de canciones del dispositivo mostrada por nmbre de cancion
-                                initRecyclerView(0);
-                                break;
-                            case 1://lista de canciones del dispositivo mostrada por nmbre de artista/grupo
-                                initRecyclerView(1);
-                                break;
-                            case 2://lista de canciones que se esperan pasar a los otros dispositivos
-                                initRecyclerView(2);
-                                break;
-                            case 3:
-
-                                Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
-                                startActivity(intent);
-
-                                break;
+                        if (tab.getText() == "SONGS"){
+                            Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
+                            startActivity(intent);
+                        }else{
+                            initRecyclerView(tab.getPosition());
                         }
                     }
 

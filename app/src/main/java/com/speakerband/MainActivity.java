@@ -38,8 +38,6 @@ import static com.speakerband.ListSelection.*;
  */
 public class MainActivity extends AppCompatActivity implements MediaPlayerControl
 {
-    //RecyclerView
-    private RecyclerView recyclerView;
 
     private RequestPermissions requerirPermisos;
     //--
@@ -123,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             if(musicService != null)
                 musicService.setList(songList);
 
-            recyclerView = (RecyclerView) findViewById(R.id.rv);
+            RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
             recyclerView.setAdapter(new RecyclerView_Adapter(songList, getApplication(), new RecyclerViewOnItemClickListener()
             {
                 /**

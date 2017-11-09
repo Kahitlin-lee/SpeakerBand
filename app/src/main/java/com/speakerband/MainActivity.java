@@ -56,9 +56,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     //Variable auxiliar
     private Song song;
     //Texto que se mostrara si la lista de canciones seleccionada esta vacia
-    private TextView listSelectionEmpty;
+    private TextView textListSelectionEmpty;
     //Texto que se mostrara si la lista de canciones esta vacia
-    private TextView listEmpty;
+    private TextView textListEmpty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -69,10 +69,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         setSupportActionBar(toolbar);
 
         //variables que se ocultan y se muestran dependiendo de si hay cancioones en las listas o no
-        listSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
-        listSelectionEmpty.setVisibility(View.GONE);
-        listEmpty = (TextView) findViewById(R.id.list_empty);
-        listEmpty.setVisibility(View.GONE);
+        textListSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
+        textListSelectionEmpty.setVisibility(View.GONE);
+        textListEmpty = (TextView) findViewById(R.id.list_empty);
+        textListEmpty.setVisibility(View.GONE);
 
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
@@ -117,18 +117,18 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             // y dependeindo de si la lista esta vacia  se  hara visible un texto  explicativo.
             if (songList.size() == 0 && typeList == 2)
             {
-                listSelectionEmpty.setVisibility(View.VISIBLE);
-                listEmpty.setVisibility(View.GONE);
+                textListSelectionEmpty.setVisibility(View.VISIBLE);
+                textListEmpty.setVisibility(View.GONE);
             } //se muestra si no hay musica en el dispositivo
             else if (songList.size() == 0 && (typeList == 1 || typeList == 0))
             {
-                listEmpty.setVisibility(View.VISIBLE);
-                listSelectionEmpty.setVisibility(View.GONE);
+                textListEmpty.setVisibility(View.VISIBLE);
+                textListSelectionEmpty.setVisibility(View.GONE);
             }//no se muestra mas si hay musica
             else if(songList.size() >= 0)
             {
-                listSelectionEmpty.setVisibility(View.GONE);
-                listEmpty.setVisibility(View.GONE);
+                textListSelectionEmpty.setVisibility(View.GONE);
+                textListEmpty.setVisibility(View.GONE);
             }
         }
     }

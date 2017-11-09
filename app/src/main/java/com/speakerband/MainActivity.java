@@ -98,21 +98,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private void initRecyclerView(int typeList)
     {
         //Obtengo la lista de canciones del dispositivo
-        songList = getSongList(this);
-
-        //DEpendiendo de la tab donde esta ubicado el usuario rellenara y/o ordenara las listas
-        //de canciones con valores diferentes
-        if(typeList == 1)
-            //=rdenaremos los datos para que las canciones se presenten alfabéticamente por Artista
-            sortByName((ArrayList) songList);
-        if(typeList == 1)
-            //ordenaremos los datos para que las canciones se presenten alfabéticamente por Artista
-            sortByArtist((ArrayList) songList);
-        if(typeList == 2)
-            //la tercera pestaña solo coge las canciones que estan destinadas a luego ser reproducidas en
-            //todos los dispositivos
-            songList = listSelection;
-
+        songList = getSongListByType(this, typeList, listSelection);
 
         //Si la lista de canciones no esta vacia
         if (songList.size() >= 0)
@@ -350,6 +336,25 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             initRecyclerView(0);
         }
     }
+
+    private static List<Song> getSongListByType(Context context, int typeList, List<Song> listSelection)
+    {
+        List<Song> songs = getSongList(context);
+        //DEpendiendo de la tab donde esta ubicado el usuario rellenara y/o ordenara las listas
+        //de canciones con valores diferentes
+        if(typeList == 0)
+            sortByName((ArrayList) songs);
+        if(typeList == 1)
+            //ordenaremos los datos para que las canciones se presenten alfabéticamente por Artista
+            sortByArtist((ArrayList) songs);
+        if(typeList == 2)
+            //la tercera pestaña solo coge las canciones que estan destinadas a luego ser reproducidas en
+            //todos los dispositivos
+            songs = listSelection;
+        return songs;
+
+    }
+
 
     //Metodos que obtienen la musica local del movil y la muestra
     /**

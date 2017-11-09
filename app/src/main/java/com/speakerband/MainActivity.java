@@ -100,6 +100,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Obtengo la lista de canciones del dispositivo
         songList = getSongListByType(this, typeList, listSelection);
 
+        showHideTextDependingOnList(textListEmpty,songList);
+        if(songList == listSelection){
+            showHideTextDependingOnList(textListSelectionEmpty,songList);
+        }
+
         //Si la lista de canciones no esta vacia
         if (songList.size() >= 0)
         {
@@ -112,24 +117,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             //indicamos tipo de layout para el recyclerView
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-            //Dependiendo de donde se  posicione el usuario, quiere decir dependiendo de la tab
-            // demla lista a reproducir o p¡solo paramostrar
-            // y dependeindo de si la lista esta vacia  se  hara visible un texto  explicativo.
-            if (songList.size() == 0 && typeList == 2)
-            {
-                textListSelectionEmpty.setVisibility(View.VISIBLE);
-                textListEmpty.setVisibility(View.GONE);
-            } //se muestra si no hay musica en el dispositivo
-            else if (songList.size() == 0 && (typeList == 1 || typeList == 0))
-            {
-                textListEmpty.setVisibility(View.VISIBLE);
-                textListSelectionEmpty.setVisibility(View.GONE);
-            }//no se muestra mas si hay musica
-            else if(songList.size() >= 0)
-            {
-                textListSelectionEmpty.setVisibility(View.GONE);
-                textListEmpty.setVisibility(View.GONE);
-            }
+        }
+    }
+
+    private void showHideTextDependingOnList(TextView text, List<Song> songList)
+    {
+        if(songList.isEmpty()){
+            text.setVisibility(View.VISIBLE);
+        }else{
+            text.setVisibility(View.GONE);
         }
     }
 

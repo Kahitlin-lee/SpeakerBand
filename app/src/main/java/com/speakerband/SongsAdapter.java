@@ -39,8 +39,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.SongViewHold
     {
         //Inflate the layout, inicializo the View Holder
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.song, parent, false);
-        SongViewHolder holder = new SongViewHolder(v);
-        return holder;
+        return new SongViewHolder(v);
     }
 
     /**
@@ -72,16 +71,6 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.SongViewHold
         //Devuelve la cantidad de elementos que mostrará RecyclerView.
         return list.size();
     }
-
-    /**
-     *
-     * @param recyclerView
-     */
-    @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
-    }
-
 
     /**
      * Clase SongViewHolder

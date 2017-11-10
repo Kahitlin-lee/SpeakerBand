@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 musicService.setList(songList);
 
             RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
-            recyclerView.setAdapter(new RecyclerView_Adapter(songList, getApplication(), listItemClickListener));
+            recyclerView.setAdapter(new SongsAdapter(songList, getApplication(), listItemClickListener));
             //indicamos tipo de layout para el recyclerView
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 

@@ -13,14 +13,14 @@ import java.util.List;
 /**
  * Created by Catalina Saavedra
  */
-public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adapter.ViewHolder>
+public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.SongViewHolder>
 {
 
     List<Song> list = Collections.emptyList();
     Context context;
     private RecyclerViewOnItemClickListener recyclerViewOnItemClickListener;
 
-    public RecyclerView_Adapter(List<Song> list, Context context, RecyclerViewOnItemClickListener
+    public SongsAdapter(List<Song> list, Context context, RecyclerViewOnItemClickListener
                                       recyclerViewOnItemClickListener)
     {
         this.list = list;
@@ -35,11 +35,11 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
      * @return
      */
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+    public SongViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
         //Inflate the layout, inicializo the View Holder
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.song, parent, false);
-        ViewHolder holder = new ViewHolder(v);
+        SongViewHolder holder = new SongViewHolder(v);
         return holder;
     }
 
@@ -49,7 +49,7 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
      * @param position
      */
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position)
+    public void onBindViewHolder(SongViewHolder holder, int position)
     {
         // Se usa el Titular de vista provisto en el método onCreateViewHolder
         // para completar la fila actual en el RecyclerView
@@ -84,15 +84,15 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
 
 
     /**
-     * Clase ViewHolder
+     * Clase SongViewHolder
      */
-    class ViewHolder  extends RecyclerView.ViewHolder implements View
+    class SongViewHolder extends RecyclerView.ViewHolder implements View
             .OnClickListener, View.OnLongClickListener
     {
         TextView title;
         TextView artist;
 
-        public ViewHolder(View itemView)
+        public SongViewHolder(View itemView)
         {
             super(itemView);
             title = (TextView) itemView.findViewById(R.id.song_title);
@@ -107,7 +107,7 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
          * @param v
          */
         public void onClick(View v)
-        {//getAdapterPosition() que devolverá la posición del item asociado al ViewHolder
+        {//getAdapterPosition() que devolverá la posición del item asociado al SongViewHolder
             recyclerViewOnItemClickListener.onClick(v, getAdapterPosition());
         }
 
@@ -117,7 +117,7 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
          * @return
          */
         public boolean onLongClick(View v)
-        {//getAdapterPosition() que devolverá la posición del item asociado al ViewHolder
+        {//getAdapterPosition() que devolverá la posición del item asociado al SongViewHolder
             recyclerViewOnItemClickListener.onLongClick(v, getAdapterPosition());
             return true;
         }

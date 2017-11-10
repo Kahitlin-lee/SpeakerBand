@@ -181,16 +181,11 @@ public class MusicService extends Service implements
             //Prepara el reproductor para su reproducción, de forma asíncrona
             mediaPlayer.prepareAsync();
 
-        } catch (IOException ex) {
+        } catch (IOException | IllegalArgumentException | SecurityException ex)
+        {
             Log.d("", "create failed:", ex);
-        // fall through
-        } catch (IllegalArgumentException ex) {
-            Log.d("", "create failed:", ex);
-            // fall through
-        } catch (SecurityException ex) {
-            Log.d("", "create failed:", ex);
-            // fall through
-        } catch(Exception e){
+        } catch (Exception e)
+        {
             Log.e("MUSIC SERVICE", "Error al establecer la fuente de datos", e);
         }
     }

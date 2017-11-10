@@ -7,11 +7,11 @@ import java.io.Serializable;
  */
 public class Message implements Serializable {
 
-    public MessageType messageType;
-    public byte[] message;
+    MessageType messageType;
+    byte[] content;
 
     public Message(MessageType messageType, byte[] message) {
         this.messageType = messageType;
-        this.message = message;
+        this.content = message;
     }
 }

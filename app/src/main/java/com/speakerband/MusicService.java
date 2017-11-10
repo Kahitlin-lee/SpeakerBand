@@ -41,16 +41,14 @@ public class MusicService extends Service implements
     private int songPosition;
     //lista de canciones, array con las canciones
     private List<Song> songs;
-    //
-    private String songTitle = "";
     //variables para la modalidad aleatoria
     private boolean mezclar = false;
     private Random random;
     ////
     private static final int NOTIFY_ID = 1;
     private NotificationManager nm;
-    public static final String BROADCAST_PLAYBACK_STOP = "stop",
-            BROADCAST_PLAYBACK_PAUSE = "pause";
+    public static final String BROADCAST_PLAYBACK_STOP = "stop";
+    public static final String BROADCAST_PLAYBACK_PAUSE = "pause";
     /**
      * Para la manipulación de notificaciones
      */
@@ -80,7 +78,6 @@ public class MusicService extends Service implements
         //inicializamos la posicion
         //Creamos el MediaPlayer
         mediaPlayer = new MediaPlayer();
-        //invocamos al merodo initializeMusicPlayer();
         initializeMusicPlayer();
         //inicializamos la posicion
         songPosition = 0;
@@ -254,10 +251,8 @@ public class MusicService extends Service implements
      */
     private void showNotification()
     {
-        songTitle = song.getTitle();
-        String songArtist = song.getArtist();
         // Usaremos el mismo texto para el ticker y la expandir la notificacion
-        CharSequence text = songTitle + ", " + songArtist;
+        CharSequence text = song.getTitle() + ", " + song.getArtist();
         //Se utiliza una PendingIntent para especificar la acción que debe realizarse una vez que el usuario seleccione la notificación.
         //El PendingIntent para iniciar nuestra actividad si el usuario selecciona esta notificación
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
@@ -334,7 +329,7 @@ public class MusicService extends Service implements
      *
      */
     public void pausePlayer(){
-        if(mediaPlayer.isPlaying() == true)
+        if(mediaPlayer.isPlaying())
             mediaPlayer.pause();
         else
             mediaPlayer.start();

@@ -51,8 +51,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private boolean paused = false, playbackPaused = false;
     //Array que utilizaremospara almacenar la lista de canciones
     private List<Song> songList;
-    //Pestañas
-    private TabLayout tabs;
     //Variable auxiliar
     private Song song;
     //Texto que se mostrara si la lista de canciones seleccionada esta vacia
@@ -170,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     private void tabs()
     {
-        tabs = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
         //Agrego las tabs que tendra mi aplicacion
         tabs.addTab(tabs.newTab().setText("SONGS"));
         tabs.addTab(tabs.newTab().setText("ARTIST"));

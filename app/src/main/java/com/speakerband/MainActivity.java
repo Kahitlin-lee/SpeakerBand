@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     @Override
                     public void onTabSelected(TabLayout.Tab tab)
                     {
-                        if (tab.getText() == "SONGS"){
+                        if (tab.getText() == "CONNECTION"){
                             Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
                             startActivity(intent);
                         }else{

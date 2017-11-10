@@ -599,7 +599,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * @param sl
      * @return
      */
-    public static ArrayList sortByName(ArrayList sl)
+    public static List sortByName(List sl)
     {
         //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
         Collections.sort(sl, new Comparator<Song>() {
@@ -615,7 +615,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * @param sl
      * @return
      */
-    public static ArrayList sortByArtist(ArrayList sl)
+    public static List sortByArtist(List sl)
     {
         //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
         Collections.sort(sl, new Comparator<Song>() {

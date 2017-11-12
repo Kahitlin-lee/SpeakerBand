@@ -71,7 +71,7 @@ public class ChatFragment extends ListFragment
     //variables de los botones
     private Button sendButton;
     private ImageButton cameraButton;
-    private ImageButton songButton;
+    private ImageButton sendSongButton;
     private ImageButton playButton;
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
@@ -93,7 +93,7 @@ public class ChatFragment extends ListFragment
 
         cameraButton = (ImageButton) view.findViewById(R.id.cameraButton);
         //Agrego y anlazo el boton para pasar una cancion
-        songButton = (ImageButton) view.findViewById(R.id.songButton);
+        sendSongButton = (ImageButton) view.findViewById(R.id.songButton);
         playButton = (ImageButton) view.findViewById(R.id.play);
 
         textMessageEditText = (EditText) view.findViewById(R.id.textMessageEditText);
@@ -138,8 +138,7 @@ public class ChatFragment extends ListFragment
                     // Obtiene la primera palabra del nombre del dispositivo
                     String author = handlerAccessor.getWifiHandler().getThisDevice().deviceName.split(" ")[0];
                     byte[] messageBytes = (author + ": " + message).getBytes();
-                    Message finalMessage = new Message(MessageType.TEXT, messageBytes);
-                    communicationManager.write(SerializationUtils.serialize(finalMessage));
+                    enviarMensaje(MessageType.TEXT, messageBytes);
                 }
                 else {
                     Log.e(TAG, "Communication Manager is null");
@@ -174,15 +173,14 @@ public class ChatFragment extends ListFragment
         });
 
         //evento del boton  enviar una cancion
-        songButton.setOnClickListener(new View.OnClickListener() {
+        sendSongButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //pushSong();
-                pushSongPath();
+                pushSong();
             }
         });
 
-        //evento del boton  enviar una cancion
+        //evento del boton  reproducir la cancion desde el dispositivo lider
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -229,18 +227,20 @@ public class ChatFragment extends ListFragment
                 loadPhoto(imageView, bitmap.getWidth(), bitmap.getHeight());
                 break;
             //cancion
+            //Comienza a recibir la cancion
             case SONG_START:
                 Log.i(TAG, "SongPath");
                 try
                 {
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
-                    loadSongPath(is );
+                    loadSongStart(is );
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 break;
+            //Recibe toda la cancion byte a byte
             case SONG:
                 Log.i(TAG, "Song");
                 try
@@ -252,6 +252,7 @@ public class ChatFragment extends ListFragment
                     e.printStackTrace();
                 }
                 break;
+            //La cancion se termina de llegar
             case SONG_END:
                 writeSong();
                 break;
@@ -281,17 +282,15 @@ public class ChatFragment extends ListFragment
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] byteArray = stream.toByteArray();
-        //indica que tipo de mensaje es
-        Message message = new Message(MessageType.IMAGE, byteArray);
-        CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
+        //indica que tipo de mensaje es y usamos el metodo de envio
+        enviarMensaje(MessageType.IMAGE, byteArray);
         Log.i(TAG, "Attempting to send image");
-        communicationManager.write(SerializationUtils.serialize(message));
     }
 
     /**
-     * Envia la cancion
+     * Envia la cancion trozo a trozo
      */
-    public void pushSongPath()
+    public void pushSong()
     {
         //recorrerlo he ir enviando cancion a cancion
         for(Song song : listSelection)
@@ -299,11 +298,11 @@ public class ChatFragment extends ListFragment
             song.readFile();
 
             //Vamos a ver cuantas veces dividimos el vector de arrays:
-            List<byte[]> partes = divideArray(song.getSongBytes(), 512);
+            List<byte[]> partes = divideArray(song.getSongBytes(), 2048);
 
             byte[] byteArraySong = null;
 
-            for(int i=0; i < partes.size(); i++)
+            for(int i = 0; i < partes.size(); i++)
             {
                 song.setSongBytes(partes.get(i));
                 //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
@@ -318,24 +317,23 @@ public class ChatFragment extends ListFragment
                 else {
                     enviarMensaje(MessageType.SONG , byteArraySong);
                 }
-
             }
-            enviarMensaje(MessageType.SONG_END , byteArraySong);  // No nos importa el contenido, solo el mensaje de terminacion.
+            enviarMensaje(MessageType.SONG_END , byteArraySong); // No nos importa el contenido, solo el mensaje de terminacion.
         }
     }
 
     /**
-     *
+     * Este metodo es el que hace el envio con wifi direct que es el codigo que se repite siempre en todos los casos
      * @param tipo
      * @param contenido
      */
     public void enviarMensaje (MessageType tipo, byte[] contenido)
     {
-        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los 3 casos
+        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los todos casos
         Message message = new Message(tipo , contenido);
-        //esto lo hace en los 3 casos
+        //esto lo hace en los todos casos
         CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
-        //lo serializa, esto tambien en los 3 casos
+        //lo serializa, esto tambien en los todos casos
         communicationManager.write(SerializationUtils.serialize(message));
     }
 
@@ -360,12 +358,13 @@ public class ChatFragment extends ListFragment
     }
 
     /**
-     *
+     * Divide el array en trozos
      * @param source
      * @param chunksize
      * @return
      */
-    public static List<byte[]> divideArray(byte[] source, int chunksize)
+    public static List<byte[]>
+    divideArray(byte[] source, int chunksize)
     {
         List<byte[]> result = new ArrayList<byte[]>();
         int start = 0;
@@ -516,18 +515,16 @@ public class ChatFragment extends ListFragment
     private ArrayList<byte[]> arrayTrozos;
 
     /**
-     *
+     * Comenza a recibir la cancion
      * @param is
      * @throws IOException
      */
-    private void loadSongPath(ObjectInputStream is ) throws IOException
+    private void loadSongStart(ObjectInputStream is ) throws IOException
     {
         try
         {
             _song = (Song)is.readObject();
             arrayTrozos = new ArrayList<byte[]>();
-            //arrayTrozos.add(_song.getSongBytes());   // Escribimos el primer trozo.
-
         } catch (IOException e) {
             e.printStackTrace();//writeabortemexeption
         } catch (ClassNotFoundException e) {
@@ -536,8 +533,9 @@ public class ChatFragment extends ListFragment
     }
 
     /**
-     * En este metodo es donde querria que se coja la cacion y la sume a la lista
-     * de reproduccion del cliente
+     * Metodo que recibe la cancion trozo a trozo y lo va agregando al array
+     * de bytes
+     * @param is
      */
     private void loadSong(ObjectInputStream is)
     {
@@ -545,7 +543,6 @@ public class ChatFragment extends ListFragment
         {
             Song songTemp = (Song)is.readObject();
             arrayTrozos.add(songTemp.getSongBytes());
-
         } catch (IOException e) {
             e.printStackTrace();//writeabortemexeption
         } catch (ClassNotFoundException e) {
@@ -553,6 +550,10 @@ public class ChatFragment extends ListFragment
         }
     }
 
+    /**
+     * Escribe el array de canciones en memoria parte a parte
+     * TODO este metodo hay que hacerlo mejor pero no es tan facil
+     */
     private void writeSong()
     {
         try

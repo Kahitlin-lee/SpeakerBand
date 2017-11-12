@@ -98,9 +98,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Obtengo la lista de canciones del dispositivo
         songList = getSongListByType(this, typeList, listSelection);
 
-        showHideTextDependingOnList(textListEmpty,songList);
+        showHideTextDependingOnList(textListEmpty,songList, typeList);
         if(songList == listSelection){
-            showHideTextDependingOnList(textListSelectionEmpty,songList);
+            showHideTextDependingOnList(textListSelectionEmpty,songList, typeList);
         }
 
         //Si la lista de canciones no esta vacia
@@ -118,13 +118,25 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     }
 
-    private void showHideTextDependingOnList(TextView text, List<Song> songList)
+    private void showHideTextDependingOnList(TextView text, List<Song> songList,int  typeList)
     {
-        if(songList.isEmpty()){
-            text.setVisibility(View.VISIBLE);
-        }else{
-            text.setVisibility(View.GONE);
-        }
+        //Dependiendo de donde se  posicione el usuario, quiere decir dependiendo de la tab
+        // demla lista a reproducir o p¡solo paramostrar
+        // y dependeindo de si la lista esta vacia  se  hara visible un texto  explicativo.
+        if (songList.size() == 0 && typeList == 2)
+        {
+            textListSelectionEmpty.setVisibility(View.VISIBLE);
+            textListEmpty.setVisibility(View.GONE);
+            } //se muestra si no hay musica en el dispositivo
+            else if (songList.size() == 0 && (typeList == 1 || typeList == 0))
+           {
+           textListSelectionEmpty.setVisibility(View.GONE);
+            }//no se muestra mas si hay musica
+            else if(songList.size() >= 0)
+            {
+               textListSelectionEmpty.setVisibility(View.GONE);
+                textListEmpty.setVisibility(View.GONE);
+            }
     }
 
     private RecyclerViewOnItemClickListener listItemClickListener = new RecyclerViewOnItemClickListener()
@@ -320,6 +332,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     }
 
+    /**
+     * Ordena las canciones dependiendo de la tab
+     * @param context
+     * @param typeList
+     * @param listSelection
+     * @return
+     */
     private static List<Song> getSongListByType(Context context, int typeList, List<Song> listSelection)
     {
         List<Song> songs = getSongList(context);

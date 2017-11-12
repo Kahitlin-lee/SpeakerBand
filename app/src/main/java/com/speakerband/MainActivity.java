@@ -38,8 +38,6 @@ import static com.speakerband.ListSelection.*;
  */
 public class MainActivity extends AppCompatActivity implements MediaPlayerControl
 {
-    //RecyclerView
-    private RecyclerView recyclerView;
 
     private RequestPermissions requerirPermisos;
     //--
@@ -53,14 +51,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private boolean paused = false, playbackPaused = false;
     //Array que utilizaremospara almacenar la lista de canciones
     private List<Song> songList;
-    //Pestañas
-    private TabLayout tabs;
     //Variable auxiliar
     private Song song;
     //Texto que se mostrara si la lista de canciones seleccionada esta vacia
-    private TextView listSelectionEmpty;
+    private TextView textListSelectionEmpty;
     //Texto que se mostrara si la lista de canciones esta vacia
-    private TextView listEmpty;
+    private TextView textListEmpty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -71,10 +67,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         setSupportActionBar(toolbar);
 
         //variables que se ocultan y se muestran dependiendo de si hay cancioones en las listas o no
-        listSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
-        listSelectionEmpty.setVisibility(View.GONE);
-        listEmpty = (TextView) findViewById(R.id.list_empty);
-        listEmpty.setVisibility(View.GONE);
+        textListSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
+        textListSelectionEmpty.setVisibility(View.GONE);
+        textListEmpty = (TextView) findViewById(R.id.list_empty);
+        textListEmpty.setVisibility(View.GONE);
 
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
@@ -100,21 +96,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private void initRecyclerView(int typeList)
     {
         //Obtengo la lista de canciones del dispositivo
-        songList = getSongList(this);
+        songList = getSongListByType(this, typeList, listSelection);
 
-        //DEpendiendo de la tab donde esta ubicado el usuario rellenara y/o ordenara las listas
-        //de canciones con valores diferentes
-        if(typeList == 1)
-            //=rdenaremos los datos para que las canciones se presenten alfabéticamente por Artista
-            sortByName((ArrayList) songList);
-        if(typeList == 1)
-            //ordenaremos los datos para que las canciones se presenten alfabéticamente por Artista
-            sortByArtist((ArrayList) songList);
-        if(typeList == 2)
-            //la tercera pestaña solo coge las canciones que estan destinadas a luego ser reproducidas en
-            //todos los dispositivos
-            songList = listSelection;
-
+        showHideTextDependingOnList(textListEmpty,songList);
+        if(songList == listSelection){
+            showHideTextDependingOnList(textListSelectionEmpty,songList);
+        }
 
         //Si la lista de canciones no esta vacia
         if (songList.size() >= 0)
@@ -123,72 +110,65 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             if(musicService != null)
                 musicService.setList(songList);
 
-            recyclerView = (RecyclerView) findViewById(R.id.rv);
-            recyclerView.setAdapter(new RecyclerView_Adapter(songList, getApplication(), new RecyclerViewOnItemClickListener()
-            {
-                /**
-                 * Click siempre para reproducir la cancion
-                 * @param v
-                 * @param position
-                 */
-                @Override
-                public void onClick(View v, int position)
-                {
-                    musicService.setSong(songList.get(position));
-                    //Dependiendo de el valor de isInternalUri hara play sobre la memoria interna o externa
-                    musicService.playSong();
-                    //lo pausa si esta a play y lo pone a play si esta pausado
-                    if(playbackPaused)
-                    {
-                        setController();
-                        playbackPaused = false;
-                    }//muestra los controles de reproduccion
-                    controller.show(0);
-                }
-
-                /**
-                 *
-                 * @param v
-                 * @param position
-                 */
-                @Override
-                public void onLongClick(View v, int position)
-                {
-                    song = songList.get(position);
-                    listSelection.add(song);
-                    Toast.makeText(MainActivity.this,R.string.song_add , Toast.LENGTH_SHORT).show();
-                }
-            }));
+            RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
+            recyclerView.setAdapter(new SongsAdapter(songList, getApplication(), listItemClickListener));
             //indicamos tipo de layout para el recyclerView
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-            //Dependiendo de donde se  posicione el usuario, quiere decir dependiendo de la tab
-            // demla lista a reproducir o p¡solo paramostrar
-            // y dependeindo de si la lista esta vacia  se  hara visible un texto  explicativo.
-            if (songList.size() == 0 && typeList == 2)
-            {
-                listSelectionEmpty.setVisibility(View.VISIBLE);
-                listEmpty.setVisibility(View.GONE);
-            } //se muestra si no hay musica en el dispositivo
-            else if (songList.size() == 0 && (typeList == 1 || typeList == 0))
-            {
-                listEmpty.setVisibility(View.VISIBLE);
-                listSelectionEmpty.setVisibility(View.GONE);
-            }//no se muestra mas si hay musica
-            else if(songList.size() >= 0)
-            {
-                listSelectionEmpty.setVisibility(View.GONE);
-                listEmpty.setVisibility(View.GONE);
-            }
         }
     }
+
+    private void showHideTextDependingOnList(TextView text, List<Song> songList)
+    {
+        if(songList.isEmpty()){
+            text.setVisibility(View.VISIBLE);
+        }else{
+            text.setVisibility(View.GONE);
+        }
+    }
+
+    private RecyclerViewOnItemClickListener listItemClickListener = new RecyclerViewOnItemClickListener()
+    {
+        /**
+         * Click siempre para reproducir la cancion
+         * @param v
+         * @param position
+         */
+        @Override
+        public void onClick(View v, int position)
+        {
+            musicService.setSong(songList.get(position));
+            //Dependiendo de el valor de isInternalUri hara play sobre la memoria interna o externa
+            musicService.playSong();
+            //lo pausa si esta a play y lo pone a play si esta pausado
+            if(playbackPaused)
+            {
+                setController();
+                playbackPaused = false;
+            }//muestra los controles de reproduccion
+            controller.show(0);
+        }
+
+        /**
+         *
+         * @param v
+         * @param position
+         */
+        @Override
+        public void onLongClick(View v, int position)
+        {
+            song = songList.get(position);
+            listSelection.add(song);
+            Toast.makeText(MainActivity.this,R.string.song_add , Toast.LENGTH_SHORT).show();
+        }
+    };
 
     /**
      * Tabs de la app
      */
     private void tabs()
     {
-        tabs = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
         //Agrego las tabs que tendra mi aplicacion
         tabs.addTab(tabs.newTab().setText("SONGS"));
         tabs.addTab(tabs.newTab().setText("ARTIST"));
@@ -203,24 +183,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     @Override
                     public void onTabSelected(TabLayout.Tab tab)
                     {
-                        int position = tab.getPosition();
-                        switch (position)
-                        {
-                            case 0://lista de canciones del dispositivo mostrada por nmbre de cancion
-                                initRecyclerView(0);
-                                break;
-                            case 1://lista de canciones del dispositivo mostrada por nmbre de artista/grupo
-                                initRecyclerView(1);
-                                break;
-                            case 2://lista de canciones que se esperan pasar a los otros dispositivos
-                                initRecyclerView(2);
-                                break;
-                            case 3:
-
-                                Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
-                                startActivity(intent);
-
-                                break;
+                        if (tab.getText() == "CONNECTION"){
+                            Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
+                            startActivity(intent);
+                        }else{
+                            initRecyclerView(tab.getPosition());
                         }
                     }
 
@@ -352,6 +319,26 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             initRecyclerView(0);
         }
     }
+
+    private static List<Song> getSongListByType(Context context, int typeList, List<Song> listSelection)
+    {
+        List<Song> songs = getSongList(context);
+        switch (typeList){
+            case 0:
+                songs = sortByName(songs);
+                break;
+            case 1:
+                songs = sortByArtist(songs);
+                break;
+            case 2:
+                songs = listSelection;
+                break;
+            default:
+
+        }
+        return songs;
+    }
+
 
     //Metodos que obtienen la musica local del movil y la muestra
     /**
@@ -611,7 +598,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * @param sl
      * @return
      */
-    public static ArrayList sortByName(ArrayList sl)
+    public static List sortByName(List sl)
     {
         //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
         Collections.sort(sl, new Comparator<Song>() {
@@ -627,7 +614,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * @param sl
      * @return
      */
-    public static ArrayList sortByArtist(ArrayList sl)
+    public static List sortByArtist(List sl)
     {
         //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
         Collections.sort(sl, new Comparator<Song>() {

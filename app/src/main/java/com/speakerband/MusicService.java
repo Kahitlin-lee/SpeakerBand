@@ -216,6 +216,18 @@ public class MusicService extends Service implements
     public boolean onError(MediaPlayer mp, int i, int i1)
     {
         mp.reset();
+        //Invoked when there has been an error during an asynchronous operation
+        switch (i) {
+            case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
+                Log.d("MediaPlayer Error", "MEDIA ERROR NOT VALID FOR PROGRESSIVE PLAYBACK " + i1);
+                break;
+            case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
+                Log.d("MediaPlayer Error", "MEDIA ERROR SERVER DIED " + i1);
+                break;
+            case MediaPlayer.MEDIA_ERROR_UNKNOWN:
+                Log.d("MediaPlayer Error", "MEDIA ERROR UNKNOWN " + i1);
+                break;
+        }
         return false;
     }
 

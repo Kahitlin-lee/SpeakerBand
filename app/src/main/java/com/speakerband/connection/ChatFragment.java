@@ -255,6 +255,7 @@ public class ChatFragment extends ListFragment
             //La cancion se termina de llegar
             case SONG_END:
                 writeSong();
+                Log.i(TAG, "ha llegado la cancion");
                 break;
         }
     }
@@ -320,6 +321,7 @@ public class ChatFragment extends ListFragment
             }
             enviarMensaje(MessageType.SONG_END , byteArraySong); // No nos importa el contenido, solo el mensaje de terminacion.
         }
+        Log.i(TAG, "Se ha enviado la cancion");
     }
 
     /**

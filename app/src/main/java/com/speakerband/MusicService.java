@@ -165,12 +165,6 @@ public class MusicService extends Service implements
         //obtengo el  id de la cancion
         long currSong = song.getId();
         //cambio uri
-        //TODO Como la uri esta cogiendo una cancion que existe en mi movil esto hace que pete cuando
-        //estoy reproduciendo una cancion en otro dispositivo ya que este se pasa como objeto
-        //pero no esta en el movil fisicamente, por lo que la solucion que veo es meter la cancion
-        //dentro del dispositivo. Lo que quiere decir q no estoy transfiriendo un archivo
-        //sino que lo que trasfiero es un objeto song
-
         trackUri= ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currSong);

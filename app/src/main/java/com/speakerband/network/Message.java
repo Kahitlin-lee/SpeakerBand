@@ -7,8 +7,8 @@ import java.io.Serializable;
  */
 public class Message implements Serializable {
 
-    MessageType messageType;
-    byte[] content;
+    public MessageType messageType;
+    public byte[] content;
 
     public Message(MessageType messageType, byte[] message) {
         this.messageType = messageType;

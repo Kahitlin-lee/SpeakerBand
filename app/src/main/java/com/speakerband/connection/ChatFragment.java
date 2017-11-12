@@ -217,12 +217,12 @@ public class ChatFragment extends ListFragment
             case TEXT:
                 Log.i(TAG, "Text message received");
                 //aca esta cogiendo el mensaje
-                pushMessage(new String(message.message));
+                pushMessage(new String(message.content));
                 break;
             case IMAGE:
                 //con esto coge la imagen
                 Log.i(TAG, "Image message received");
-                bitmap = BitmapFactory.decodeByteArray(message.message, 0, message.message.length);
+                bitmap = BitmapFactory.decodeByteArray(message.content, 0, message.content.length);
                 ImageView imageView = new ImageView(getContext());
                 imageView.setImageBitmap(bitmap);
                 //lo envia al metodo que crea nuevamente la imagen
@@ -233,7 +233,7 @@ public class ChatFragment extends ListFragment
                 Log.i(TAG, "SongPath");
                 try
                 {
-                    in = new ByteArrayInputStream(message.message);
+                    in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     loadSongPath(is );
                 } catch (IOException e) {
@@ -245,7 +245,7 @@ public class ChatFragment extends ListFragment
                 Log.i(TAG, "Song");
                 try
                 {
-                    in = new ByteArrayInputStream(message.message);
+                    in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     loadSong(is);
                 } catch (IOException e) {
@@ -296,7 +296,7 @@ public class ChatFragment extends ListFragment
         //recorrerlo he ir enviando cancion a cancion
         for(Song song : listSelection)
         {
-            song.convertMusicFileToString();
+            song.readFile();
 
             //Vamos a ver cuantas veces dividimos el vector de arrays:
             List<byte[]> partes = divideArray(song.getSongBytes(), 512);

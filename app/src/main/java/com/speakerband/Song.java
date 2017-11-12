@@ -3,20 +3,11 @@ package com.speakerband;
 /**
  * Created by g_electra on 26/9/17.
  */
-
-import android.net.Uri;
-import android.util.Base64;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.util.List;
-
-import static com.speakerband.ListSelection.listSelectionPath;
 
 /**
  * He hecho la clase Serializable de caso contrario saltaria la NotSerializableException
@@ -53,9 +44,9 @@ public class Song implements Serializable
     }
 
     /**
-     *
+     * Metodo que lee el fichero
      */
-    public void convertMusicFileToString()
+    public void readFile()
     {
         final File f = new File(uri);
 
@@ -67,7 +58,7 @@ public class Song implements Serializable
     }
 
     /**
-     *
+     * Metodo para leer el fichero de la cancion
      * @param file
      * @return
      * @throws IOException

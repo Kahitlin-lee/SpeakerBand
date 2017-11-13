@@ -98,16 +98,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Obtengo la lista de canciones del dispositivo
         songList = getSongListByType(this, typeList, listSelection);
 
-        showHideTextDependingOnList(textListEmpty,songList, typeList);
-        if(songList == listSelection){
-            showHideTextDependingOnList(textListSelectionEmpty,songList, typeList);
-        }
-
         //Si la lista de canciones no esta vacia
-        if (songList.size() >= 0)
-        {
+        if (songList.size() >= 0) {
             //Actualizamos el Servicio con toda la lista de canciones
-            if(musicService != null)
+            if (musicService != null)
                 musicService.setList(songList);
 
             RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
@@ -116,27 +110,25 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         }
+        showHideTextDependingOnList(textListEmpty, songList);
+        textListSelectionEmpty.setVisibility(View.GONE);
+        if (songList == listSelection) {
+            showHideTextDependingOnList(textListSelectionEmpty, songList);
+        }
     }
 
-    private void showHideTextDependingOnList(TextView text, List<Song> songList,int  typeList)
+    /**
+     *
+     * @param text
+     * @param songList
+     */
+    private void showHideTextDependingOnList(TextView text, List<Song> songList)
     {
-        //Dependiendo de donde se  posicione el usuario, quiere decir dependiendo de la tab
-        // demla lista a reproducir o p¡solo paramostrar
-        // y dependeindo de si la lista esta vacia  se  hara visible un texto  explicativo.
-        if (songList.size() == 0 && typeList == 2)
-        {
-            textListSelectionEmpty.setVisibility(View.VISIBLE);
-            textListEmpty.setVisibility(View.GONE);
-            } //se muestra si no hay musica en el dispositivo
-            else if (songList.size() == 0 && (typeList == 1 || typeList == 0))
-           {
-           textListSelectionEmpty.setVisibility(View.GONE);
-            }//no se muestra mas si hay musica
-            else if(songList.size() >= 0)
-            {
-               textListSelectionEmpty.setVisibility(View.GONE);
-                textListEmpty.setVisibility(View.GONE);
-            }
+        if(songList.isEmpty()) {
+            text.setVisibility(View.VISIBLE);
+        }else{
+        text.setVisibility(View.GONE);
+        }
     }
 
     private RecyclerViewOnItemClickListener listItemClickListener = new RecyclerViewOnItemClickListener()

@@ -49,6 +49,7 @@ public class MusicService extends Service implements
     private NotificationManager nm;
     public static final String BROADCAST_PLAYBACK_STOP = "stop";
     public static final String BROADCAST_PLAYBACK_PAUSE = "pause";
+
     /**
      * Para la manipulación de notificaciones
      */

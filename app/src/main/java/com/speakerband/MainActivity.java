@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     //Texto que se mostrara si la lista de canciones esta vacia
     private TextView textListEmpty;
 
+    private UtilFicheros utilFicheros;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -72,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         textListEmpty = (TextView) findViewById(R.id.list_empty);
         textListEmpty.setVisibility(View.GONE);
 
+        //Creo objeto de la clase UtilFicheros
+        utilFicheros = new UtilFicheros();
+
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
         requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
@@ -84,6 +89,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         //Metodo de ayuda para configurar el controlador
         setController();
+
+        if(utilFicheros.createFolderApp(MainActivity.this) == true)
+        {
+            Toast.makeText(MainActivity.this, R.string.carpeta_creada , Toast.LENGTH_SHORT).show();
+        } else
+        {
+            Toast.makeText(MainActivity.this, R.string.carpeta_no_creada , Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -110,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         }
+        //TODO no funciona correctamente y estoy arta de mirarlo y saber por que
         showHideTextDependingOnList(textListEmpty, songList);
         textListSelectionEmpty.setVisibility(View.GONE);
         if (songList == listSelection) {
@@ -118,13 +132,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     /**
-     *
+     * Metodo que hace visible o invidible un texto informativo de pendiendo de si hay canciones
+     * o no en el dispositivo o en la liesta de seleccion
      * @param text
      * @param songList
      */
     private void showHideTextDependingOnList(TextView text, List<Song> songList)
     {
-        if(songList.isEmpty()) {
+        if(songList.isEmpty() || songList == null) {
             text.setVisibility(View.VISIBLE);
         }else{
         text.setVisibility(View.GONE);
@@ -162,8 +177,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         public void onLongClick(View v, int position)
         {
             song = songList.get(position);
-            listSelection.add(song);
-            Toast.makeText(MainActivity.this,R.string.song_add , Toast.LENGTH_SHORT).show();
+            if(!listSelection.contains(song.getTitle())) {
+                listSelection.add(song);
+                utilFicheros.writeSongOnExternalMemory(song, (MainActivity.this.getString(R.string.app_name_con_barra)));
+                Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, R.string.song_exist_list_selection, Toast.LENGTH_SHORT).show();
+            }
         }
     };
 
@@ -331,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * @param listSelection
      * @return
      */
-    private static List<Song> getSongListByType(Context context, int typeList, List<Song> listSelection)
+    private List<Song> getSongListByType(Context context, int typeList, List<Song> listSelection)
     {
         List<Song> songs = getSongList(context);
         switch (typeList){
@@ -342,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 songs = sortByArtist(songs);
                 break;
             case 2:
-                songs = listSelection;
+                songs = getSongListSelection(context);
                 break;
             default:
 
@@ -356,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * Método auxiliar para obtener la información del archivo de audio:
      * Obtiene la lista de todas las canciones que estan en el dispositivo
      */
-    public static List<Song> getSongList(Context context)
+    public List<Song> getSongList(Context context)
     {
         ArrayList list = new ArrayList();
         if (android.support.v4.app.ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -368,7 +388,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         ContentResolver musicResolver = context.getContentResolver();
         //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-
 
         //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
@@ -402,6 +421,67 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         sortByName(list);
         return list;
     }
+
+    /**
+     * Método que recupera la lista de canciones del fichero de la app Speakerband
+     * y las muestra en la pestaña correspondiente a las canciones de la lista de reproduccion
+     * que se comparten entre archivos.
+     */
+    public List<Song> getSongListSelection(Context context)
+    {
+        ArrayList list = new ArrayList();
+        if (android.support.v4.app.ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            return list;
+        }
+
+        if (utilFicheros.findFolder(context.getString(R.string.app_name_con_barra)) == true)
+        {
+            Toast.makeText(MainActivity.this, R.string.carpeta_encontrada , Toast.LENGTH_SHORT).show();
+            //instancia de ContentResolver
+            ContentResolver musicResolver = context.getContentResolver();
+            //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
+            Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+            //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
+            Cursor musicCursor = musicResolver.query(musicUri,
+                    null,MediaStore.Audio.Media.DATA + " like ? ",
+                    new String[] {"%SpeakerBand%"},  null);
+
+            //iterar los resultados, primero chequeando que tenemos datos válidos:
+            if ((musicCursor != null) && (musicCursor.moveToFirst())) {
+                //get Columnas
+                int titleColumn = musicCursor.getColumnIndex
+                        (android.provider.MediaStore.Audio.Media.TITLE);
+                int idColumn = musicCursor.getColumnIndex
+                        (android.provider.MediaStore.Audio.Media._ID);
+                int albumColumn = musicCursor.getColumnIndex
+                        (MediaStore.Audio.Media.ALBUM);
+                int artistColumn = musicCursor.getColumnIndex
+                        (android.provider.MediaStore.Audio.Media.ARTIST);
+                int uriDataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
+
+                //add songs a la lista
+                do {
+                    long thisId = musicCursor.getLong(idColumn);
+                    String thisTitle = musicCursor.getString(titleColumn);
+                    String thisAlbum = musicCursor.getString(albumColumn);
+                    String thisArtist = musicCursor.getString(artistColumn);
+                    String thisUri = musicCursor.getString(uriDataColumn);
+                    list.add(new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri));
+                }
+                while (musicCursor.moveToNext());
+            }//Por defecto lo ordena por nombre de cancion
+            sortByName(list);
+            return list;
+
+        } else {
+            Toast.makeText(MainActivity.this, R.string.carpeta_no_encontrada , Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
+
+
 
     //---------------
 

@@ -31,6 +31,7 @@ import android.widget.TextView;
 
 import com.speakerband.R;
 import com.speakerband.Song;
+import com.speakerband.UtilFicheros;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 import static com.speakerband.ListSelection.*;
@@ -76,6 +77,10 @@ public class ChatFragment extends ListFragment
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
+    private UtilFicheros utilFicheros;
+
+
+
     /**
      *
      * @param inflater
@@ -95,6 +100,9 @@ public class ChatFragment extends ListFragment
         //Agrego y anlazo el boton para pasar una cancion
         sendSongButton = (ImageButton) view.findViewById(R.id.songButton);
         playButton = (ImageButton) view.findViewById(R.id.play);
+
+        //Creo objeto de la clase UtilFicheros
+        utilFicheros = new UtilFicheros();
 
         textMessageEditText = (EditText) view.findViewById(R.id.textMessageEditText);
         textMessageEditText.addTextChangedListener(new TextWatcher()
@@ -574,54 +582,12 @@ public class ChatFragment extends ListFragment
         {
             e.printStackTrace();
         }
-        _song.setUri(writeSongOnExternalMemory(_song));
+        _song.setUri(utilFicheros.writeSongOnExternalMemory(_song , "Speakerband"));
         listSelection.add(_song);
     }
 
-    /**
-     * Metodo que escribe un archivo de musica en la memoria externa
-     * TODO mejorar esta explicaicon del metodo
-     * @param song
-     * @return
-     */
-    private String writeSongOnExternalMemory(Song song)
-    {
-        //ContextWrapper contextWrapper = new ContextWrapper(getActivity());
-        //File directory = contextWrapper.getDir(getActivity().getFilesDir().getName(), Context.MODE_PRIVATE);
-        File file =  new File(Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-                + song.getTitleWithExtension());
-        FileOutputStream fileOutputStream = null; // save
 
-        // Get length of file in bytes
-        long fileSizeInBytes = file.length();
-        // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
-        long fileSizeInKB = fileSizeInBytes / 1024;
-        // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-        long fileSizeInMB = fileSizeInKB / 1024;
 
-        try
-        {
-            fileOutputStream = new FileOutputStream(file);
-            fileOutputStream.write(song.getSongBytes());
-            fileOutputStream.flush();
-            fileOutputStream.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Get length of file in bytes
-         fileSizeInBytes = file.length();
-        // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
-         fileSizeInKB = fileSizeInBytes / 1024;
-        // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-         fileSizeInMB = fileSizeInKB / 1024;
-
-        return file.getAbsolutePath();
-    }
 
 
 

@@ -7,9 +7,11 @@ import android.widget.Toast;
 import com.speakerband.MainActivity;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 
 /**
  * Created by g_electra on 22/11/17.
@@ -33,10 +35,32 @@ public class UtilFicheros
 
         for (File file : files) {
             if (file.getName().equals(fileSpeakerBand.getName())) {
+              files = fileSpeakerBand.listFiles();
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Busca la carpeta con el nombre del fichero mas /
+     * que se ingrese por parametro
+     * EJ : "/SpeakerBand"
+     * @param nombreFicheroEncontrar nombre del fichero que se espera encotrar en el dispositivo
+     * @return
+     */
+    public String returnPath(String nombreFicheroEncontrar)
+    {
+        File path = new File (Environment.getExternalStorageDirectory().getAbsolutePath());
+        File fileSpeakerBand = new File(Environment.getExternalStorageDirectory() + nombreFicheroEncontrar);
+        File[] files = path.listFiles();
+
+        for (File file : files) {
+            if (file.getName().equals(fileSpeakerBand.getName())) {
+                return file.getAbsolutePath();
+            }
+        }
+        return null;
     }
 
     /**
@@ -81,7 +105,6 @@ public class UtilFicheros
         if (path.exists() && (!file.exists())) {
             try {
                 fileOutputStream = new FileOutputStream(file);
-                //TODO peta
                 fileOutputStream.write(song.getSongBytes());
                 fileOutputStream.flush();
                 fileOutputStream.close();
@@ -103,4 +126,54 @@ public class UtilFicheros
         }
         return null;
     }
+
+    /**
+     *
+     * @param song
+     * @param nombreFicheroDondeSeEscribe
+     */
+    public void copyFile(Song song, String nombreFicheroDondeSeEscribe)
+    {
+        FileChannel source = null;
+        FileChannel destination = null;
+        File path = null;
+        File destFile = null;
+        File sourceFile = null;
+
+        try
+        {
+
+            path = Environment.getExternalStoragePublicDirectory(nombreFicheroDondeSeEscribe);
+            destFile = new File(path, song.getTitleWithExtension());
+            sourceFile = new File (song.getUri());
+
+            if (!destFile.getParentFile().exists())
+                destFile.getParentFile().mkdirs();
+
+            if (!destFile.exists()) {
+                destFile.createNewFile();
+            }
+
+            source = new FileInputStream(sourceFile).getChannel();
+            destination = new FileOutputStream(destFile).getChannel();
+            destination.transferFrom(source, 0, source.size());
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                 if (source != null) {
+                    source.close();
+                }
+                if (destination != null) {
+                    destination.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

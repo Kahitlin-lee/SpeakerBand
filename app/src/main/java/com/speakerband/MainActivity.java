@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
@@ -179,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             song = songList.get(position);
             if(!listSelection.contains(song.getTitle())) {
                 listSelection.add(song);
-                utilFicheros.writeSongOnExternalMemory(song, (MainActivity.this.getString(R.string.app_name_con_barra)));
+                utilFicheros.copyFile(song, (MainActivity.this.getString(R.string.app_name_con_barra)));
                 Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(MainActivity.this, R.string.song_exist_list_selection, Toast.LENGTH_SHORT).show();
@@ -440,13 +441,23 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             Toast.makeText(MainActivity.this, R.string.carpeta_encontrada , Toast.LENGTH_SHORT).show();
             //instancia de ContentResolver
             ContentResolver musicResolver = context.getContentResolver();
+
             //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
             Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
+            String selection = MediaStore.Audio.Media.DATA + " LIKE '%Speakerband%'";
+
+            String[] projection = {MediaStore.Audio.AudioColumns.DATA,MediaStore.Audio.AudioColumns.TITLE ,
+                    MediaStore.Audio.AudioColumns._ID,
+                    MediaStore.Audio.ArtistColumns.ARTIST,};
+
             //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
-            Cursor musicCursor = musicResolver.query(musicUri,
-                    null,MediaStore.Audio.Media.DATA + " like ? ",
-                    new String[] {"%SpeakerBand%"},  null);
+            Cursor musicCursor = musicResolver.query(
+                    musicUri, projection,
+                    MediaStore.Audio.Media.DATA + " like ? ", new String[]{"%Speakerband%"},
+                    null);
+
+            int i = musicCursor.getCount();
 
             //iterar los resultados, primero chequeando que tenemos datos válidos:
             if ((musicCursor != null) && (musicCursor.moveToFirst())) {
@@ -473,8 +484,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 while (musicCursor.moveToNext());
             }//Por defecto lo ordena por nombre de cancion
             sortByName(list);
+            musicCursor.close();
             return list;
-
         } else {
             Toast.makeText(MainActivity.this, R.string.carpeta_no_encontrada , Toast.LENGTH_SHORT).show();
             return null;

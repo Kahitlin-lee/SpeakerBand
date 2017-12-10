@@ -2,9 +2,8 @@ package com.speakerband;
 
 import android.content.Context;
 import android.os.Environment;
-import android.widget.Toast;
 
-import com.speakerband.MainActivity;
+import com.speakerband.utils.Constants;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,7 +17,7 @@ import java.nio.channels.FileChannel;
  * Clase con metodos para el manejo de ficheros
  */
 
-public class UtilFicheros
+public class UtilFiles
 {
     /**
      * Busca la carpeta con el nombre del fichero mas /
@@ -27,7 +26,7 @@ public class UtilFicheros
      * @param nombreFicheroEncontrar nombre del fichero que se espera encotrar en el dispositivo
      * @return
      */
-    public boolean findFolder(String nombreFicheroEncontrar)
+    public static boolean findFolder(String nombreFicheroEncontrar)
     {
         File path = new File (Environment.getExternalStorageDirectory().getAbsolutePath());
         File fileSpeakerBand = new File(Environment.getExternalStorageDirectory() + nombreFicheroEncontrar);
@@ -49,7 +48,7 @@ public class UtilFicheros
      * @param nombreFicheroEncontrar nombre del fichero que se espera encotrar en el dispositivo
      * @return
      */
-    public String returnPath(String nombreFicheroEncontrar)
+    public static String returnPath(String nombreFicheroEncontrar)
     {
         File path = new File (Environment.getExternalStorageDirectory().getAbsolutePath());
         File fileSpeakerBand = new File(Environment.getExternalStorageDirectory() + nombreFicheroEncontrar);
@@ -63,13 +62,28 @@ public class UtilFicheros
         return null;
     }
 
+    public static File[] listFileSongs(String nombreFicheroEncontrar)
+    {
+        File path = new File (Environment.getExternalStorageDirectory().getAbsolutePath());
+        File fileSpeakerBand = new File(Environment.getExternalStorageDirectory() + nombreFicheroEncontrar);
+        File[] files = path.listFiles();
+
+        for (File file : files) {
+            if (file.getName().equals(fileSpeakerBand.getName()))
+            {
+                return fileSpeakerBand.listFiles();
+            }
+        }
+        return null;
+    }
+
     /**
      * Crea el archivo de de la aplicacion Speakerband
      * @return
      */
-    public boolean  createFolderApp(Context context)
+    public static boolean  createFolderApp(Context context)
     {
-        File file = new File(Environment.getExternalStorageDirectory() + (context.getString(R.string.app_name_con_barra)));
+        File file = new File(Environment.getExternalStorageDirectory() + Constants.NOMBRE_APP_DIRECTORIO);
         if (file.exists())
         {
              return true;
@@ -97,7 +111,7 @@ public class UtilFicheros
      * @param nombreFicheroDondeSeEscribe nombre del fichero donde se escribira la cancion
      * @return
      */
-    public String writeSongOnExternalMemory(Song song, String nombreFicheroDondeSeEscribe)
+    public static String writeSongOnExternalMemory(Song song, String nombreFicheroDondeSeEscribe)
     { //guarda las canciones en la carpeta de Speakerband del storage
         File path = Environment.getExternalStoragePublicDirectory(nombreFicheroDondeSeEscribe);
         File file = new File(path, song.getTitleWithExtension());
@@ -132,7 +146,7 @@ public class UtilFicheros
      * @param song
      * @param nombreFicheroDondeSeEscribe
      */
-    public void copyFile(Song song, String nombreFicheroDondeSeEscribe)
+    public static void copyFile(Song song, String nombreFicheroDondeSeEscribe)
     {
         FileChannel source = null;
         FileChannel destination = null;

@@ -40,6 +40,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:25.3.1'
+    compile 'com.google.code.gson:gson:2.7'
     testCompile 'junit:junit:4.12'
     compile 'in.srain.cube:grid-view-with-header-footer:1.0.12'
     compile 'com.github.Crash-Test-Buddies:WiFi-Buddy:v0.8.0'  // Librería Wifi-Direct

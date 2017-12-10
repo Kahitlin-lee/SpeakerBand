@@ -8,11 +8,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,14 +28,22 @@ import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.JsonElement;
 import com.speakerband.connection.ConnectionActivity;
+import com.speakerband.utils.Constants;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import static com.speakerband.ListSelection.*;
+import static com.speakerband.UtilFiles.copyFile;
+import static com.speakerband.UtilFiles.createFolderApp;
+import static com.speakerband.UtilFiles.findFolder;
+import static com.speakerband.UtilFiles.listFileSongs;
+import static com.speakerband.UtilFiles.returnPath;
 
 /**
  * Activity principal
@@ -59,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     //Texto que se mostrara si la lista de canciones esta vacia
     private TextView textListEmpty;
 
-    private UtilFicheros utilFicheros;
+    public static MatrixCursor matrixCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -75,9 +86,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         textListEmpty = (TextView) findViewById(R.id.list_empty);
         textListEmpty.setVisibility(View.GONE);
 
-        //Creo objeto de la clase UtilFicheros
-        utilFicheros = new UtilFicheros();
-
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
         requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
@@ -91,7 +99,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Metodo de ayuda para configurar el controlador
         setController();
 
-        if(utilFicheros.createFolderApp(MainActivity.this) == true)
+        //Recuperamos la lista de seleccion
+        //TODO
+        ArrayList <Song> auxList = SharedPreferencesClass.getListSelectionPreferences(MainActivity.this);
+        if(!auxList.isEmpty() ) {
+            listSelection = auxList;
+        }
+
+        if(createFolderApp(MainActivity.this) == true)
         {
             Toast.makeText(MainActivity.this, R.string.carpeta_creada , Toast.LENGTH_SHORT).show();
         } else
@@ -180,7 +195,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             song = songList.get(position);
             if(!listSelection.contains(song.getTitle())) {
                 listSelection.add(song);
-                utilFicheros.copyFile(song, (MainActivity.this.getString(R.string.app_name_con_barra)));
+                //Agregamos la nueva cancion a SharedPreferencesClass
+                SharedPreferencesClass.addListSelectionPreferences(MainActivity.this, song);
+                //Copia la cancion el el fichero de la app
+                copyFile(song, Constants.NOMBRE_APP_DIRECTORIO);
                 Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(MainActivity.this, R.string.song_exist_list_selection, Toast.LENGTH_SHORT).show();
@@ -208,6 +226,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     @Override
                     public void onTabSelected(TabLayout.Tab tab)
                     {
+                        //Agregamos al ir y volver de las tabs las canciones que no estan agregadas todavia
+                        ArrayList auxList = SharedPreferencesClass.getListSelectionPreferences(MainActivity.this);
+                        if(listSelection.size() > auxList.size()){
+                            for(int i = auxList.size() ; i < listSelection.size() ; i++){
+                                SharedPreferencesClass.addListSelectionPreferences(MainActivity.this, song);
+                            }
+                        }
                         if (tab.getText() == "CONNECTION"){
                             Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
                             startActivity(intent);
@@ -313,6 +338,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     protected void onDestroy()
     {
+        SharedPreferencesClass.saveListSelectionPreferences(MainActivity.this, listSelection);
         stopService(playIntent);
         musicService.unbindService(musicConnection);
         musicService = null;
@@ -366,7 +392,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 songs = getSongListSelection(context);
                 break;
             default:
-
         }
         return songs;
     }
@@ -420,6 +445,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             while (musicCursor.moveToNext());
         }//Por defecto lo ordena por nombre de cancion
         sortByName(list);
+
+        //TODO fuciono los dos cursores
+        //getCursorForFileQuery();
+        musicCursor.close();
         return list;
     }
 
@@ -436,60 +465,69 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             return list;
         }
 
-        if (utilFicheros.findFolder(context.getString(R.string.app_name_con_barra)) == true)
+        if (findFolder(Constants.NOMBRE_APP_DIRECTORIO) == true)
         {
             Toast.makeText(MainActivity.this, R.string.carpeta_encontrada , Toast.LENGTH_SHORT).show();
-            //instancia de ContentResolver
-            ContentResolver musicResolver = context.getContentResolver();
 
-            //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
-            Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            File[] listSpeakerBand = listFileSongs(Constants.NOMBRE_APP_DIRECTORIO);
 
-            String selection = MediaStore.Audio.Media.DATA + " LIKE '%Speakerband%'";
+            Cursor musicCursor = getCursorForFileQuery(listSpeakerBand);
 
-            String[] projection = {MediaStore.Audio.AudioColumns.DATA,MediaStore.Audio.AudioColumns.TITLE ,
-                    MediaStore.Audio.AudioColumns._ID,
-                    MediaStore.Audio.ArtistColumns.ARTIST,};
+            //get Columnas
+            int titleColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.TITLE);
+            int idColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media._ID);
+            int albumColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.ALBUM);
+            int artistColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.ARTIST);
+            int uriDataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
 
-            //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
-            Cursor musicCursor = musicResolver.query(
-                    musicUri, projection,
-                    MediaStore.Audio.Media.DATA + " like ? ", new String[]{"%Speakerband%"},
-                    null);
+            do
+            {
+                long thisId = musicCursor.getLong(idColumn);
+                String thisTitle = musicCursor.getString(titleColumn);
+                String thisAlbum = musicCursor.getString(albumColumn);
+                String thisArtist = musicCursor.getString(artistColumn);
+                String thisUri = musicCursor.getString(uriDataColumn);
+                list.add(new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri));
+            }
+            while (musicCursor.moveToNext());
 
-            int i = musicCursor.getCount();
-
-            //iterar los resultados, primero chequeando que tenemos datos válidos:
-            if ((musicCursor != null) && (musicCursor.moveToFirst())) {
-                //get Columnas
-                int titleColumn = musicCursor.getColumnIndex
-                        (android.provider.MediaStore.Audio.Media.TITLE);
-                int idColumn = musicCursor.getColumnIndex
-                        (android.provider.MediaStore.Audio.Media._ID);
-                int albumColumn = musicCursor.getColumnIndex
-                        (MediaStore.Audio.Media.ALBUM);
-                int artistColumn = musicCursor.getColumnIndex
-                        (android.provider.MediaStore.Audio.Media.ARTIST);
-                int uriDataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
-
-                //add songs a la lista
-                do {
-                    long thisId = musicCursor.getLong(idColumn);
-                    String thisTitle = musicCursor.getString(titleColumn);
-                    String thisAlbum = musicCursor.getString(albumColumn);
-                    String thisArtist = musicCursor.getString(artistColumn);
-                    String thisUri = musicCursor.getString(uriDataColumn);
-                    list.add(new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri));
-                }
-                while (musicCursor.moveToNext());
-            }//Por defecto lo ordena por nombre de cancion
             sortByName(list);
             musicCursor.close();
+            matrixCursor.close();
             return list;
         } else {
             Toast.makeText(MainActivity.this, R.string.carpeta_no_encontrada , Toast.LENGTH_SHORT).show();
             return null;
         }
+    }
+
+    /**
+     *
+     * @param listSpeakerBand
+     * @return
+     */
+    public Cursor getCursorForFileQuery(File[] listSpeakerBand)
+    {
+        //MatrixCursorle permite construir algo que implemente la Cursorinterfaz a partir de datos puros, que vierte en un modelo de datos bidimensional.
+        //declarar un MatrixCursor especificando los nombres de las columnas,
+        String[] columns = new String[] { "titleColumn", "idColumn", "albumColumn" , "artistColumn" , "uriDataColumn"};
+
+        matrixCursor = new MatrixCursor(columns);
+
+        //llenar el cursor con sus filas.
+        for (File file :  listSpeakerBand) {
+            for (Song song : listSelection) {
+                if (file.getAbsolutePath().equals(song.getUri()) && file.getName().equals(song.getTitle())) {
+                    matrixCursor.addRow(new Object[]{song.getTitle(), song.getId(), song.getAlbum(),
+                            song.getArtist(), song.getUri()});
+                }
+            }
+        }
+        return matrixCursor;
     }
 
 

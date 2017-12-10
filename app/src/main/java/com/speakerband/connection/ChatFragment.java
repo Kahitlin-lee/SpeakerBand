@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
@@ -29,9 +28,11 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.speakerband.MainActivity;
 import com.speakerband.R;
+import com.speakerband.SharedPreferencesClass;
 import com.speakerband.Song;
-import com.speakerband.UtilFicheros;
+import com.speakerband.UtilFiles;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 import static com.speakerband.ListSelection.*;
@@ -40,9 +41,6 @@ import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -77,7 +75,7 @@ public class ChatFragment extends ListFragment
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
-    private UtilFicheros utilFicheros;
+    private UtilFiles utilFiles;
 
 
 
@@ -101,8 +99,8 @@ public class ChatFragment extends ListFragment
         sendSongButton = (ImageButton) view.findViewById(R.id.songButton);
         playButton = (ImageButton) view.findViewById(R.id.play);
 
-        //Creo objeto de la clase UtilFicheros
-        utilFicheros = new UtilFicheros();
+        //Creo objeto de la clase UtilFiles
+        utilFiles = new UtilFiles();
 
         textMessageEditText = (EditText) view.findViewById(R.id.textMessageEditText);
         textMessageEditText.addTextChangedListener(new TextWatcher()
@@ -582,7 +580,7 @@ public class ChatFragment extends ListFragment
         {
             e.printStackTrace();
         }
-        _song.setUri(utilFicheros.writeSongOnExternalMemory(_song , "Speakerband"));
+        _song.setUri(utilFiles.writeSongOnExternalMemory(_song , "Speakerband"));
         listSelection.add(_song);
     }
 

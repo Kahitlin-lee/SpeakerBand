@@ -22,11 +22,12 @@ public class SharedPreferencesClass
     }
 
     /**
-     * Metodo que salva la lista de canciones de la lista de seleccion
+     * Metodo que salva la lista de canciones de la lista de seleccion en el SharedPreferences
      * @param context
      * @param listSelectionPreferences
      */
-    public static void saveListSelectionPreferences(Context context, ArrayList<Song> listSelectionPreferences) {
+    public static void saveListSelectionPreferences(Context context, ArrayList<Song> listSelectionPreferences)
+    {
         SharedPreferences settings;
         SharedPreferences.Editor editor;
 
@@ -43,11 +44,12 @@ public class SharedPreferencesClass
     }
 
     /**
-     * Metodo que agrega una cancion a la lista de seleccion
+     * Metodo que agrega una cancion a la lista de seleccion del SharedPreferences
      * @param context
      * @param song
      */
-    public static void addListSelectionPreferences(Context context, Song song) {
+    public static void addListSelectionPreferences(Context context, Song song)
+    {
         List<Song> listSelectionPreferences = getListSelectionPreferences(context);
         if (listSelectionPreferences == null)
             listSelectionPreferences = new ArrayList<Song>();
@@ -56,24 +58,25 @@ public class SharedPreferencesClass
     }
 
     /**
-     *
+     * Metodo que elimina toda la lista de seleccion del SharedPreferencesClass
      * @param context
-     * @param song
      */
-    public static void removeListSelectionPreferences(Context context, Song song) {
-        ArrayList<Song> listSelectionPreferences = getListSelectionPreferences(context);
-        if (listSelectionPreferences != null) {
-            listSelectionPreferences.remove(song);
-            saveListSelectionPreferences(context, listSelectionPreferences);
-        }
+    public static void removeSongFromListSelectionPreferences(Context context)
+    {
+        SharedPreferences sharedPrefs = context.getSharedPreferences(LIST_SELECTION,
+                Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.clear();
+        editor.commit();
     }
 
     /**
-     * Metodo que obtiene la lista de seleccion
+     * Metodo que obtiene la lista de seleccion del SharedPreferences
      * @param context
      * @return
      */
-    public static ArrayList<Song> getListSelectionPreferences(Context context) {
+    public static ArrayList<Song> getListSelectionPreferences(Context context)
+    {
         SharedPreferences settings;
         List<Song> listSelectionPreferences;
 
@@ -83,14 +86,15 @@ public class SharedPreferencesClass
         if (settings.contains(LIST_SELECTION)) {
             String jsonFavorites = settings.getString(LIST_SELECTION, null);
             Gson gson = new Gson();
-            Song[] favoriteItems = gson.fromJson(jsonFavorites,
-                    Song[].class);
-
-            listSelectionPreferences = Arrays.asList(favoriteItems);
-            listSelectionPreferences = new ArrayList<Song>(listSelectionPreferences);
+            if(!jsonFavorites.equals(null)) {
+                Song[] favoriteItems = gson.fromJson(jsonFavorites,
+                        Song[].class);
+                listSelectionPreferences = Arrays.asList(favoriteItems);
+                listSelectionPreferences = new ArrayList<Song>(listSelectionPreferences);
+                return (ArrayList<Song>) listSelectionPreferences;
+            } else
+            return null;
         } else
             return null;
-
-        return (ArrayList<Song>) listSelectionPreferences;
     }
 }

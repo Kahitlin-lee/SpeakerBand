@@ -1,8 +1,9 @@
-package com.speakerband;
+package com.speakerband.utils;
 
 import android.content.Context;
 import android.os.Environment;
 
+import com.speakerband.Song;
 import com.speakerband.utils.Constants;
 
 import java.io.File;
@@ -62,6 +63,11 @@ public class UtilFiles
         return null;
     }
 
+    /**
+     *  Lista todas las canciones que hay en un archivo
+     * @param nombreFicheroEncontrar
+     * @return
+     */
     public static File[] listFileSongs(String nombreFicheroEncontrar)
     {
         File path = new File (Environment.getExternalStorageDirectory().getAbsolutePath());
@@ -88,7 +94,7 @@ public class UtilFiles
         {
              return true;
         } else
-            {
+        {
             try
             {
                 if (file.mkdir()) {
@@ -142,7 +148,7 @@ public class UtilFiles
     }
 
     /**
-     *
+     * Copia una cancion de una carpeta a otra
      * @param song
      * @param nombreFicheroDondeSeEscribe
      */

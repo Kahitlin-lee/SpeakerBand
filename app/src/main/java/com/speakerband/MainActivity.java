@@ -10,12 +10,9 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.provider.MediaStore;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,9 +25,9 @@ import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.JsonElement;
 import com.speakerband.connection.ConnectionActivity;
 import com.speakerband.utils.Constants;
+import com.speakerband.utils.UtilList;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,12 +35,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static com.speakerband.ListSelection.*;
-import static com.speakerband.UtilFiles.copyFile;
-import static com.speakerband.UtilFiles.createFolderApp;
-import static com.speakerband.UtilFiles.findFolder;
-import static com.speakerband.UtilFiles.listFileSongs;
-import static com.speakerband.UtilFiles.returnPath;
+import static com.speakerband.SharedPreferencesClass.removeSongFromListSelectionPreferences;
+import static com.speakerband.utils.UtilList.listSelection;
+import static com.speakerband.utils.UtilFiles.createFolderApp;
+import static com.speakerband.utils.UtilFiles.findFolder;
+import static com.speakerband.utils.UtilFiles.listFileSongs;
 
 /**
  * Activity principal
@@ -90,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
         requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
 
+        comprobarListaSeleccion();
+
         //Tabs
         tabs();
 
@@ -99,19 +97,41 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Metodo de ayuda para configurar el controlador
         setController();
 
-        //Recuperamos la lista de seleccion
-        //TODO
-        ArrayList <Song> auxList = SharedPreferencesClass.getListSelectionPreferences(MainActivity.this);
-        if(!auxList.isEmpty() ) {
-            listSelection = auxList;
-        }
 
-        if(createFolderApp(MainActivity.this) == true)
+
+//        if(createFolderApp(MainActivity.this) == true)
+//        {
+//            Toast.makeText(MainActivity.this, R.string.carpeta_creada , Toast.LENGTH_SHORT).show();
+//        } else
+//        {
+//            Toast.makeText(MainActivity.this, R.string.carpeta_no_creada , Toast.LENGTH_SHORT).show();
+//        }
+    }
+
+    /**
+     * Comprobar que las canciones de la lista de seleccion de SharedPreferences exista
+     * en el dispositivo
+     */
+    public void comprobarListaSeleccion() {
+        //Si no es null
+        if(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this)!= null)
         {
-            Toast.makeText(MainActivity.this, R.string.carpeta_creada , Toast.LENGTH_SHORT).show();
-        } else
-        {
-            Toast.makeText(MainActivity.this, R.string.carpeta_no_creada , Toast.LENGTH_SHORT).show();
+            //Recuperamos la lista de seleccion
+            List<Song> listSelectionConfirmation = new ArrayList<Song> (SharedPreferencesClass.getListSelectionPreferences(MainActivity.this));
+            List l = getSongList(this);
+            for (Song s : listSelectionConfirmation){
+                for (Song sS : listSelectionConfirmation) {
+                    if (sS.getUri().equals(s.getUri())) {
+                        listSelection.add(s);
+                    }
+                }
+            }
+
+            // Eliminar la lista actual de preferencias
+            removeSongFromListSelectionPreferences(this);
+
+            // Volvemos a rellenar las preferencias con la lista de canciones que si existe
+            SharedPreferencesClass.saveListSelectionPreferences(MainActivity.this, listSelection);
         }
     }
 
@@ -132,13 +152,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             //Actualizamos el Servicio con toda la lista de canciones
             if (musicService != null)
                 musicService.setList(songList);
-
             RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
-            recyclerView.setAdapter(new SongsAdapter(songList, getApplication(), listItemClickListener));
+
             //indicamos tipo de layout para el recyclerView
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+            recyclerView.setAdapter(new SongsAdapter(songList, getApplication(), listItemClickListener));
         }
+
         //TODO no funciona correctamente y estoy arta de mirarlo y saber por que
         showHideTextDependingOnList(textListEmpty, songList);
         textListSelectionEmpty.setVisibility(View.GONE);
@@ -185,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
 
         /**
-         *
+         * Long clcli que agrega las canciones a la lista de preferencias
          * @param v
          * @param position
          */
@@ -193,12 +214,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         public void onLongClick(View v, int position)
         {
             song = songList.get(position);
-            if(!listSelection.contains(song.getTitle())) {
+            if(!listSelection.contains(song)) {
                 listSelection.add(song);
                 //Agregamos la nueva cancion a SharedPreferencesClass
                 SharedPreferencesClass.addListSelectionPreferences(MainActivity.this, song);
-                //Copia la cancion el el fichero de la app
-                copyFile(song, Constants.NOMBRE_APP_DIRECTORIO);
                 Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(MainActivity.this, R.string.song_exist_list_selection, Toast.LENGTH_SHORT).show();
@@ -226,13 +245,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     @Override
                     public void onTabSelected(TabLayout.Tab tab)
                     {
-                        //Agregamos al ir y volver de las tabs las canciones que no estan agregadas todavia
-                        ArrayList auxList = SharedPreferencesClass.getListSelectionPreferences(MainActivity.this);
-                        if(listSelection.size() > auxList.size()){
-                            for(int i = auxList.size() ; i < listSelection.size() ; i++){
-                                SharedPreferencesClass.addListSelectionPreferences(MainActivity.this, song);
-                            }
-                        }
                         if (tab.getText() == "CONNECTION"){
                             Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
                             startActivity(intent);
@@ -283,7 +295,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
          */
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            //TODO
             musicIsConnected = false;
         }
     };
@@ -383,13 +394,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         List<Song> songs = getSongList(context);
         switch (typeList){
             case 0:
-                songs = sortByName(songs);
+                songs = UtilList.sortByName(songs);
                 break;
             case 1:
-                songs = sortByArtist(songs);
+                songs = UtilList.sortByArtist(songs);
                 break;
             case 2:
-                songs = getSongListSelection(context);
+                listSelection = getSongListSelection(context);
+                songs = listSelection;
                 break;
             default:
         }
@@ -444,7 +456,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             }
             while (musicCursor.moveToNext());
         }//Por defecto lo ordena por nombre de cancion
-        sortByName(list);
+        UtilList.sortByName(list);
 
         //TODO fuciono los dos cursores
         //getCursorForFileQuery();
@@ -453,9 +465,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     /**
-     * Método que recupera la lista de canciones del fichero de la app Speakerband
+     * Método que recupera la lista de canciones de los ficheros del dispositivo que existan en la lista de preferencias
      * y las muestra en la pestaña correspondiente a las canciones de la lista de reproduccion
-     * que se comparten entre archivos.
+     *  que se comparten entre archivos.
      */
     public List<Song> getSongListSelection(Context context)
     {
@@ -465,14 +477,17 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             return list;
         }
 
-        if (findFolder(Constants.NOMBRE_APP_DIRECTORIO) == true)
+        //instancia de ContentResolver
+        ContentResolver musicResolver = context.getContentResolver();
+        //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
+        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+        //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
+        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+
+        //iterar los resultados, primero chequeando que tenemos datos válidos:
+        if(musicCursor != null && musicCursor.moveToFirst())
         {
-            Toast.makeText(MainActivity.this, R.string.carpeta_encontrada , Toast.LENGTH_SHORT).show();
-
-            File[] listSpeakerBand = listFileSongs(Constants.NOMBRE_APP_DIRECTORIO);
-
-            Cursor musicCursor = getCursorForFileQuery(listSpeakerBand);
-
             //get Columnas
             int titleColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
@@ -484,6 +499,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     (android.provider.MediaStore.Audio.Media.ARTIST);
             int uriDataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
 
+            //add songs a la lista
             do
             {
                 long thisId = musicCursor.getLong(idColumn);
@@ -491,18 +507,19 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 String thisAlbum = musicCursor.getString(albumColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
                 String thisUri = musicCursor.getString(uriDataColumn);
-                list.add(new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri));
+                song = new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri);
+                for (Song s :listSelection) {
+                    if (s.getUri().equals(song.getUri())) {
+                        list.add(song);
+                    }
+                }
             }
             while (musicCursor.moveToNext());
+        }//Por defecto lo ordena por nombre de cancion
+        UtilList.sortByName(list);
 
-            sortByName(list);
-            musicCursor.close();
-            matrixCursor.close();
-            return list;
-        } else {
-            Toast.makeText(MainActivity.this, R.string.carpeta_no_encontrada , Toast.LENGTH_SHORT).show();
-            return null;
-        }
+        musicCursor.close();
+        return list;
     }
 
     /**
@@ -521,7 +538,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //llenar el cursor con sus filas.
         for (File file :  listSpeakerBand) {
             for (Song song : listSelection) {
-                if (file.getAbsolutePath().equals(song.getUri()) && file.getName().equals(song.getTitle())) {
+                if (file.getAbsolutePath().equals(song.getUri()) && file.getName().equals(song.getTitleWithExtension())) {
                     matrixCursor.addRow(new Object[]{song.getTitle(), song.getId(), song.getAlbum(),
                             song.getArtist(), song.getUri()});
                 }
@@ -568,7 +585,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         return super.onOptionsItemSelected(item);
     }
 
-    //MEtodo de MusicController ,
+    //Metodo de MusicController ,
 
     /**
      * Metodo de ayuda para configurar el controlador
@@ -596,7 +613,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         });
     }
 
-    //métodos que llamamos cuando establecemos el controlador:
+    //  Métodos que llamamos cuando establecemos el controlador:
 
     /**
      * play next
@@ -732,36 +749,5 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
 
-    //Metodos de ordenacion
-    /**
-     * Metodo que ordena las canciones por nombre
-     * @param sl
-     * @return
-     */
-    public static List sortByName(List sl)
-    {
-        //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
-        Collections.sort(sl, new Comparator<Song>() {
-            public int compare(Song a, Song b) {
-                return a.getTitle().compareTo(b.getTitle());
-            }
-        });
-        return sl;
-    }
 
-    /**
-     * Metodo que ordena las canciones por artista
-     * @param sl
-     * @return
-     */
-    public static List sortByArtist(List sl)
-    {
-        //ordenaremos los datos para que las canciones se presenten alfabéticamente por titulo
-        Collections.sort(sl, new Comparator<Song>() {
-            public int compare(Song a, Song b) {
-                return a.getArtist().compareTo(b.getArtist());
-            }
-        });
-        return sl;
-    }
 }

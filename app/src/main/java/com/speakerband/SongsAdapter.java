@@ -52,7 +52,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.SongViewHold
     {
         // Se usa el Titular de vista provisto en el método onCreateViewHolder
         // para completar la fila actual en el RecyclerView
-        //cogemos la cancion en su posición
+        // cogemos la cancion en su posición
         Song song = list.get(position);
         //el titulo de la cancion
         holder.title.setText(song.getTitle());

@@ -26,16 +26,19 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.speakerband.MainActivity;
 import com.speakerband.R;
-import com.speakerband.SharedPreferencesClass;
 import com.speakerband.Song;
-import com.speakerband.UtilFiles;
+import com.speakerband.utils.UtilFiles;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
-import static com.speakerband.ListSelection.*;
+
+import static android.widget.Toast.LENGTH_SHORT;
+import static com.speakerband.utils.UtilList.*;
 
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -76,8 +79,6 @@ public class ChatFragment extends ListFragment
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
     private UtilFiles utilFiles;
-
-
 
     /**
      *
@@ -574,19 +575,19 @@ public class ChatFragment extends ListFragment
                 outputStream.write(_song.getSongBytes());
                 outputStream.write(trozito);
                 _song.setSongBytes(outputStream.toByteArray());
+                //progressBarDos.setVisibility(View.VISIBLE);
             }
         }
         catch (IOException e)
         {
             e.printStackTrace();
-        }
-        _song.setUri(utilFiles.writeSongOnExternalMemory(_song , "Speakerband"));
-        listSelection.add(_song);
+        }//TODO una vez reuelto lo de que las cacnioes sunene sincornizadas volver a cambiar
+        // que guarde en la carpeta descargas (Download) por que guarde en mi carpeta hecha con codigo
+        //Speakerband y resolver los problemas que esto da
+        _song.setUri(utilFiles.writeSongOnExternalMemory(_song , "Download"));
+        if (!listSelection.contains(_song))
+            listSelection.add(_song);
     }
-
-
-
-
 
 
 //    private void play(ObjectInputStream is)

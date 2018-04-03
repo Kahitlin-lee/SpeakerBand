@@ -37,9 +37,6 @@ import java.util.List;
 
 import static com.speakerband.SharedPreferencesClass.removeSongFromListSelectionPreferences;
 import static com.speakerband.utils.UtilList.listSelection;
-import static com.speakerband.utils.UtilFiles.createFolderApp;
-import static com.speakerband.utils.UtilFiles.findFolder;
-import static com.speakerband.utils.UtilFiles.listFileSongs;
 
 /**
  * Activity principal
@@ -65,8 +62,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private TextView textListSelectionEmpty;
     //Texto que se mostrara si la lista de canciones esta vacia
     private TextView textListEmpty;
-
-    public static MatrixCursor matrixCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -96,16 +91,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         //Metodo de ayuda para configurar el controlador
         setController();
-
-
-
-//        if(createFolderApp(MainActivity.this) == true)
-//        {
-//            Toast.makeText(MainActivity.this, R.string.carpeta_creada , Toast.LENGTH_SHORT).show();
-//        } else
-//        {
-//            Toast.makeText(MainActivity.this, R.string.carpeta_no_creada , Toast.LENGTH_SHORT).show();
-//        }
     }
 
     /**
@@ -114,11 +99,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     public void comprobarListaSeleccion() {
         //Si no es null
-        if(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this)!= null)
+        List<Song>  listSelectionConfirmation;
+
+        if(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this) != null)
         {
             //Recuperamos la lista de seleccion
-            List<Song> listSelectionConfirmation = new ArrayList<Song> (SharedPreferencesClass.getListSelectionPreferences(MainActivity.this));
             List l = getSongList(this);
+            listSelectionConfirmation = new ArrayList<Song> (SharedPreferencesClass.getListSelectionPreferences(MainActivity.this));
             for (Song s : listSelectionConfirmation){
                 for (Song sS : listSelectionConfirmation) {
                     if (sS.getUri().equals(s.getUri())) {
@@ -199,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             //lo pausa si esta a play y lo pone a play si esta pausado
             if(playbackPaused)
             {
-                setController();
+                setController();  //Creo que con que este en el onResume ya basta, se puede quitar
                 playbackPaused = false;
             }//muestra los controles de reproduccion
             controller.show(0);
@@ -213,6 +200,19 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         @Override
         public void onLongClick(View v, int position)
         {
+            ///////// BORRAR //////
+//            for(int i=0; i < songList.size() ; i++)
+//            {
+//                if(songList.get(i).getUri().contains("Babas"))
+//                {
+//                    listSelection.add(song);
+//                    //Agregamos la nueva cancion a SharedPreferencesClass
+//                    SharedPreferencesClass.addListSelectionPreferences(MainActivity.this, song);
+//                    Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
+//                }
+//            }
+            //////// BORRAR ////////
+
             song = songList.get(position);
             if(!listSelection.contains(song)) {
                 listSelection.add(song);
@@ -386,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * Ordena las canciones dependiendo de la tab
      * @param context
      * @param typeList
-     * @param listSelection
+     * @param listSelection   En este parametro deberias de eliminarlo, no vale para nada
      * @return
      */
     private List<Song> getSongListByType(Context context, int typeList, List<Song> listSelection)
@@ -507,8 +507,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 String thisAlbum = musicCursor.getString(albumColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
                 String thisUri = musicCursor.getString(uriDataColumn);
+
                 song = new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri);
-                for (Song s :listSelection) {
+                for (Song s :listSelection)
+                {
                     if (s.getUri().equals(song.getUri())) {
                         list.add(song);
                     }
@@ -519,35 +521,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         UtilList.sortByName(list);
 
         musicCursor.close();
+        // TODO solo por probar que sea el el preferences me este jodiendo el tamaño de las canvciones
+        listSelection = list;
         return list;
     }
-
-    /**
-     *
-     * @param listSpeakerBand
-     * @return
-     */
-    public Cursor getCursorForFileQuery(File[] listSpeakerBand)
-    {
-        //MatrixCursorle permite construir algo que implemente la Cursorinterfaz a partir de datos puros, que vierte en un modelo de datos bidimensional.
-        //declarar un MatrixCursor especificando los nombres de las columnas,
-        String[] columns = new String[] { "titleColumn", "idColumn", "albumColumn" , "artistColumn" , "uriDataColumn"};
-
-        matrixCursor = new MatrixCursor(columns);
-
-        //llenar el cursor con sus filas.
-        for (File file :  listSpeakerBand) {
-            for (Song song : listSelection) {
-                if (file.getAbsolutePath().equals(song.getUri()) && file.getName().equals(song.getTitleWithExtension())) {
-                    matrixCursor.addRow(new Object[]{song.getTitle(), song.getId(), song.getAlbum(),
-                            song.getArtist(), song.getUri()});
-                }
-            }
-        }
-        return matrixCursor;
-    }
-
-
 
     //---------------
 
@@ -622,7 +599,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     {
         musicService.playNext();
         if(playbackPaused){
-            setController();
             playbackPaused = false;
         }
         controller.show(0);
@@ -635,7 +611,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     {
         musicService.playPrev();
         if(playbackPaused){
-            setController();
             playbackPaused = false;
         }
         controller.show(0);

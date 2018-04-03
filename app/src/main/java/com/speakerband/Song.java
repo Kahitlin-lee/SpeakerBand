@@ -52,6 +52,10 @@ public class Song implements Serializable
 
         try {
             songFile = readFile(f);
+
+            long fileSizeInBytes = f.length();
+            long fileSizeInKB = fileSizeInBytes / 1024;
+            long fileSizeInMB = fileSizeInKB / 1024;
         } catch (IOException e) {
             e.printStackTrace();
         }

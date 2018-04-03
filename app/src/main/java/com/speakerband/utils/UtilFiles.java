@@ -87,7 +87,7 @@ public class UtilFiles
      * Crea el archivo de de la aplicacion Speakerband
      * @return
      */
-    public static boolean  createFolderApp(Context context)
+    public static boolean createFolderApp(Context context)
     {
         File file = new File(Environment.getExternalStorageDirectory() + Constants.NOMBRE_APP_DIRECTORIO);
         if (file.exists())
@@ -108,43 +108,6 @@ public class UtilFiles
                 return false;
             }
         }
-    }
-
-    /**
-     * Metodo que escribe un archivo de musica en la memoria externa
-     * TODO mejorar esta explicaicon del metodo
-     * @param song
-     * @param nombreFicheroDondeSeEscribe nombre del fichero donde se escribira la cancion
-     * @return
-     */
-    public static String writeSongOnExternalMemory(Song song, String nombreFicheroDondeSeEscribe)
-    { //guarda las canciones en la carpeta de Speakerband del storage
-        File path = Environment.getExternalStoragePublicDirectory(nombreFicheroDondeSeEscribe);
-        File file = new File(path, song.getTitleWithExtension());
-        FileOutputStream fileOutputStream = null; // save
-        if (path.exists() && (!file.exists())) {
-            try {
-                fileOutputStream = new FileOutputStream(file);
-                fileOutputStream.write(song.getSongBytes());
-                fileOutputStream.flush();
-                fileOutputStream.close();
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            // Get length of file in bytes
-            long fileSizeInBytes = file.length();
-            // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
-            long fileSizeInKB = fileSizeInBytes / 1024;
-            // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-            long fileSizeInMB = fileSizeInKB / 1024;
-
-            return file.getAbsolutePath();
-        }
-        return null;
     }
 
     /**

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
@@ -37,13 +38,15 @@ import com.speakerband.utils.UtilFiles;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 
-import static android.widget.Toast.LENGTH_SHORT;
 import static com.speakerband.utils.UtilList.*;
 
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -79,6 +82,8 @@ public class ChatFragment extends ListFragment
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
     private UtilFiles utilFiles;
+
+    private CommunicationManager _communicationManager;
 
     /**
      *
@@ -128,6 +133,10 @@ public class ChatFragment extends ListFragment
         messagesListView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
         messagesListView.setStackFromBottom(true);
 
+        if(_communicationManager == null)
+            _communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
+
+
         //Evento del boton enviar de el chat
         //1º lugar donde pasa al mandar el texto con esto ya llego al cliente y lo pienta
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -137,9 +146,8 @@ public class ChatFragment extends ListFragment
                 Log.i(WifiDirectHandler.TAG, "Send button tapped");
 
                 //TODO probar hacer esta variable de clase
-                CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
 
-                if (communicationManager != null && !textMessageEditText.toString().equals(""))
+                if (_communicationManager != null && !textMessageEditText.toString().equals(""))
                 {
                     String message = textMessageEditText.getText().toString();
                     // Obtiene la primera palabra del nombre del dispositivo
@@ -190,8 +198,10 @@ public class ChatFragment extends ListFragment
         //evento del boton  reproducir la cancion desde el dispositivo lider
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                playSign();
+            public void onClick(View v)
+            {
+                if (_communicationManager != null)
+                    playSign();
             }
         });
 
@@ -241,7 +251,7 @@ public class ChatFragment extends ListFragment
                 {
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
-                    loadSongStart(is );
+                    loadSongStart(is);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -336,14 +346,28 @@ public class ChatFragment extends ListFragment
      * @param tipo
      * @param contenido
      */
-    public void enviarMensaje (MessageType tipo, byte[] contenido)
+    public void enviarMensaje (final MessageType tipo,final byte[] contenido)
     {
-        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los todos casos
-        Message message = new Message(tipo , contenido);
-        //esto lo hace en los todos casos
-        CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
-        //lo serializa, esto tambien en los todos casos
-        communicationManager.write(SerializationUtils.serialize(message));
+
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try
+                {
+                    //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los todos casos
+                    Message message = new Message(tipo , contenido);
+                    //lo serializa, esto tambien en los todos casos
+                    _communicationManager.write(SerializationUtils.serialize(message));
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+
     }
 
     /**
@@ -372,8 +396,7 @@ public class ChatFragment extends ListFragment
      * @param chunksize
      * @return
      */
-    public static List<byte[]>
-    divideArray(byte[] source, int chunksize)
+    public static List<byte[]> divideArray(byte[] source, int chunksize)
     {
         List<byte[]> result = new ArrayList<byte[]>();
         int start = 0;
@@ -413,10 +436,8 @@ public class ChatFragment extends ListFragment
                 byte[] byteArraySong = stream.toByteArray();
                 //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los 3 casos
                 Message message = new Message(MessageType.PLAY, byteArraySong);
-                //esto lo hace en los 3 casos
-                CommunicationManager communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
                 //lo serializa, esto tambien en los 3 casos
-                communicationManager.write(SerializationUtils.serialize(message));
+                _communicationManager.write(SerializationUtils.serialize(message));
             }
         }
     }
@@ -534,6 +555,8 @@ public class ChatFragment extends ListFragment
         {
             _song = (Song)is.readObject();
             arrayTrozos = new ArrayList<byte[]>();
+   //         arrayTrozos.add(_song.getSongBytes());
+
         } catch (IOException e) {
             e.printStackTrace();//writeabortemexeption
         } catch (ClassNotFoundException e) {
@@ -584,9 +607,47 @@ public class ChatFragment extends ListFragment
         }//TODO una vez reuelto lo de que las cacnioes sunene sincornizadas volver a cambiar
         // que guarde en la carpeta descargas (Download) por que guarde en mi carpeta hecha con codigo
         //Speakerband y resolver los problemas que esto da
-        _song.setUri(utilFiles.writeSongOnExternalMemory(_song , "Download"));
+        _song.setUri(writeSongOnExternalMemory(_song , "Download"));
         if (!listSelection.contains(_song))
             listSelection.add(_song);
+    }
+
+
+    /**
+     * Metodo que escribe un archivo de musica en la memoria externa
+     * TODO mejorar esta explicaicon del metodo
+     * @param song
+     * @param nombreFicheroDondeSeEscribe nombre del fichero donde se escribira la cancion
+     * @return
+     */
+    public static String writeSongOnExternalMemory(Song song, String nombreFicheroDondeSeEscribe)
+    {
+        File path = Environment.getExternalStoragePublicDirectory(nombreFicheroDondeSeEscribe);
+        File file = new File(path, song.getTitleWithExtension());
+        FileOutputStream fileOutputStream = null; // save
+        if (path.exists() && (!file.exists())) {
+            try {
+                fileOutputStream = new FileOutputStream(file);
+                fileOutputStream.write(song.getSongBytes());
+                fileOutputStream.flush();
+                fileOutputStream.close();
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Get length of file in bytes
+            long fileSizeInBytes = file.length();
+            // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+            long fileSizeInKB = fileSizeInBytes / 1024;
+            // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+            long fileSizeInMB = fileSizeInKB / 1024;
+
+            return file.getAbsolutePath();
+        }
+        return null;
     }
 
 

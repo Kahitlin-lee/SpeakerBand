@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -27,18 +28,14 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.speakerband.MainActivity;
 import com.speakerband.R;
 import com.speakerband.Song;
-import com.speakerband.utils.UtilFiles;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
-
-import static com.speakerband.utils.UtilList.*;
+import com.speakerband.utils.UtilFiles;
 
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -53,8 +50,12 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import edu.rit.se.wifibuddy.CommunicationManager;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
+
+import static com.speakerband.utils.UtilList.listSelection;
+import static com.speakerband.utils.UtilList.songPlaying;
 
 
 
@@ -79,11 +80,13 @@ public class ChatFragment extends ListFragment
     private ImageButton sendSongButton;
     private ImageButton playButton;
 
+    DoBackgroundTask descargaTask = new DoBackgroundTask();
+
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
     private UtilFiles utilFiles;
 
-    private CommunicationManager _communicationManager;
+    public CommunicationManager _communicationManager;
 
     /**
      *
@@ -145,15 +148,13 @@ public class ChatFragment extends ListFragment
 
                 Log.i(WifiDirectHandler.TAG, "Send button tapped");
 
-                //TODO probar hacer esta variable de clase
-
                 if (_communicationManager != null && !textMessageEditText.toString().equals(""))
                 {
                     String message = textMessageEditText.getText().toString();
                     // Obtiene la primera palabra del nombre del dispositivo
                     String author = handlerAccessor.getWifiHandler().getThisDevice().deviceName.split(" ")[0];
                     byte[] messageBytes = (author + ": " + message).getBytes();
-                    enviarMensaje(MessageType.TEXT, messageBytes);
+                    startDescarga(MessageType.TEXT, messageBytes);
                 }
                 else {
                     Log.e(TAG, "Communication Manager is null");
@@ -301,7 +302,7 @@ public class ChatFragment extends ListFragment
         image.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] byteArray = stream.toByteArray();
         //indica que tipo de mensaje es y usamos el metodo de envio
-        enviarMensaje(MessageType.IMAGE, byteArray);
+        startDescarga(MessageType.IMAGE, byteArray);
         Log.i(TAG, "Attempting to send image");
     }
 
@@ -326,21 +327,23 @@ public class ChatFragment extends ListFragment
                 //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
                 //toByteArray(Crea una matriz de bytes recién asignada.
                 // en los 3 casos lo pasa a un array de bytes
+
                 byteArraySong = convertirObjetoArrayBytes (song);
 
                 if (i == 0)  //Primera vez
                 {
-                    enviarMensaje(MessageType.SONG_START, byteArraySong);
+                    startDescarga(MessageType.SONG_START, byteArraySong);
                 }
                 else {
-                    enviarMensaje(MessageType.SONG , byteArraySong);
+                    startDescarga(MessageType.SONG , byteArraySong);
                 }
             }
-            enviarMensaje(MessageType.SONG_END , byteArraySong); // No nos importa el contenido, solo el mensaje de terminacion.
+            startDescarga(MessageType.SONG_END , byteArraySong); // No nos importa el contenido, solo el mensaje de terminacion.
         }
         Log.i(TAG, "Se ha enviado la cancion");
     }
 
+    Thread _thread ;
     /**
      * Este metodo es el que hace el envio con wifi direct que es el codigo que se repite siempre en todos los casos
      * @param tipo
@@ -348,8 +351,7 @@ public class ChatFragment extends ListFragment
      */
     public void enviarMensaje (final MessageType tipo,final byte[] contenido)
     {
-
-        Thread thread = new Thread(new Runnable() {
+        _thread = new Thread(new Runnable() {
 
             @Override
             public void run() {
@@ -366,8 +368,7 @@ public class ChatFragment extends ListFragment
             }
         });
 
-        thread.start();
-
+        _thread.start();
     }
 
     /**
@@ -555,8 +556,7 @@ public class ChatFragment extends ListFragment
         {
             _song = (Song)is.readObject();
             arrayTrozos = new ArrayList<byte[]>();
-   //         arrayTrozos.add(_song.getSongBytes());
-
+            //         arrayTrozos.add(_song.getSongBytes());
         } catch (IOException e) {
             e.printStackTrace();//writeabortemexeption
         } catch (ClassNotFoundException e) {
@@ -665,5 +665,97 @@ public class ChatFragment extends ListFragment
 //        }
 //    }
 
+    /**
+     * Metodo que simula la descarga de 4 archivos al pulsar el botón de descarga
+     */
+    public void startDescarga(final MessageType tipo,final byte[] contenido)
+    {
+        /**********************************************************/
+        //Si la descarga no se ha iniciado nunca o ha sido cancelada
+        if(descargaTask == null)
+            descargaTask = new DoBackgroundTask();
+        if (!descargaTask.isCancelled())
+            if(descargaTask.getStatus() == AsyncTask.Status.PENDING) {
+                //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los todos casos
+                Message message = new Message(tipo , contenido);
+                //lanza la tarea con parámetros url, que son lo que usa doInBackground
+                descargaTask.execute(message);
+            }else
+                Toast.makeText(getContext(),
+                        "YA hay una descarga en ejecucion", Toast.LENGTH_SHORT).show();
+    }
 
+    /**
+     * URL parametro == doInBackground
+     * Integer  parametro == onProgressUpdate
+     * Long parametro == onPostExecute
+     * El primer y el segundo parametro son la entrada y la salida del doInBackground
+     */
+    private class DoBackgroundTask extends AsyncTask<Message, Integer, byte[]>
+    {
+        /**
+         * doInBackground : Es el que se encaga del segunto plano.
+         * Los parametros de entrada recibe para ejecutar las instrucciones que iran en segundo plano
+         * en este casi una url
+         * Aqui es donde se ejecutan las tareas que uqeremos ejecutar en segundo plano
+         * @param messages
+         * @return totalBytesDownloaded
+         */
+        @Override
+        protected byte[] doInBackground(Message... messages) {
+            //lo serializa, esto tambien en los todos casos
+            _communicationManager.write(SerializationUtils.serialize(messages[0]));
+            //return true;
+            messages[0].getContent();
+            return messages[0].getContent();
+        }
+
+        /**
+         * onPreExecute() es la funcion que se ejecuta en el hilo principal antes de ejecutarse la tarea.
+         * Se puede usar para realizar inicializaciones, como cuando se mostrar una barra de progreso.
+         */
+        @Override
+        protected void onPreExecute()
+        {
+            super.onPreExecute();
+
+
+        }
+
+        /**
+         * onProgressUpdate es el metodo que se ejecuta en el hilo de la interfaz de usuario
+         * es decir en el hilo principal. se ejecuta cuando se realiza una llamada a
+         * publishProgress.
+         * @param progress Recive (parametro) las unidades de progreso
+         */
+        @Override
+        protected void onProgressUpdate(Integer... progress)
+        {
+
+        }
+
+        /**
+         * Metodo onPostExecute.
+         * se invoca en el hilo de ejecución de la interfaz de usario y se llama
+         * cuando el método doInBackground() ha terminado de ejecutarse
+         * @param result lo que regresa el hilo en segundo plano
+         */
+        protected void onPostExecute(byte[] result)
+        {
+            descargaTask = null;
+            Toast.makeText(getContext(),
+                    "Descargados " + result + " bytes", Toast.LENGTH_LONG)
+                    .show();
+        }
+
+        /**
+         * Metodo onCancelled , que se encarga de que si se corta la ejecucion
+         * del segundo hilo .
+         */
+        protected void onCancelled(byte[] result)
+        {
+            super.onCancelled();
+
+        }
+    }
 }

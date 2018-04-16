@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -26,13 +25,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.speakerband.connection.ConnectionActivity;
-import com.speakerband.utils.Constants;
 import com.speakerband.utils.UtilList;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static com.speakerband.SharedPreferencesClass.removeSongFromListSelectionPreferences;
@@ -81,7 +76,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
         requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
 
-        comprobarListaSeleccion();
+        //Si las preferencias no es null
+        if(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this) != null) {
+            deleteAndGeneratePreferencess(comprobarListaSeleccion());
+        }
 
         //Tabs
         tabs();
@@ -93,33 +91,50 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         setController();
     }
 
+    //Variable para el metodo
+    List<Song> _listSangDevice = null;
+    ArrayList<Song> _realList = null;
+    List<Song>  _listSelectionPreferences = null;
+
     /**
      * Comprobar que las canciones de la lista de seleccion de SharedPreferences exista
      * en el dispositivo
      */
-    public void comprobarListaSeleccion() {
-        //Si no es null
-        List<Song>  listSelectionConfirmation;
-
-        if(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this) != null)
-        {
+    public ArrayList<Song> comprobarListaSeleccion() {
+        if(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this) != null) {
             //Recuperamos la lista de seleccion
-            List l = getSongList(this);
-            listSelectionConfirmation = new ArrayList<Song> (SharedPreferencesClass.getListSelectionPreferences(MainActivity.this));
-            for (Song s : listSelectionConfirmation){
-                for (Song sS : listSelectionConfirmation) {
-                    if (sS.getUri().equals(s.getUri())) {
-                        listSelection.add(s);
+            // List con las canciones que hay en el dispositivo
+            _listSangDevice = getSongList(this);
+            // List con las canciones que estan en las preferencias
+            _listSelectionPreferences = new ArrayList<Song>(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this));
+            // List con las canciones que hay en el dispositivo
+            _realList = new ArrayList<>();
+
+            if (!_listSangDevice.isEmpty()
+                    && !_listSelectionPreferences.isEmpty())
+            for (Song s : _listSangDevice) {
+                for (Song sS : _listSelectionPreferences) {
+                    if (sS.getUri() != null && s.getUri() != null) {
+                        if (sS.getUri().equals(s.getUri())) {
+                            _realList.add(s);
+                        }
                     }
                 }
             }
-
-            // Eliminar la lista actual de preferencias
-            removeSongFromListSelectionPreferences(this);
-
-            // Volvemos a rellenar las preferencias con la lista de canciones que si existe
-            SharedPreferencesClass.saveListSelectionPreferences(MainActivity.this, listSelection);
         }
+        return _realList;
+    }
+
+    /**
+     * Metodo que borra y genera nuevamente con nuevoas canciones la lista de preferencias
+     * @param _realList lista nueva
+     */
+    public void deleteAndGeneratePreferencess(ArrayList<Song> _realList) {
+        // Eliminar la lista actual de preferencias
+        removeSongFromListSelectionPreferences(this);
+
+        // Volvemos a rellenar las preferencias con la lista de canciones que si existe
+        SharedPreferencesClass.saveListSelectionPreferences(MainActivity.this, _realList );
     }
 
     /**
@@ -166,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         if(songList.isEmpty() || songList == null) {
             text.setVisibility(View.VISIBLE);
         }else{
-        text.setVisibility(View.GONE);
+            text.setVisibility(View.GONE);
         }
     }
 
@@ -400,6 +415,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 songs = UtilList.sortByArtist(songs);
                 break;
             case 2:
+                // TODO De esta forma al hacer el long click es sobre la cancion en si buscada en el dispositivo y
+                // no sobre lo que indica la losta de preferencias, puede que de esta forma no la envie cortada
                 listSelection = getSongListSelection(context);
                 songs = listSelection;
                 break;
@@ -464,6 +481,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         return list;
     }
 
+    //Variable para los metodo
+    ArrayList<Song> _currentList;
+
     /**
      * Método que recupera la lista de canciones de los ficheros del dispositivo que existan en la lista de preferencias
      * y las muestra en la pestaña correspondiente a las canciones de la lista de reproduccion
@@ -498,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
             int uriDataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
-
+            _currentList =  comprobarListaSeleccion();
             //add songs a la lista
             do
             {
@@ -509,10 +529,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 String thisUri = musicCursor.getString(uriDataColumn);
 
                 song = new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri);
-                for (Song s :listSelection)
-                {
-                    if (s.getUri().equals(song.getUri())) {
-                        list.add(song);
+                if (_currentList != null) {
+                    for (Song s : _currentList)
+                    {
+                        if (s.getUri().equals(song.getUri())) {
+                            list.add(song);
+                        }
                     }
                 }
             }

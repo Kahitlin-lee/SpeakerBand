@@ -14,4 +14,8 @@ public class Message implements Serializable {
         this.messageType = messageType;
         this.content = message;
     }
+
+    public byte[] getContent() {
+        return content;
+    }
 }

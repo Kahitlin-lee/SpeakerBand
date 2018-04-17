@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -79,8 +80,8 @@ public class ChatFragment extends ListFragment
     private ImageButton cameraButton;
     private ImageButton sendSongButton;
     private ImageButton playButton;
+    private ProgressBar progressBarDos;
 
-    DoBackgroundTask descargaTask = new DoBackgroundTask();
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
@@ -99,6 +100,9 @@ public class ChatFragment extends ListFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
+
+        progressBarDos = (ProgressBar)view.findViewById(R.id.barraProgreso2);
+        progressBarDos.setVisibility(View.GONE);
 
         sendButton = (Button) view.findViewById(R.id.sendButton);
         sendButton.setEnabled(false);
@@ -184,6 +188,7 @@ public class ChatFragment extends ListFragment
                     //se envia la informacion de un activity a otro con
                     //startActivityForResult
                     startActivityForResult(takePictureIntent, 1);
+                    sendSongButton.setEnabled(false);
                 }
             }
         });
@@ -261,8 +266,11 @@ public class ChatFragment extends ListFragment
             //Recibe toda la cancion byte a byte
             case SONG:
                 Log.i(TAG, "Song");
+                Toast.makeText(getContext(),
+                        "entro aqui", Toast.LENGTH_SHORT).show();
                 try
                 {
+                    progressBarDos.setVisibility(View.VISIBLE);
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     loadSong(is);
@@ -273,7 +281,10 @@ public class ChatFragment extends ListFragment
             //La cancion se termina de llegar
             case SONG_END:
                 writeSong();
-                Log.i(TAG, "ha llegado la cancion");
+                Log.i(TAG, "Ha llegado la cancion");
+                Toast.makeText(getContext(),
+                        "Ha llegado la cancion", Toast.LENGTH_SHORT).show();
+                progressBarDos.setVisibility(View.GONE);
                 break;
         }
     }
@@ -316,59 +327,38 @@ public class ChatFragment extends ListFragment
         {
             song.readFile();
 
-            //Vamos a ver cuantas veces dividimos el vector de arrays:
-            List<byte[]> partes = divideArray(song.getSongBytes(), 2048);
-
-            byte[] byteArraySong = null;
-
-            for(int i = 0; i < partes.size(); i++)
-            {
-                song.setSongBytes(partes.get(i));
-                //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
-                //toByteArray(Crea una matriz de bytes recién asignada.
-                // en los 3 casos lo pasa a un array de bytes
-
-                byteArraySong = convertirObjetoArrayBytes (song);
-
-                if (i == 0)  //Primera vez
-                {
-                    startDescarga(MessageType.SONG_START, byteArraySong);
-                }
-                else {
+//            //Vamos a ver cuantas veces dividimos el vector de arrays:
+//            List<byte[]> partes = divideArray(song.getSongBytes(), 2048);
+//
+//            byte[] byteArraySong = null;
+//
+//            for(int i = 0; i < partes.size(); i++)
+//            {
+//                progressBarDos.setVisibility(View.VISIBLE);
+//                song.setSongBytes(partes.get(i));
+//                //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
+//                //toByteArray(Crea una matriz de bytes recién asignada.
+//                // en los 3 casos lo pasa a un array de bytes
+//
+//                byteArraySong = convertirObjetoArrayBytes (song);
+//
+//                if (i == 0)  //Primera vez
+//                {
+//                    startDescarga(MessageType.SONG_START, byteArraySong);
+//                }
+//                else {
+                    byte[] byteArraySong = song.getSongBytes();
                     startDescarga(MessageType.SONG , byteArraySong);
-                }
-            }
+                //}
+           // }
+
             startDescarga(MessageType.SONG_END , byteArraySong); // No nos importa el contenido, solo el mensaje de terminacion.
         }
+        progressBarDos.setVisibility(View.GONE);
         Log.i(TAG, "Se ha enviado la cancion");
-    }
-
-    Thread _thread ;
-    /**
-     * Este metodo es el que hace el envio con wifi direct que es el codigo que se repite siempre en todos los casos
-     * @param tipo
-     * @param contenido
-     */
-    public void enviarMensaje (final MessageType tipo,final byte[] contenido)
-    {
-        _thread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try
-                {
-                    //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los todos casos
-                    Message message = new Message(tipo , contenido);
-                    //lo serializa, esto tambien en los todos casos
-                    _communicationManager.write(SerializationUtils.serialize(message));
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        _thread.start();
+        Toast.makeText(getContext(),
+                "Se ha enviado la cancion", Toast.LENGTH_SHORT).show();
+        sendSongButton.setEnabled(false);
     }
 
     /**
@@ -575,6 +565,8 @@ public class ChatFragment extends ListFragment
         {
             Song songTemp = (Song)is.readObject();
             arrayTrozos.add(songTemp.getSongBytes());
+            Toast.makeText(getContext(),
+                    "esta llegando la  cancion", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();//writeabortemexeption
         } catch (ClassNotFoundException e) {
@@ -665,6 +657,8 @@ public class ChatFragment extends ListFragment
 //        }
 //    }
 
+    public DoBackgroundTask descargaTask = new DoBackgroundTask();
+
     /**
      * Metodo que simula la descarga de 4 archivos al pulsar el botón de descarga
      */
@@ -680,9 +674,9 @@ public class ChatFragment extends ListFragment
                 Message message = new Message(tipo , contenido);
                 //lanza la tarea con parámetros url, que son lo que usa doInBackground
                 descargaTask.execute(message);
-            }else
-                Toast.makeText(getContext(),
-                        "YA hay una descarga en ejecucion", Toast.LENGTH_SHORT).show();
+            } else {
+                progressBarDos.setVisibility(View.VISIBLE);
+            }
     }
 
     /**

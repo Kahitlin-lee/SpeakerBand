@@ -29,6 +29,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:hardwareAccelerated="false"
+        android:largeHeap="true"
         android:theme="@style/AppTheme">
 
         <activity
@@ -49,7 +51,6 @@
             android:screenOrientation="portrait" />
 
         <service android:name="com.speakerband.MusicService" />
-
         <!-- TODO No sé si este servicio nos va a dar problemas ya que se importa desde la librería directamente-->
         <service android:name="edu.rit.se.wifibuddy.WifiDirectHandler" />
 

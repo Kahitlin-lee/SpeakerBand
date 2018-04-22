@@ -56,7 +56,6 @@ import edu.rit.se.wifibuddy.CommunicationManager;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
 
 import static com.speakerband.utils.UtilList.listSelection;
-import static com.speakerband.utils.UtilList.songPlaying;
 
 
 
@@ -206,8 +205,8 @@ public class ChatFragment extends ListFragment
             @Override
             public void onClick(View v)
             {
-                if (_communicationManager != null)
-                    playSign();
+                //if (_communicationManager != null)
+                    //playSign();
             }
         });
 
@@ -258,6 +257,7 @@ public class ChatFragment extends ListFragment
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     loadSongStart(is);
+                    writeSong();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -267,11 +267,12 @@ public class ChatFragment extends ListFragment
             case SONG:
                 Log.i(TAG, "Song");
                 Toast.makeText(getContext(),
-                        "entro aqui", Toast.LENGTH_SHORT).show();
+                        "Tendria que estar llegando la cancion", Toast.LENGTH_SHORT).show();
                 try
                 {
                     progressBarDos.setVisibility(View.VISIBLE);
                     in = new ByteArrayInputStream(message.content);
+                    // probar con buffer de datos, puede que eso lo mejore, leer biendel tea y ver que tal
                     ObjectInputStream is = new ObjectInputStream(in);
                     loadSong(is);
                 } catch (IOException e) {
@@ -323,15 +324,14 @@ public class ChatFragment extends ListFragment
     public void pushSong()
     {
         //recorrerlo he ir enviando cancion a cancion
-        for(Song song : listSelection)
-        {
+        for(Song song : listSelection) {
             song.readFile();
 
-//            //Vamos a ver cuantas veces dividimos el vector de arrays:
-//            List<byte[]> partes = divideArray(song.getSongBytes(), 2048);
-//
-//            byte[] byteArraySong = null;
-//
+            //Vamos a ver cuantas veces dividimos el vector de arrays:
+            //List<byte[]> partes = divideArray(song.getSongBytes(), 2048);
+
+            byte[] byteArraySong = null;
+            byteArraySong = convertirObjetoArrayBytes(song);
 //            for(int i = 0; i < partes.size(); i++)
 //            {
 //                progressBarDos.setVisibility(View.VISIBLE);
@@ -340,19 +340,18 @@ public class ChatFragment extends ListFragment
 //                //toByteArray(Crea una matriz de bytes recién asignada.
 //                // en los 3 casos lo pasa a un array de bytes
 //
-//                byteArraySong = convertirObjetoArrayBytes (song);
+//                byteArraySong = convertirObjetoArrayBytes(song);
 //
 //                if (i == 0)  //Primera vez
 //                {
-//                    startDescarga(MessageType.SONG_START, byteArraySong);
+                    startDescarga(MessageType.SONG_START, byteArraySong);
 //                }
 //                else {
-                    byte[] byteArraySong = song.getSongBytes();
-                    startDescarga(MessageType.SONG , byteArraySong);
-                //}
-           // }
-
-            startDescarga(MessageType.SONG_END , byteArraySong); // No nos importa el contenido, solo el mensaje de terminacion.
+//                    startDescarga(MessageType.SONG , byteArraySong);
+//                }
+//            }
+ //           startDescarga(MessageType.SONG_END , byteArraySong); // No nos importa el contenido, solo el mensaje de terminacion.
+//        }
         }
         progressBarDos.setVisibility(View.GONE);
         Log.i(TAG, "Se ha enviado la cancion");
@@ -398,39 +397,6 @@ public class ChatFragment extends ListFragment
             start += chunksize;
         }
         return result;
-    }
-
-    /**
-     * Envia la cancion que se tiene q poner a  play
-     * TOdavia no hace nada
-     */
-    public void playSign()
-    {
-        //recorrerlo he ir enviando cancion a cancion
-        for(Song s : listSelection)
-        {
-            if (s.equals(songPlaying))
-            {
-                //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                //convertir la cancion en bytes
-                try {
-                    ObjectOutputStream os = new ObjectOutputStream(stream);
-                    os.writeObject(s);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
-                //toByteArray(Crea una matriz de bytes recién asignada.
-                // en los 3 casos lo pasa a un array de bytes
-                byte[] byteArraySong = stream.toByteArray();
-                //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los 3 casos
-                Message message = new Message(MessageType.PLAY, byteArraySong);
-                //lo serializa, esto tambien en los 3 casos
-                _communicationManager.write(SerializationUtils.serialize(message));
-            }
-        }
     }
 
     /**
@@ -545,7 +511,7 @@ public class ChatFragment extends ListFragment
         try
         {
             _song = (Song)is.readObject();
-            arrayTrozos = new ArrayList<byte[]>();
+            //arrayTrozos = new ArrayList<byte[]>();
             //         arrayTrozos.add(_song.getSongBytes());
         } catch (IOException e) {
             e.printStackTrace();//writeabortemexeption
@@ -584,14 +550,14 @@ public class ChatFragment extends ListFragment
         {
             //Unimos todos los trozos de arrays
             //Concatenamos Arrays:
-            for (byte[] trozito : arrayTrozos )
-            {
+            //for (byte[] trozito : arrayTrozos )
+            //{
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 outputStream.write(_song.getSongBytes());
-                outputStream.write(trozito);
+                //outputStream.write(trozito);
                 _song.setSongBytes(outputStream.toByteArray());
                 //progressBarDos.setVisibility(View.VISIBLE);
-            }
+            //}
         }
         catch (IOException e)
         {
@@ -657,7 +623,7 @@ public class ChatFragment extends ListFragment
 //        }
 //    }
 
-    public DoBackgroundTask descargaTask = new DoBackgroundTask();
+    public DoBackgroundTask descargaTask;
 
     /**
      * Metodo que simula la descarga de 4 archivos al pulsar el botón de descarga
@@ -668,15 +634,11 @@ public class ChatFragment extends ListFragment
         //Si la descarga no se ha iniciado nunca o ha sido cancelada
         if(descargaTask == null)
             descargaTask = new DoBackgroundTask();
-        if (!descargaTask.isCancelled())
-            if(descargaTask.getStatus() == AsyncTask.Status.PENDING) {
-                //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array, tambien en los todos casos
-                Message message = new Message(tipo , contenido);
-                //lanza la tarea con parámetros url, que son lo que usa doInBackground
-                descargaTask.execute(message);
-            } else {
-                progressBarDos.setVisibility(View.VISIBLE);
-            }
+
+        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array
+        Message message = new Message(tipo , contenido);
+        //lanza la tarea con parámetros
+        descargaTask.execute(message);
     }
 
     /**
@@ -736,6 +698,7 @@ public class ChatFragment extends ListFragment
          */
         protected void onPostExecute(byte[] result)
         {
+            descargaTask.onCancelled();
             descargaTask = null;
             Toast.makeText(getContext(),
                     "Descargados " + result + " bytes", Toast.LENGTH_LONG)
@@ -749,7 +712,12 @@ public class ChatFragment extends ListFragment
         protected void onCancelled(byte[] result)
         {
             super.onCancelled();
-
+            descargaTask.cancel(true);
+            try {
+                descargaTask.finalize();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
         }
     }
 }

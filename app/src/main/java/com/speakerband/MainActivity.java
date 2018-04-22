@@ -1,6 +1,7 @@
 package com.speakerband;
 
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -366,8 +368,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     {
         SharedPreferencesClass.saveListSelectionPreferences(MainActivity.this, listSelection);
         stopService(playIntent);
-        musicService.unbindService(musicConnection);
-        musicService = null;
+
+        if (musicService != null ) {
+            getApplicationContext().unbindService(musicConnection);
+            musicService.unbindService(musicConnection);
+            musicService = null;
+        }
+
         super.onDestroy();
     }
 
@@ -427,12 +434,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
 
     //Metodos que obtienen la musica local del movil y la muestra
+
     /**
      * Método auxiliar para obtener la información del archivo de audio:
      * Obtiene la lista de todas las canciones que estan en el dispositivo
      */
     public List<Song> getSongList(Context context)
     {
+        Cursor _musicCursor;
+
         ArrayList list = new ArrayList();
         if (android.support.v4.app.ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -445,39 +455,38 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+        _musicCursor = musicResolver.query(musicUri, null, null, null, null);
 
         //iterar los resultados, primero chequeando que tenemos datos válidos:
-        if(musicCursor != null && musicCursor.moveToFirst())
+        if(_musicCursor != null && _musicCursor.moveToFirst())
         {
             //get Columnas
-            int titleColumn = musicCursor.getColumnIndex
+            int titleColumn = _musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex
+            int idColumn = _musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media._ID);
-            int albumColumn = musicCursor.getColumnIndex
+            int albumColumn = _musicCursor.getColumnIndex
                     (MediaStore.Audio.Media.ALBUM);
-            int artistColumn = musicCursor.getColumnIndex
+            int artistColumn = _musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
-            int uriDataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
+            int uriDataColumn = _musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
 
             //add songs a la lista
             do
             {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisAlbum = musicCursor.getString(albumColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                String thisUri = musicCursor.getString(uriDataColumn);
+                long thisId = _musicCursor.getLong(idColumn);
+                String thisTitle = _musicCursor.getString(titleColumn);
+                String thisAlbum = _musicCursor.getString(albumColumn);
+                String thisArtist = _musicCursor.getString(artistColumn);
+                String thisUri = _musicCursor.getString(uriDataColumn);
                 list.add(new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri));
             }
-            while (musicCursor.moveToNext());
+            while (_musicCursor.moveToNext());
         }//Por defecto lo ordena por nombre de cancion
         UtilList.sortByName(list);
 
-        //TODO fuciono los dos cursores
-        //getCursorForFileQuery();
-        musicCursor.close();
+        if (_musicCursor != null )
+            _musicCursor.close();
         return list;
     }
 
@@ -491,42 +500,44 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     public List<Song> getSongListSelection(Context context)
     {
+        Cursor _musicCursor;
+
         ArrayList list = new ArrayList();
-        if (android.support.v4.app.ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_EXTERNAL_STORAGE)
-                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
             return list;
         }
 
         //instancia de ContentResolver
         ContentResolver musicResolver = context.getContentResolver();
         //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
-        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+         _musicCursor = musicResolver.query(musicUri, null, null, null, null);
 
         //iterar los resultados, primero chequeando que tenemos datos válidos:
-        if(musicCursor != null && musicCursor.moveToFirst())
+        if(_musicCursor != null && _musicCursor.moveToFirst())
         {
             //get Columnas
-            int titleColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media._ID);
-            int albumColumn = musicCursor.getColumnIndex
+            int titleColumn = _musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.TITLE);
+            int idColumn = _musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media._ID);
+            int albumColumn = _musicCursor.getColumnIndex
                     (MediaStore.Audio.Media.ALBUM);
-            int artistColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.ARTIST);
-            int uriDataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
+            int artistColumn = _musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.ARTIST);
+            int uriDataColumn = _musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
             _currentList =  comprobarListaSeleccion();
             //add songs a la lista
             do
             {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisAlbum = musicCursor.getString(albumColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                String thisUri = musicCursor.getString(uriDataColumn);
+                long thisId = _musicCursor.getLong(idColumn);
+                String thisTitle = _musicCursor.getString(titleColumn);
+                String thisAlbum = _musicCursor.getString(albumColumn);
+                String thisArtist = _musicCursor.getString(artistColumn);
+                String thisUri = _musicCursor.getString(uriDataColumn);
 
                 song = new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri);
                 if (_currentList != null) {
@@ -538,11 +549,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     }
                 }
             }
-            while (musicCursor.moveToNext());
+            while (_musicCursor.moveToNext());
         }//Por defecto lo ordena por nombre de cancion
         UtilList.sortByName(list);
 
-        musicCursor.close();
+        if (_musicCursor != null )
+            _musicCursor.close();
         // TODO solo por probar que sea el el preferences me este jodiendo el tamaño de las canvciones
         listSelection = list;
         return list;

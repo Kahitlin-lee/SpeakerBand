@@ -247,7 +247,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         super.onStop();
         Log.i(TAG, "Stopping MainActivity");
         // TODO no se si esto dara problemas aca
-        getApplicationContext().unbindService(wifiServiceConnection);
+//        getApplicationContext().unbindService(wifiServiceConnection);
 //        if(wifiDirectHandlerBound) {
 //            Intent intent = new Intent(this, WifiDirectHandler.class);
 //            stopService(intent);
@@ -314,7 +314,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 Log.i(TAG, "Message received");
                 if(chatFragment != null) {
                     //2º lugar donde pasa cuando llega
-                    chatFragment.pushMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY), context);
+                    chatFragment.pullMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY), context);
                 }
             } else if (intent.getAction().equals(WifiDirectHandler.Action.WIFI_STATE_CHANGED)) {
                 //3º lugar donde pasa cuando llega la foto, depues de esto la muestra

@@ -48,16 +48,19 @@ public class Song implements Serializable
      */
     public void readFile()
     {
-        final File f = new File(uri);
+        if (uri!=null) {
+            final File f = new File(uri);
+            if(f!=null) {
+                try {
+                    songFile = readFile(f);
 
-        try {
-            songFile = readFile(f);
-
-            long fileSizeInBytes = f.length();
-            long fileSizeInKB = fileSizeInBytes / 1024;
-            long fileSizeInMB = fileSizeInKB / 1024;
-        } catch (IOException e) {
-            e.printStackTrace();
+                    long fileSizeInBytes = f.length();
+                    long fileSizeInKB = fileSizeInBytes / 1024;
+                    long fileSizeInMB = fileSizeInKB / 1024;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

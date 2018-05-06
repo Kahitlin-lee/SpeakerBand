@@ -217,19 +217,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         @Override
         public void onLongClick(View v, int position)
         {
-            ///////// BORRAR //////
-//            for(int i=0; i < songList.size() ; i++)
-//            {
-//                if(songList.get(i).getUri().contains("Babas"))
-//                {
-//                    listSelection.add(song);
-//                    //Agregamos la nueva cancion a SharedPreferencesClass
-//                    SharedPreferencesClass.addListSelectionPreferences(MainActivity.this, song);
-//                    Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
-//                }
-//            }
-            //////// BORRAR ////////
-
             song = songList.get(position);
             if(!listSelection.contains(song)) {
                 listSelection.add(song);

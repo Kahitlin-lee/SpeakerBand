@@ -16,12 +16,14 @@
         android:listSelector="@android:color/transparent">
     </ListView>
 
+
     <ProgressBar
         android:id="@+id/barraProgreso2"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
+
 
     <LinearLayout
         android:layout_width="match_parent"

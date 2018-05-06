@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -36,6 +35,7 @@ import com.speakerband.R;
 import com.speakerband.Song;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
+import com.speakerband.utils.MyCountDownTimer;
 import com.speakerband.utils.UtilFiles;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -49,12 +49,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import edu.rit.se.wifibuddy.CommunicationManager;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
 
+import static com.speakerband.network.MessageType.SONG_START;
 import static com.speakerband.utils.UtilList.listSelection;
 
 
@@ -81,10 +81,10 @@ public class ChatFragment extends ListFragment
     private ImageButton playButton;
     private ProgressBar progressBarDos;
 
-
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
     private UtilFiles utilFiles;
+    private MyCountDownTimer myCountDownTimer;
 
     public CommunicationManager _communicationManager;
 
@@ -142,13 +142,12 @@ public class ChatFragment extends ListFragment
         if(_communicationManager == null)
             _communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
 
-
         //Evento del boton enviar de el chat
         //1º lugar donde pasa al mandar el texto con esto ya llego al cliente y lo pienta
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-
+                Thread thread = null;
                 Log.i(WifiDirectHandler.TAG, "Send button tapped");
 
                 if (_communicationManager != null && !textMessageEditText.toString().equals(""))
@@ -157,7 +156,7 @@ public class ChatFragment extends ListFragment
                     // Obtiene la primera palabra del nombre del dispositivo
                     String author = handlerAccessor.getWifiHandler().getThisDevice().deviceName.split(" ")[0];
                     byte[] messageBytes = (author + ": " + message).getBytes();
-                    startDescarga(MessageType.TEXT, messageBytes);
+                    thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.TEXT, messageBytes);
                 }
                 else {
                     Log.e(TAG, "Communication Manager is null");
@@ -167,12 +166,14 @@ public class ChatFragment extends ListFragment
 
                 if (!message.equals(""))
                 {
-                    pushMessage("Me: " + message);
+                    pullMessage("Me: " + message);
                     messages.add(message);
                     Log.i(TAG, "Message: " + message);
                     textMessageEditText.setText("");
                 }
                 sendButton.setEnabled(false);
+                if(thread != null)
+                    thread.interrupt();
             }
         });
 
@@ -187,7 +188,7 @@ public class ChatFragment extends ListFragment
                     //se envia la informacion de un activity a otro con
                     //startActivityForResult
                     startActivityForResult(takePictureIntent, 1);
-                    sendSongButton.setEnabled(false);
+                    //sendSongButton.setEnabled(false);
                 }
             }
         });
@@ -206,7 +207,7 @@ public class ChatFragment extends ListFragment
             public void onClick(View v)
             {
                 //if (_communicationManager != null)
-                    //playSign();
+                //playSign();
             }
         });
 
@@ -226,18 +227,20 @@ public class ChatFragment extends ListFragment
      * @param context
      */
     //TODO cambiarle el nombre a este metodo por pullMessage., aqui agregue en parametro context pero esto me puede dar mucho problema
-    public void pushMessage(byte[] readMessage, Context context)
+    public void pullMessage(byte[] readMessage, Context context)
     {
         Message message = SerializationUtils.deserialize(readMessage);
         Bitmap bitmap;
         ByteArrayInputStream in;
+        Song _song = null;
+
 
         switch(message.messageType)
         {
             case TEXT:
                 Log.i(TAG, "Text message received");
                 //aca esta cogiendo el mensaje
-                pushMessage(new String(message.content));
+                pullMessage(new String(message.content));
                 break;
             case IMAGE:
                 //con esto coge la imagen
@@ -256,38 +259,22 @@ public class ChatFragment extends ListFragment
                 {
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
-                    loadSongStart(is);
-                    writeSong();
+                    _song = loadSong(is);
+                    writeSong(_song);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 break;
-            //Recibe toda la cancion byte a byte
-            case SONG:
-                Log.i(TAG, "Song");
-                Toast.makeText(getContext(),
-                        "Tendria que estar llegando la cancion", Toast.LENGTH_SHORT).show();
-                try
-                {
-                    progressBarDos.setVisibility(View.VISIBLE);
-                    in = new ByteArrayInputStream(message.content);
-                    // probar con buffer de datos, puede que eso lo mejore, leer biendel tea y ver que tal
-                    ObjectInputStream is = new ObjectInputStream(in);
-                    loadSong(is);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
             //La cancion se termina de llegar
             case SONG_END:
-                writeSong();
                 Log.i(TAG, "Ha llegado la cancion");
                 Toast.makeText(getContext(),
                         "Ha llegado la cancion", Toast.LENGTH_SHORT).show();
-                progressBarDos.setVisibility(View.GONE);
                 break;
         }
+        matarTodosLoshilos();
+        //sendSongButton.setEnabled(true);
     }
 
     /**
@@ -296,7 +283,7 @@ public class ChatFragment extends ListFragment
      * e internamente en el otro metodo pushMenssage
      * @param message
      */
-    public void pushMessage(String message)
+    public void pullMessage(String message)
     {
         adapter.add(message);
         adapter.notifyDataSetChanged();
@@ -314,7 +301,7 @@ public class ChatFragment extends ListFragment
         image.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] byteArray = stream.toByteArray();
         //indica que tipo de mensaje es y usamos el metodo de envio
-        startDescarga(MessageType.IMAGE, byteArray);
+        envioMensajesAlOtroDispositivoParaDescarga(MessageType.IMAGE, byteArray);
         Log.i(TAG, "Attempting to send image");
     }
 
@@ -323,41 +310,35 @@ public class ChatFragment extends ListFragment
      */
     public void pushSong()
     {
+        byte[] byteArraySong = null;
+        myCountDownTimer = new MyCountDownTimer (30000, 3000);
+        progressBarDos.setVisibility(View.VISIBLE);
+        Thread thread;
+
         //recorrerlo he ir enviando cancion a cancion
-        for(Song song : listSelection) {
-            song.readFile();
+        for(int i = 0 ; i < listSelection.size() ; i++) {
+            listSelection.get(i).readFile();
 
             //Vamos a ver cuantas veces dividimos el vector de arrays:
             //List<byte[]> partes = divideArray(song.getSongBytes(), 2048);
 
-            byte[] byteArraySong = null;
-            byteArraySong = convertirObjetoArrayBytes(song);
-//            for(int i = 0; i < partes.size(); i++)
-//            {
-//                progressBarDos.setVisibility(View.VISIBLE);
-//                song.setSongBytes(partes.get(i));
-//                //Lo que sea lo tiene que transformar en byte (en este caso la cancion)
-//                //toByteArray(Crea una matriz de bytes recién asignada.
-//                // en los 3 casos lo pasa a un array de bytes
-//
-//                byteArraySong = convertirObjetoArrayBytes(song);
-//
-//                if (i == 0)  //Primera vez
-//                {
-                    startDescarga(MessageType.SONG_START, byteArraySong);
-//                }
-//                else {
-//                    startDescarga(MessageType.SONG , byteArraySong);
-//                }
-//            }
- //           startDescarga(MessageType.SONG_END , byteArraySong); // No nos importa el contenido, solo el mensaje de terminacion.
-//        }
+            byteArraySong = convertirObjetoArrayBytes(listSelection.get(i));
+
+            thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_START, byteArraySong);
+
+            Toast.makeText(getContext(),
+                    "Se ha enviado una cancion" + listSelection.get(i).getTitle(), Toast.LENGTH_SHORT).show();
+
+            myCountDownTimer.start();
+            if(thread != null)
+                thread.interrupt();
         }
+        myCountDownTimer.cancel();
         progressBarDos.setVisibility(View.GONE);
-        Log.i(TAG, "Se ha enviado la cancion");
-        Toast.makeText(getContext(),
-                "Se ha enviado la cancion", Toast.LENGTH_SHORT).show();
-        sendSongButton.setEnabled(false);
+        thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.SONG_END, byteArraySong);
+        if(thread != null)
+            thread.interrupt();
+        //sendSongButton.setEnabled(false);
     }
 
     /**
@@ -380,24 +361,6 @@ public class ChatFragment extends ListFragment
         return stream.toByteArray();
     }
 
-    /**
-     * Divide el array en trozos
-     * @param source
-     * @param chunksize
-     * @return
-     */
-    public static List<byte[]> divideArray(byte[] source, int chunksize)
-    {
-        List<byte[]> result = new ArrayList<byte[]>();
-        int start = 0;
-        while (start < source.length)
-        {
-            int end = Math.min(source.length, start + chunksize);
-            result.add(Arrays.copyOfRange(source, start, end));
-            start += chunksize;
-        }
-        return result;
-    }
 
     /**
      * ArrayAdapter para administrar mensajes de chat.
@@ -498,76 +461,47 @@ public class ChatFragment extends ListFragment
 
     //Variable para los metodos para enviar alchivo a trozos uasadas en los metodos loadSongPath,
     // loadSong, writeSong,
-    private Song _song;
     private ArrayList<byte[]> arrayTrozos;
 
     /**
-     * Comenza a recibir la cancion
+     * Comenza a recibir la cancCION
+     * lee el objeto
      * @param is
      * @throws IOException
      */
-    private void loadSongStart(ObjectInputStream is ) throws IOException
+    private Song loadSong(ObjectInputStream is) throws IOException
     {
+        Song _song = null;
         try
         {
             _song = (Song)is.readObject();
-            //arrayTrozos = new ArrayList<byte[]>();
-            //         arrayTrozos.add(_song.getSongBytes());
         } catch (IOException e) {
             e.printStackTrace();//writeabortemexeption
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+        return _song;
     }
 
     /**
-     * Metodo que recibe la cancion trozo a trozo y lo va agregando al array
-     * de bytes
-     * @param is
+     * Escribe el array de canciones en memoria
      */
-    private void loadSong(ObjectInputStream is)
+    private void writeSong(Song s)
     {
         try
         {
-            Song songTemp = (Song)is.readObject();
-            arrayTrozos.add(songTemp.getSongBytes());
-            Toast.makeText(getContext(),
-                    "esta llegando la  cancion", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            e.printStackTrace();//writeabortemexeption
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Escribe el array de canciones en memoria parte a parte
-     * TODO este metodo hay que hacerlo mejor pero no es tan facil
-     */
-    private void writeSong()
-    {
-        try
-        {
-            //Unimos todos los trozos de arrays
-            //Concatenamos Arrays:
-            //for (byte[] trozito : arrayTrozos )
-            //{
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                outputStream.write(_song.getSongBytes());
-                //outputStream.write(trozito);
-                _song.setSongBytes(outputStream.toByteArray());
-                //progressBarDos.setVisibility(View.VISIBLE);
-            //}
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(s.getSongBytes());
+            s.setSongBytes(outputStream.toByteArray());
         }
         catch (IOException e)
         {
             e.printStackTrace();
-        }//TODO una vez reuelto lo de que las cacnioes sunene sincornizadas volver a cambiar
-        // que guarde en la carpeta descargas (Download) por que guarde en mi carpeta hecha con codigo
-        //Speakerband y resolver los problemas que esto da
-        _song.setUri(writeSongOnExternalMemory(_song , "Download"));
-        if (!listSelection.contains(_song))
-            listSelection.add(_song);
+        }
+        s.setUri(writeSongOnExternalMemory(s , "Download"));
+
+        if (!listSelection.contains(s))
+            listSelection.add(s);
     }
 
 
@@ -623,101 +557,53 @@ public class ChatFragment extends ListFragment
 //        }
 //    }
 
-    public DoBackgroundTask descargaTask;
+
+
+    ArrayList <Thread> threads = new ArrayList();
 
     /**
      * Metodo que simula la descarga de 4 archivos al pulsar el botón de descarga
      */
-    public void startDescarga(final MessageType tipo,final byte[] contenido)
+    public Thread envioMensajesAlOtroDispositivoParaDescarga(final MessageType tipo,final byte[] contenido)
     {
-        /**********************************************************/
-        //Si la descarga no se ha iniciado nunca o ha sido cancelada
-        if(descargaTask == null)
-            descargaTask = new DoBackgroundTask();
+        Thread thread;
 
-        //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array
-        Message message = new Message(tipo , contenido);
-        //lanza la tarea con parámetros
-        descargaTask.execute(message);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array
+                    Message messageEnviar = new Message(tipo, contenido);
+                    //lo serializa, esto tambien en los todos casos
+                    _communicationManager.write(SerializationUtils.serialize(messageEnviar));
+                }catch (Exception e) {
+                    Log.e(TAG, "Error" + e.getMessage());
+                }
+            }
+        };
+        thread = new Thread(runnable);
+        threads.add(thread);
+        thread.start();
+        return thread;
     }
 
-    /**
-     * URL parametro == doInBackground
-     * Integer  parametro == onProgressUpdate
-     * Long parametro == onPostExecute
-     * El primer y el segundo parametro son la entrada y la salida del doInBackground
-     */
-    private class DoBackgroundTask extends AsyncTask<Message, Integer, byte[]>
-    {
-        /**
-         * doInBackground : Es el que se encaga del segunto plano.
-         * Los parametros de entrada recibe para ejecutar las instrucciones que iran en segundo plano
-         * en este casi una url
-         * Aqui es donde se ejecutan las tareas que uqeremos ejecutar en segundo plano
-         * @param messages
-         * @return totalBytesDownloaded
-         */
-        @Override
-        protected byte[] doInBackground(Message... messages) {
-            //lo serializa, esto tambien en los todos casos
-            _communicationManager.write(SerializationUtils.serialize(messages[0]));
-            //return true;
-            messages[0].getContent();
-            return messages[0].getContent();
-        }
 
-        /**
-         * onPreExecute() es la funcion que se ejecuta en el hilo principal antes de ejecutarse la tarea.
-         * Se puede usar para realizar inicializaciones, como cuando se mostrar una barra de progreso.
-         */
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
+    @Override
+    public void onStop() {
+        super.onStop();
+        matarTodosLoshilos();
+    }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        matarTodosLoshilos();
+    }
 
-        }
-
-        /**
-         * onProgressUpdate es el metodo que se ejecuta en el hilo de la interfaz de usuario
-         * es decir en el hilo principal. se ejecuta cuando se realiza una llamada a
-         * publishProgress.
-         * @param progress Recive (parametro) las unidades de progreso
-         */
-        @Override
-        protected void onProgressUpdate(Integer... progress)
-        {
-
-        }
-
-        /**
-         * Metodo onPostExecute.
-         * se invoca en el hilo de ejecución de la interfaz de usario y se llama
-         * cuando el método doInBackground() ha terminado de ejecutarse
-         * @param result lo que regresa el hilo en segundo plano
-         */
-        protected void onPostExecute(byte[] result)
-        {
-            descargaTask.onCancelled();
-            descargaTask = null;
-            Toast.makeText(getContext(),
-                    "Descargados " + result + " bytes", Toast.LENGTH_LONG)
-                    .show();
-        }
-
-        /**
-         * Metodo onCancelled , que se encarga de que si se corta la ejecucion
-         * del segundo hilo .
-         */
-        protected void onCancelled(byte[] result)
-        {
-            super.onCancelled();
-            descargaTask.cancel(true);
-            try {
-                descargaTask.finalize();
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
+    public void matarTodosLoshilos() {
+        for (Thread tr : threads ) {
+            if(tr != null)
+                tr.interrupt();
         }
     }
 }

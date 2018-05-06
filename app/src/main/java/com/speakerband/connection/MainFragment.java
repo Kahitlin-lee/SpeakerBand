@@ -122,6 +122,7 @@ public class MainFragment extends Fragment
         return view;
     }
 
+
     /**
      * Establece la instancia de la actividad principal
      */

@@ -81,23 +81,26 @@ public class AvailableServicesFragment extends Fragment
      */
     private void resetServiceDiscovery(){
         // Clear the list, notify the list adapter, and start discovering services again
-        Log.i(TAG, "Resetting Service discovery");
+        Log.i(TAG, "Restableciendo el  servicio");
         services.clear();
         servicesListAdapter.notifyDataSetChanged();
         getHandler().resetServiceDiscovery();
     }
 
+    /**
+     *
+     */
     private void registerLocalP2pReceiver() {
-        Log.i(TAG, "Registering local P2P broadcast receiver");
+        Log.i(TAG, "Registro del receptor de difusión P2P local");
         WifiDirectReceiver p2pBroadcastReceiver = new WifiDirectReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiDirectHandler.Action.DNS_SD_SERVICE_AVAILABLE);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(p2pBroadcastReceiver, intentFilter);
-        Log.i(TAG, "Local P2P broadcast receiver registered");
+        Log.i(TAG, "Receptor de difusión local P2P registrado");
     }
 
     /**
-     * Receiver for receiving intents from the WifiDirectHandler to update UI
+     * Receptor para recibir intents del WifiDirectHandler para actualizar la IU
      * when Wi-Fi Direct commands are completed
      */
     public class WifiDirectReceiver extends BroadcastReceiver {

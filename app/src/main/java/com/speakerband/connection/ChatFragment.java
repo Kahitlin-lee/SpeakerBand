@@ -2,6 +2,7 @@ package com.speakerband.connection;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,8 +36,6 @@ import com.speakerband.R;
 import com.speakerband.Song;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
-import com.speakerband.utils.MyCountDownTimer;
-import com.speakerband.utils.UtilFiles;
 
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -80,11 +79,9 @@ public class ChatFragment extends ListFragment
     private ImageButton sendSongButton;
     private ImageButton playButton;
     private ProgressBar progressBarDos;
+    public static ProgressDialog pd;
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
-
-    private UtilFiles utilFiles;
-    private MyCountDownTimer myCountDownTimer;
 
     public CommunicationManager _communicationManager;
 
@@ -110,9 +107,6 @@ public class ChatFragment extends ListFragment
         //Agrego y anlazo el boton para pasar una cancion
         sendSongButton = (ImageButton) view.findViewById(R.id.songButton);
         playButton = (ImageButton) view.findViewById(R.id.play);
-
-        //Creo objeto de la clase UtilFiles
-        utilFiles = new UtilFiles();
 
         textMessageEditText = (EditText) view.findViewById(R.id.textMessageEditText);
         textMessageEditText.addTextChangedListener(new TextWatcher()
@@ -226,7 +220,6 @@ public class ChatFragment extends ListFragment
      * @param readMessage
      * @param context
      */
-    //TODO cambiarle el nombre a este metodo por pullMessage., aqui agregue en parametro context pero esto me puede dar mucho problema
     public void pullMessage(byte[] readMessage, Context context)
     {
         Message message = SerializationUtils.deserialize(readMessage);
@@ -268,9 +261,9 @@ public class ChatFragment extends ListFragment
                 break;
             //La cancion se termina de llegar
             case SONG_END:
-                Log.i(TAG, "Ha llegado la cancion");
+                Log.i(TAG, "Han llegado todas las cancion");
                 Toast.makeText(getContext(),
-                        "Ha llegado la cancion", Toast.LENGTH_SHORT).show();
+                        "Han llegado todas las cancion", Toast.LENGTH_SHORT).show();
                 break;
         }
         matarTodosLoshilos();
@@ -311,34 +304,44 @@ public class ChatFragment extends ListFragment
     public void pushSong()
     {
         byte[] byteArraySong = null;
-        myCountDownTimer = new MyCountDownTimer (30000, 3000);
+
+        pd = ProgressDialog.show (getContext(), "", "Loading Songs...", true);
+
         progressBarDos.setVisibility(View.VISIBLE);
+
         Thread thread;
 
         //recorrerlo he ir enviando cancion a cancion
-        for(int i = 0 ; i < listSelection.size() ; i++) {
-            listSelection.get(i).readFile();
+        for(int  x = 0 ; x < listSelection.size() ; x++) {
+            listSelection.get(x).readFile();
 
-            //Vamos a ver cuantas veces dividimos el vector de arrays:
-            //List<byte[]> partes = divideArray(song.getSongBytes(), 2048);
-
-            byteArraySong = convertirObjetoArrayBytes(listSelection.get(i));
+            byteArraySong = convertirObjetoArrayBytes(listSelection.get(x));
 
             thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_START, byteArraySong);
 
-            Toast.makeText(getContext(),
-                    "Se ha enviado una cancion" + listSelection.get(i).getTitle(), Toast.LENGTH_SHORT).show();
+            if(dormirApp3Segundos(thread))
+                Toast.makeText(getContext(),
+                        "Se ha enviado una cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(getContext(),
+                        "No se ha podido enviar la cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
 
-            myCountDownTimer.start();
-            if(thread != null)
-                thread.interrupt();
         }
-        myCountDownTimer.cancel();
-        progressBarDos.setVisibility(View.GONE);
+
+        if(listSelection.size() <= 0)
+            Toast.makeText(getContext(),
+                    "No hay canciones para enviar", Toast.LENGTH_SHORT).show();
+
+
         thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.SONG_END, byteArraySong);
         if(thread != null)
             thread.interrupt();
+
         //sendSongButton.setEnabled(false);
+
+        progressBarDos.setVisibility(View.GONE);
+        pd.dismiss();
+
     }
 
     /**
@@ -543,21 +546,21 @@ public class ChatFragment extends ListFragment
     }
 
 
-//    private void play(ObjectInputStream is)
-//    {
-//        try
-//        {
-//            Song song = (Song)is.readObject();
-//            musicService.setSong(song);
-//            musicService.playSong();
-//        } catch (IOException e) {
-//            e.printStackTrace();//writeabortemexeption
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void play(ObjectInputStream is)
+    {
+        try
+        {
+            Song song = (Song)is.readObject();
+           // musicService.setSong(song);
+            //  musicService.playSong();
+        } catch (IOException e) {
+            e.printStackTrace();//writeabortemexeption
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
-
+    // TODOS los metodos que usan hilos.
 
     ArrayList <Thread> threads = new ArrayList();
 
@@ -581,10 +584,30 @@ public class ChatFragment extends ListFragment
                 }
             }
         };
+
         thread = new Thread(runnable);
         threads.add(thread);
         thread.start();
+
         return thread;
+    }
+
+    /**
+     *
+     */
+    public Boolean dormirApp3Segundos(Thread t)
+    {
+        try {
+            Thread.sleep (3000);
+            if(!t.isInterrupted()) {
+                t.interrupt();
+            }
+        }
+        catch (InterruptedException ex) {
+            Log.d ("", ex.toString ());
+            return false;
+        }
+        return true;
     }
 
 
@@ -607,3 +630,4 @@ public class ChatFragment extends ListFragment
         }
     }
 }
+

@@ -28,7 +28,7 @@ import edu.rit.se.wifibuddy.WifiDirectHandler;
 
 /**
  * Actividad que  que es un contenedor para Fragment y la ActionBar.
- * Contiene WifiDirectHandler, que es un service
+ * Contiene WifiDirectHandler, que es el service
  * MainActivity tiene Communication BroadcastReceiver to handle Intents diparado desde WifiDirectHandler.
  * Es el activity que inicializa la conexion entre los moviles
  */
@@ -43,15 +43,15 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     private static final String TAG = WifiDirectHandler.TAG + "MainActivity";
 
     /**
-     * Sets the UI layout for the Activity.
-     * Registers a Communication BroadcastReceiver so the Activity can be notified of
-     * intents fired in WifiDirectHandler, like Service Connected and Messaged Received.
+     * Establece el diseño de la interfaz de usuario para la actividad.
+     * Registra un Communication BroadcastReceiver para que la actividad pueda ser notificada
+     * intents para WifiDirectHandler, como Service Connected y Messaged Received.
      */
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "Creating MainActivity");
+        Log.i(TAG, "Creamos MainActivity de wifi Direct");
         setContentView(R.layout.activity_main_connection);
 
         // Inicializa ActionBar
@@ -61,7 +61,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         deviceInfoTextView = (TextView) findViewById(R.id.thisDeviceInfoTextView);
 
         registerCommunicationReceiver();
-        Log.i(TAG, "MainActivity created");
+        Log.i(TAG, "MainActivity creado");
 
         Intent intent = new Intent(this, WifiDirectHandler.class);
         bindService(intent, wifiServiceConnection, BIND_AUTO_CREATE);
@@ -109,7 +109,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 logsDialogFragment.show(getFragmentManager(), "dialog");
                 return true;
             case R.id.action_exit:
-                // Exit MenuItem tapped
                 finish();
                 return true;
             default:
@@ -117,18 +116,19 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         }
     }
 
-    // TODO: BRETT, add JavaDoc
-    // Note: This is used to run WifiDirectHandler as a Service instead of being coupled to an
-    //          Activity. This is NOT a connection to a P2P service being broadcast from a device
+
+    /**
+     * Esto se usa para ejecutar WifiDirectHandler como un servicio en lugar de estar acoplado a una
+     * Actividad. Esto NO es una conexión a un servicio P2P que se está transmitiendo desde un dispositivo
+     */
     private ServiceConnection wifiServiceConnection = new ServiceConnection()
     {
-
         /**
-         * Called when a connection to the Service has been established, with the IBinder of the
-         * communication channel to the Service.
-         * @param name The component name of the service that has been connected
-         * @param service The IBinder of the Service's communication channel
-         */
+          * Se invocado cuando se ha establecido una conexión con el Servicio, con el IBinder del
+          * canal de comunicación al Servicio.
+          * @param name El nombre del componente del servicio que se ha conectado
+          * @param service El IBinder del canal de comunicación del Servicio
+          */
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.i(TAG, "Binding WifiDirectHandler service");
@@ -148,11 +148,11 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         }
 
         /**
-         * Called when a connection to the Service has been lost.  This typically
-         * happens when the process hosting the service has crashed or been killed.
-         * This does not remove the ServiceConnection itself -- this
-         * binding to the service will remain active, and you will receive a call
-         * to onServiceConnected when the Service is next running.
+         * Se invoca cuando se pierde una conexión al Servicio. Esto
+         * sucede cuando el proceso que aloja el servicio se ha bloqueado o ha sido asesinado.
+         * Esto  elimina el ServiceConnection en sí,
+         * el enlace al servicio permanecerá activo y recibirá una llamada
+         * a onServiceConnected cuando el servicio se ejecuta nuevamente.
          */
         @Override
         public void onServiceDisconnected(ComponentName name) {
@@ -162,7 +162,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     };
 
     /**
-     * Replaces a Fragment in the 'fragment_container'
+     * Cambiamos a Fragment en el 'fragment_container'
      * @param fragment Fragment to add
      */
     public void replaceFragment(Fragment fragment)
@@ -171,13 +171,13 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         transaction.replace(R.id.fragment_container, fragment);
         transaction.addToBackStack(null);
 
-        // Commit the transaction
+        // Commit de la transaction
         transaction.commit();
     }
 
     /**
-     * Returns the wifiDirectHandler
-     * @return The wifiDirectHandler
+     * Regresa el wifiDirectHandler
+     * @return el wifiDirectHandler
      */
     @Override
     public WifiDirectHandler getWifiHandler() {
@@ -185,9 +185,9 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     }
 
     /**
-     * Initiates a P2P connection to a service when a Service ListItem is tapped.
-     * An invitation appears on the other device to accept or decline the connection.
-     * @param service The service to connect to
+     * Inicia una conexión P2P a un servicio cuando se escucha un ListItem de servicio.
+     * Aparece una invitación en el otro dispositivo para aceptar o rechazar la conexión.
+     * @param service El servicio para conectarse a
      */
     public void onServiceClick(DnsSdService service) {
         Log.i(TAG, "\nService List item tapped");
@@ -197,17 +197,17 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 chatFragment = new ChatFragment();
             }
             replaceFragment(chatFragment);
-            Log.i(TAG, "Switching to Chat fragment");
+            Log.i(TAG, "Cambiamos a Chat fragment");
         } else if (service.getSrcDevice().status == WifiP2pDevice.AVAILABLE) {
             String sourceDeviceName = service.getSrcDevice().deviceName;
             if (sourceDeviceName.equals("")) {
-                sourceDeviceName = "other device";
+                sourceDeviceName = "otro movil";
             }
-            Toast.makeText(this, "Inviting " + sourceDeviceName + " to connect", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Envitamos " + sourceDeviceName + " A conectarse ", Toast.LENGTH_LONG).show();
             wifiDirectHandler.initiateConnectToService(service);
         } else {
-            Log.e(TAG, "Service not available");
-            Toast.makeText(this, "Service not available", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Servicio no disponible");
+            Toast.makeText(this, "Servicio no disponible\n", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -288,8 +288,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     }
 
     /**
-     * BroadcastReceiver used to receive Intents fired from the WifiDirectHandler when P2P events occur
-     * Used to update the UI and receive communication messages
+     * BroadcastReceiver utilizado para recibir Intents enviados desde el manejador WifiDirect cuando ocurren eventos P2P
+     * Utilizado para actualizar la interfaz de usuario y recibir mensajes de comunicación
      */
     public class CommunicationReceiver extends BroadcastReceiver
     {
@@ -299,19 +299,19 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             // Get the intent sent by WifiDirectHandler when a service is found
             if (intent.getAction().equals(WifiDirectHandler.Action.SERVICE_CONNECTED)) {
                 // This device has connected to another device broadcasting the same service
-                Log.i(TAG, "Service connected");
+                Log.i(TAG, "Service conectado");
                 if (chatFragment == null) {
                     chatFragment = new ChatFragment();
                 }
                 replaceFragment(chatFragment);
-                Log.i(TAG, "Switching to Chat fragment");
+                Log.i(TAG, "Cambiando to Chat fragment");
             } else if (intent.getAction().equals(WifiDirectHandler.Action.DEVICE_CHANGED)) {
                 // This device's information has changed
-                Log.i(TAG, "This device changed");
+                Log.i(TAG, "Este dispositivo cambia");
                 deviceInfoTextView.setText(wifiDirectHandler.getThisDeviceInfo());
             } else if (intent.getAction().equals(WifiDirectHandler.Action.MESSAGE_RECEIVED)) {
                 // A message from the Communication Manager has been received
-                Log.i(TAG, "Message received");
+                Log.i(TAG, "Mensaje recibido");
                 if(chatFragment != null) {
                     //2º lugar donde pasa cuando llega
                     chatFragment.pullMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY), context);

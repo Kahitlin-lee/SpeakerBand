@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:paddingBottom="70sp"
-    android:layout_marginTop="?attr/actionBarSize" >
+    android:foreground="?android:attr/selectableItemBackground">
 
     <ListView
         android:id="@android:id/list"
@@ -22,6 +22,16 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        />
+
+    <ProgressBar
+        android:id="@+id/barraProgreso1"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:visibility="visible"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         />
 
 
@@ -56,16 +66,22 @@
             android:id="@+id/cameraButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/camera" />
+            android:src="@drawable/cameraa" />
         <ImageButton
             android:id="@+id/songButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/musicplayer" />
+            android:src="@drawable/sendd" />
+        <ImageButton
+            android:id="@+id/sincronizaButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/syncc" />
         <ImageButton
             android:id="@+id/play"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/play2" />
+            android:src="@drawable/playy" />
+
     </LinearLayout>
 </FrameLayout>

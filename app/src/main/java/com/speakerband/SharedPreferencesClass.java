@@ -2,6 +2,7 @@ package com.speakerband;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -15,9 +16,10 @@ import java.util.List;
 
 public class SharedPreferencesClass
 {
-    public static final String LIST_SELECTION = "LIST_SELECTION";
+    private static final String LIST_SELECTION = "LIST_SELECTION";
 
     public SharedPreferencesClass() {
+
         super();
     }
 
@@ -26,7 +28,7 @@ public class SharedPreferencesClass
      * @param context
      * @param listSelectionPreferences
      */
-    public static void saveListSelectionPreferences(Context context, ArrayList<Song> listSelectionPreferences)
+    protected void saveListSelectionPreferences(Context context, ArrayList<Song> listSelectionPreferences)
     {
         SharedPreferences settings;
         SharedPreferences.Editor editor;
@@ -40,7 +42,7 @@ public class SharedPreferencesClass
 
         editor.putString(LIST_SELECTION, jsonFavorites);
 
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -48,20 +50,21 @@ public class SharedPreferencesClass
      * @param context
      * @param song
      */
-    public static void addListSelectionPreferences(Context context, Song song)
+    public void addUnaSongListSelectionPreferences(Context context, Song song)
     {
         List<Song> listSelectionPreferences = getListSelectionPreferences(context);
         if (listSelectionPreferences == null)
             listSelectionPreferences = new ArrayList<Song>();
         listSelectionPreferences.add(song);
         saveListSelectionPreferences(context, (ArrayList<Song>) listSelectionPreferences);
+        Log.d("SharedPerefencesClass", "Guardando cancion en la lista del shared preferences");
     }
 
     /**
      * Metodo que elimina toda la lista de seleccion del SharedPreferencesClass
      * @param context
      */
-    public static void removeSongFromListSelectionPreferences(Context context)
+    protected void removeSongFromListSelectionPreferences(Context context)
     {
         SharedPreferences sharedPrefs = context.getSharedPreferences(LIST_SELECTION,
                 Context.MODE_PRIVATE);
@@ -75,7 +78,7 @@ public class SharedPreferencesClass
      * @param context
      * @return
      */
-    public static ArrayList<Song> getListSelectionPreferences(Context context)
+    protected ArrayList<Song> getListSelectionPreferences(Context context)
     {
         SharedPreferences settings;
         List<Song> listSelectionPreferences;

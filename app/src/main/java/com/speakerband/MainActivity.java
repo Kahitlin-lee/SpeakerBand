@@ -32,8 +32,7 @@ import com.speakerband.utils.UtilList;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.speakerband.SharedPreferencesClass.removeSongFromListSelectionPreferences;
-import static com.speakerband.utils.UtilList.listSelection;
+import static com.speakerband.ClaseAplicationGlobal.listSelection;
 
 /**
  * Activity principal
@@ -60,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     //Texto que se mostrara si la lista de canciones esta vacia
     private TextView textListEmpty;
 
+    private ClaseAplicationGlobal mApplication;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -78,10 +80,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
         requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
 
-        //Si las preferencias no es null
-        if(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this) != null) {
-            deleteAndGeneratePreferencess(comprobarListaSeleccion());
-        }
+        mApplication = (ClaseAplicationGlobal) getApplicationContext ();
+        mApplication.generarNuevamentePreferencias();
 
         //Tabs
         tabs();
@@ -93,51 +93,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         setController();
     }
 
-    //Variable para el metodo
-    List<Song> _listSangDevice = null;
-    ArrayList<Song> _realList = null;
-    List<Song>  _listSelectionPreferences = null;
 
-    /**
-     * Comprobar que las canciones de la lista de seleccion de SharedPreferences exista
-     * en el dispositivo
-     */
-    public ArrayList<Song> comprobarListaSeleccion() {
-        if(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this) != null) {
-            //Recuperamos la lista de seleccion
-            // List con las canciones que hay en el dispositivo
-            _listSangDevice = getSongList(this);
-            // List con las canciones que estan en las preferencias
-            _listSelectionPreferences = new ArrayList<Song>(SharedPreferencesClass.getListSelectionPreferences(MainActivity.this));
-            // List con las canciones que hay en el dispositivo
-            _realList = new ArrayList<>();
-
-            if (!_listSangDevice.isEmpty()
-                    && !_listSelectionPreferences.isEmpty())
-            for (Song s : _listSangDevice) {
-                for (Song sS : _listSelectionPreferences) {
-                    if (sS.getUri() != null && s.getUri() != null) {
-                        if (sS.getUri().equals(s.getUri())) {
-                            _realList.add(s);
-                        }
-                    }
-                }
-            }
-        }
-        return _realList;
-    }
-
-    /**
-     * Metodo que borra y genera nuevamente con nuevoas canciones la lista de preferencias
-     * @param _realList lista nueva
-     */
-    public void deleteAndGeneratePreferencess(ArrayList<Song> _realList) {
-        // Eliminar la lista actual de preferencias
-        removeSongFromListSelectionPreferences(this);
-
-        // Volvemos a rellenar las preferencias con la lista de canciones que si existe
-        SharedPreferencesClass.saveListSelectionPreferences(MainActivity.this, _realList );
-    }
 
     /**
      * Pinta el RecyclerView con la lista de canciones dependiendo de la pestaña
@@ -220,8 +176,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             song = songList.get(position);
             if(!listSelection.contains(song)) {
                 listSelection.add(song);
-                //Agregamos la nueva cancion a SharedPreferencesClass
-                SharedPreferencesClass.addListSelectionPreferences(MainActivity.this, song);
+                //Agregamos la nueva cancion a SharedPreferencesClass desde La clase global aplication
+                mApplication.agregarUnaCancionAPreferencess(song);
                 Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(MainActivity.this, R.string.song_exist_list_selection, Toast.LENGTH_SHORT).show();
@@ -353,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     protected void onDestroy()
     {
-        SharedPreferencesClass.saveListSelectionPreferences(MainActivity.this, listSelection);
+        mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
         stopService(playIntent);
 
         if (musicService != null ) {
@@ -426,7 +382,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * Método auxiliar para obtener la información del archivo de audio:
      * Obtiene la lista de todas las canciones que estan en el dispositivo
      */
-    public List<Song> getSongList(Context context)
+    public static List<Song> getSongList(Context context)
     {
         Cursor _musicCursor;
 
@@ -477,8 +433,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         return list;
     }
 
-    //Variable para los metodo
-    ArrayList<Song> _currentList;
 
     /**
      * Método que recupera la lista de canciones de los ficheros del dispositivo que existan en la lista de preferencias
@@ -516,7 +470,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             int artistColumn = _musicCursor.getColumnIndex
                     (MediaStore.Audio.Media.ARTIST);
             int uriDataColumn = _musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
-            _currentList =  comprobarListaSeleccion();
+
+            // Lista de canciones que existen actualmente en la lista de preferencias
+            ArrayList<Song> _currentList = mApplication.saberSiExisteLasCancionesDeListaDePreferenciasEnELMovil();
+
             //add songs a la lista
             do
             {

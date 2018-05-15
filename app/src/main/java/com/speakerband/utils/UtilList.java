@@ -3,7 +3,6 @@ package com.speakerband.utils;
 
 import com.speakerband.Song;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -16,7 +15,6 @@ import java.util.List;
  */
 public class UtilList
 {
-    public static ArrayList<Song> listSelection = new ArrayList<Song>();
     public static Song songPlaying ;
 
     //Metodos de ordenacion

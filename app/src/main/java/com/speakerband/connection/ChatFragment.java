@@ -2,7 +2,6 @@ package com.speakerband.connection;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,6 +31,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.speakerband.ClaseAplicationGlobal;
+import com.speakerband.MainActivity;
 import com.speakerband.R;
 import com.speakerband.Song;
 import com.speakerband.network.Message;
@@ -54,7 +55,7 @@ import edu.rit.se.wifibuddy.CommunicationManager;
 import edu.rit.se.wifibuddy.WifiDirectHandler;
 
 import static com.speakerband.network.MessageType.SONG_START;
-import static com.speakerband.utils.UtilList.listSelection;
+import static com.speakerband.ClaseAplicationGlobal.listSelection;
 
 
 
@@ -73,17 +74,21 @@ public class ChatFragment extends ListFragment
     //instancia de la interfaz WiFiDirectHandlerAccessor
     private WiFiDirectHandlerAccessor handlerAccessor;
     private Toolbar toolbar;
+
     //variables de los botones
     private Button sendButton;
     private ImageButton cameraButton;
     private ImageButton sendSongButton;
     private ImageButton playButton;
+    private ImageButton sincronizaButton;
+
     private ProgressBar progressBarDos;
-    public static ProgressDialog pd;
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
     public CommunicationManager _communicationManager;
+
+    private ClaseAplicationGlobal mApplication;
 
     /**
      *
@@ -98,14 +103,17 @@ public class ChatFragment extends ListFragment
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
 
         progressBarDos = (ProgressBar)view.findViewById(R.id.barraProgreso2);
-        progressBarDos.setVisibility(View.GONE);
 
         sendButton = (Button) view.findViewById(R.id.sendButton);
         sendButton.setEnabled(false);
 
         cameraButton = (ImageButton) view.findViewById(R.id.cameraButton);
+
         //Agrego y anlazo el boton para pasar una cancion
         sendSongButton = (ImageButton) view.findViewById(R.id.songButton);
+        // Boton que sicroniza las canciones
+        sincronizaButton = (ImageButton) view.findViewById(R.id.sincronizaButton);
+        // Boton que le da el play a las canciones
         playButton = (ImageButton) view.findViewById(R.id.play);
 
         textMessageEditText = (EditText) view.findViewById(R.id.textMessageEditText);
@@ -123,7 +131,10 @@ public class ChatFragment extends ListFragment
             }
         });
 
-        //el adaptador es solo usado para los mensajes
+        // COge la clase aplication general para todas 
+        mApplication = (ClaseAplicationGlobal) getActivity().getApplication();
+
+        //el adaptador es solo usado para los mensajes de texto
         ListView messagesListView = (ListView) view.findViewById(android.R.id.list);
         adapter = new ChatMessageAdapter(getActivity(), android.R.id.text1, items);
         messagesListView.setAdapter(adapter);
@@ -200,8 +211,8 @@ public class ChatFragment extends ListFragment
             @Override
             public void onClick(View v)
             {
-                //if (_communicationManager != null)
-                //playSign();
+                if (_communicationManager != null)
+                    playSign();
             }
         });
 
@@ -248,6 +259,7 @@ public class ChatFragment extends ListFragment
             //Comienza a recibir la cancion
             case SONG_START:
                 Log.i(TAG, "SongPath");
+                progressBarDos.setVisibility(View.VISIBLE);
                 try
                 {
                     in = new ByteArrayInputStream(message.content);
@@ -261,12 +273,15 @@ public class ChatFragment extends ListFragment
                 break;
             //La cancion se termina de llegar
             case SONG_END:
+                procesoDeGuardarPreferenciasEnUnHiloSecundario();
                 Log.i(TAG, "Han llegado todas las cancion");
                 Toast.makeText(getContext(),
                         "Han llegado todas las cancion", Toast.LENGTH_SHORT).show();
+                escribirMenssgeEnElChat("Han llegado todas las cancion");
+                progressBarDos.setVisibility(View.GONE);
                 break;
         }
-        matarTodosLoshilos();
+        // matarTodosLoshilos();
         //sendSongButton.setEnabled(true);
     }
 
@@ -280,6 +295,17 @@ public class ChatFragment extends ListFragment
     {
         adapter.add(message);
         adapter.notifyDataSetChanged();
+    }
+
+    /**
+     *
+     * @param message
+     */
+    public void escribirMenssgeEnElChat(String message){
+        pullMessage("" + message);
+        messages.add(message);
+        Log.i(TAG, "Message: " + message);
+        textMessageEditText.setText("");
     }
 
     /**
@@ -305,8 +331,6 @@ public class ChatFragment extends ListFragment
     {
         byte[] byteArraySong = null;
 
-        pd = ProgressDialog.show (getContext(), "", "Loading Songs...", true);
-
         progressBarDos.setVisibility(View.VISIBLE);
 
         Thread thread;
@@ -319,13 +343,15 @@ public class ChatFragment extends ListFragment
 
             thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_START, byteArraySong);
 
-            if(dormirApp3Segundos(thread))
+            if(dormirApp3Segundos(thread)) {
+                escribirMenssgeEnElChat("Se ha enviado una cancion" + listSelection.get(x).getTitle());
                 Toast.makeText(getContext(),
                         "Se ha enviado una cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
-            else
+            } else {
+                escribirMenssgeEnElChat("No se ha enviado una cancion" + listSelection.get(x).getTitle());
                 Toast.makeText(getContext(),
                         "No se ha podido enviar la cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
-
+            }
         }
 
         if(listSelection.size() <= 0)
@@ -339,9 +365,8 @@ public class ChatFragment extends ListFragment
 
         //sendSongButton.setEnabled(false);
 
-        progressBarDos.setVisibility(View.GONE);
-        pd.dismiss();
-
+       progressBarDos.setVisibility(View.GONE);
+        //pd.dismiss();
     }
 
     /**
@@ -505,6 +530,7 @@ public class ChatFragment extends ListFragment
 
         if (!listSelection.contains(s))
             listSelection.add(s);
+
     }
 
 
@@ -515,12 +541,12 @@ public class ChatFragment extends ListFragment
      * @param nombreFicheroDondeSeEscribe nombre del fichero donde se escribira la cancion
      * @return
      */
-    public static String writeSongOnExternalMemory(Song song, String nombreFicheroDondeSeEscribe)
+    public String writeSongOnExternalMemory(Song song, String nombreFicheroDondeSeEscribe)
     {
         File path = Environment.getExternalStoragePublicDirectory(nombreFicheroDondeSeEscribe);
         File file = new File(path, song.getTitleWithExtension());
         FileOutputStream fileOutputStream = null; // save
-        if (path.exists() && (!file.exists())) {
+        if ((!file.exists()) && path.exists()) {
             try {
                 fileOutputStream = new FileOutputStream(file);
                 fileOutputStream.write(song.getSongBytes());
@@ -540,24 +566,17 @@ public class ChatFragment extends ListFragment
             // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
             long fileSizeInMB = fileSizeInKB / 1024;
 
+            escribirMenssgeEnElChat("Se ha guardado la cancion " + song.getTitle() + " en la carpeta de descargas");
+
             return file.getAbsolutePath();
         }
         return null;
     }
 
-
-    private void play(ObjectInputStream is)
+    private void playSign()
     {
-        try
-        {
-            Song song = (Song)is.readObject();
-           // musicService.setSong(song);
-            //  musicService.playSong();
-        } catch (IOException e) {
-            e.printStackTrace();//writeabortemexeption
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+       MainActivity.musicService.setSong(listSelection.get(0));
+       MainActivity.musicService.playSong();
     }
 
     // TODOS los metodos que usan hilos.
@@ -610,6 +629,30 @@ public class ChatFragment extends ListFragment
         return true;
     }
 
+    /**
+     *
+     */
+    public void procesoDeGuardarPreferenciasEnUnHiloSecundario()
+    {
+        Thread thread;
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (listSelection!=null) {
+                        mApplication.eliminarYRegenrearLaPreferencess(listSelection);
+                    }
+                }catch (Exception e) {
+                    Log.e(TAG, "Error" + e.getMessage());
+                }
+            }
+        };
+
+        thread = new Thread(runnable);
+        threads.add(thread);
+        thread.start();
+    }
 
     @Override
     public void onStop() {

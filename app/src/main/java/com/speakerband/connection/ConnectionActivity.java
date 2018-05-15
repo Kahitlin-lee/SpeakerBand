@@ -203,7 +203,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             if (sourceDeviceName.equals("")) {
                 sourceDeviceName = "otro movil";
             }
-            Toast.makeText(this, "Envitamos " + sourceDeviceName + " A conectarse ", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Invitamos " + sourceDeviceName + " A conectarse ", Toast.LENGTH_LONG).show();
             wifiDirectHandler.initiateConnectToService(service);
         } else {
             Log.e(TAG, "Servicio no disponible");

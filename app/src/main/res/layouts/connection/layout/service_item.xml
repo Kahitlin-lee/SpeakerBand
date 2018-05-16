@@ -33,6 +33,6 @@
             android:layout_gravity="end"
             android:textAlignment="textEnd"
             android:textSize="20sp"
-            android:textColor="#2196F3" />
+            android:textColor="#424242" />
     </RelativeLayout>
 </LinearLayout>

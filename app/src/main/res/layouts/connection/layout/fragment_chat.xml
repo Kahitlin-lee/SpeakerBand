@@ -57,21 +57,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/cameraa" />
-        <ImageButton
-            android:id="@+id/songButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/sendd" />
-        <ImageButton
-            android:id="@+id/sincronizaButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/syncc" />
-        <ImageButton
-            android:id="@+id/play"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/playy" />
 
     </LinearLayout>
 </FrameLayout>

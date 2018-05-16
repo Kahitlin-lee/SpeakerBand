@@ -4,38 +4,41 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="6dp"
-    android:elevation="100dp">
+    android:elevation="100dp"
+    >
     <!-- layout para representar cada canción de la lista. -->
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="5dp"
-        >
+        android:background="#212121"
+            >
 
         <ImageButton
             android:id="@+id/play_pause"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            android:src="@android:drawable/ic_media_play"
+            android:src="@drawable/play_button"
             android:layout_gravity="center_vertical"
-            android:tint="@color/colorAccent"
+            android:tint="#FFFFFF"
             android:foregroundGravity="center_vertical"
             android:layout_marginLeft="4dp"
             android:layout_marginRight="8dp"
-            android:backgroundTint="@color/colorPrimary" />
+            android:backgroundTint="#212121" />
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="5dp"
+            android:backgroundTint="#757575"
             >
             <TextView
                 android:id="@+id/song_title"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#121200"
+                android:textColor="#EEEEEE"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -43,7 +46,7 @@
                 android:id="@+id/song_artist"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#430146"
+                android:textColor="#FAFAFA"
                 android:textSize="18sp" />
         </LinearLayout>
     </LinearLayout>

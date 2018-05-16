@@ -42,4 +42,6 @@
     <string name="type_message">Type message</string>
     <string name="send">➤</string>
     <string name="finding_services">Finding services</string>
+    <string name="abrir_chat">Chat</string>
+    <string name="abrir_sync_canciones">Canciones</string>
 </resources>

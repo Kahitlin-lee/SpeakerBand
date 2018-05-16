@@ -14,7 +14,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical"
-        android:background="#FF330000"
+        android:background="#212121"
         android:id="@+id/relativeLayoutMainContent">
 
         <TextView
@@ -48,7 +48,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:background="#FF330000"
+            android:background="#212121"
             tools:context=".MainActivity"
             android:layout_below="@id/rv"
             android:layout_alignParentBottom = "true"

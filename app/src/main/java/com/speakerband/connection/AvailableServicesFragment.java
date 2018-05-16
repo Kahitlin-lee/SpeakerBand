@@ -46,6 +46,7 @@ public class AvailableServicesFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_available_services, container, false);
         toolbar = (Toolbar) getActivity().findViewById(R.id.mainToolbar);
         deviceList = (ListView)rootView.findViewById(R.id.device_list);
+
         prepareResetButton(rootView);
         setServiceList();
         services.clear();

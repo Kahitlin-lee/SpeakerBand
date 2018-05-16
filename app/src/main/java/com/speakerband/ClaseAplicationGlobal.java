@@ -8,15 +8,29 @@ import java.util.List;
 public class ClaseAplicationGlobal extends Application {
 
 
+
+    public static ArrayList<Song> listSelection;
+    public static ArrayList<Song> listQueYaHasidoEnviada;
+    public static boolean estaEnElFragmentChat;
+    public static boolean estaEnElFragmentSong;
+
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        preferences = new SharedPreferencesClass();
+        listSelection = new ArrayList<Song>();
+        listQueYaHasidoEnviada = new ArrayList<Song>();
+
+    }
+
+
     // -------- Metodos que trabajan con  SharedPreferencesClass
     //Variable para el metodo relacionados con SharedPreferencesClass
     List<Song> _listSangDevice = null;
     ArrayList<Song> _realList = null;
     List<Song>  _listSelectionPreferences = null;
-    SharedPreferencesClass preferences = new SharedPreferencesClass();
-
-    public static ArrayList<Song> listSelection = new ArrayList<Song>();
-
+    SharedPreferencesClass preferences;
 
     //Si las preferencias no es nula la genera nuevamente con las canciones existentes
     public void generarNuevamentePreferencias() {

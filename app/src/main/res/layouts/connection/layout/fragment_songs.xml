@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="70sp"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="50dip"
+        android:transcriptMode="alwaysScroll"
+        android:listSelector="@android:color/transparent">
+    </ListView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dip"
+        android:layout_gravity="bottom"
+        android:gravity="center"
+        >
+
+
+        <ImageButton
+            android:id="@+id/songButton"
+            android:layout_width="100dip"
+            android:layout_height="50dip"
+            android:src="@drawable/sendd" />
+        <ImageButton
+            android:id="@+id/sincronizaButton"
+            android:layout_width="100dip"
+            android:layout_height="50dip"
+            android:src="@drawable/syncc" />
+        <ImageButton
+            android:id="@+id/play"
+            android:layout_width="100dip"
+            android:layout_height="50dip"
+            android:src="@drawable/playy" />
+
+    </LinearLayout>
+</FrameLayout>

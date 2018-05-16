@@ -13,6 +13,7 @@
             android:orientation="vertical"
             android:layout_marginTop="?attr/actionBarSize"
             android:paddingBottom="70sp"
+            android:background="#FAFAFA"
             tools:context="com.speakerband.MainActivity"
             tools:showIn="@layout/activity_main"
             >
@@ -31,6 +32,7 @@
                 style="@style/styleSwitchDefault"
                 android:id="@+id/noPromptServiceRegistrationSwitch"
                 android:text="@string/action_register_no_prompt"
+                android:background="#616161"
                 android:checked="false"
                 android:enabled="false"
                 android:visibility="invisible" />
@@ -39,6 +41,7 @@
                 style="@style/styleButtonDefault"
                 android:text="@string/action_discover_services"
                 android:id="@+id/discoverServicesButton"
+                android:background="#757575"
                 android:enabled="false" />
     </LinearLayout>
 

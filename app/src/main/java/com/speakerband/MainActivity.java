@@ -26,7 +26,7 @@ import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.speakerband.connection.ConnectionActivity;
+import com.speakerband.conexiones.ConnectionActivity;
 import com.speakerband.utils.UtilList;
 
 import java.util.ArrayList;

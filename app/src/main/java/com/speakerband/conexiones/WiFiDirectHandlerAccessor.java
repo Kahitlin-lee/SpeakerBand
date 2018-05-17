@@ -1,4 +1,4 @@
-package com.speakerband.network;
+package com.speakerband.conexiones;
 
 import com.speakerband.WifiBuddy.WifiDirectHandler;
 

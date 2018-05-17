@@ -1,4 +1,4 @@
-package com.speakerband.connection;
+package com.speakerband.conexiones;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -16,7 +16,7 @@ import android.widget.Switch;
 import com.speakerband.R;
 
 import java.util.HashMap;
-import edu.rit.se.wifibuddy.WifiDirectHandler;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 /**
  * EL  Fragment principal de la aplicación, que contiene los interruptores

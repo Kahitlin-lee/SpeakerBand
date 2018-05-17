@@ -1,4 +1,4 @@
-package com.speakerband.connection;
+package com.speakerband.conexiones;
 
 
 import android.content.BroadcastReceiver;
@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import edu.rit.se.wifibuddy.DnsSdService;
-import edu.rit.se.wifibuddy.WifiDirectHandler;
+import com.speakerband.WifiBuddy.DnsSdService;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 /**
  * ListFragment that shows a list of available discovered services

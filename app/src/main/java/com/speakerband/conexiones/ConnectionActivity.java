@@ -1,4 +1,4 @@
-package com.speakerband.connection;
+package com.speakerband.conexiones;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -23,8 +23,8 @@ import android.widget.Toast;
 
 import com.speakerband.R;
 
-import edu.rit.se.wifibuddy.DnsSdService;
-import edu.rit.se.wifibuddy.WifiDirectHandler;
+import com.speakerband.WifiBuddy.DnsSdService;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 /**
  * Actividad que  que es un contenedor para Fragment y la ActionBar.

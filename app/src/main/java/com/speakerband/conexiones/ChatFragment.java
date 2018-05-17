@@ -1,4 +1,4 @@
-package com.speakerband.connection;
+package com.speakerband.conexiones;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -51,8 +51,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.rit.se.wifibuddy.CommunicationManager;
-import edu.rit.se.wifibuddy.WifiDirectHandler;
+import com.speakerband.WifiBuddy.CommunicationManager;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 import static com.speakerband.network.MessageType.SONG_START;
 import static com.speakerband.ClaseAplicationGlobal.listSelection;

@@ -1,6 +1,7 @@
 package com.speakerband;
 
 import android.app.Application;
+import android.net.wifi.WifiManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,18 @@ public class ClaseAplicationGlobal extends Application {
 
     public static ArrayList<Song> listSelection = new ArrayList<Song>();
 
+    public static WifiManager wifiManager;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+    }
+
+    public WifiManager getWifiManager()
+    {
+        return wifiManager;
+    }
 
     //Si las preferencias no es nula la genera nuevamente con las canciones existentes
     public void generarNuevamentePreferencias() {

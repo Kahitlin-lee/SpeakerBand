@@ -12,6 +12,7 @@ android {
             ]
         }//7017cbf1a93f3f12befa9565a3697c2e00e7539d
     }
+
     compileSdkVersion 25
     buildToolsVersion '27.0.3'
     defaultConfig {

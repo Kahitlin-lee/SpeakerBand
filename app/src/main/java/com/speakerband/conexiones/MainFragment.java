@@ -16,6 +16,8 @@ import android.widget.Switch;
 import com.speakerband.R;
 
 import java.util.HashMap;
+
+import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 /**
@@ -29,7 +31,6 @@ public class MainFragment extends Fragment
     private Switch serviceRegistrationSwitch;
     private Switch noPromptServiceRegistrationSwitch;
     private Button discoverServicesButton;
-    private AvailableServicesFragment availableServicesFragment;
     private ConnectionActivity mainActivity;
     private Toolbar toolbar;
     private static final String TAG = WifiDirectHandler.TAG + "MainFragment";
@@ -110,10 +111,7 @@ public class MainFragment extends Fragment
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "\nDiscover Services Button Pressed");
-                if (availableServicesFragment == null) {
-                    availableServicesFragment = new AvailableServicesFragment();
-                }
-                mainActivity.replaceFragment(availableServicesFragment);
+                mainActivity.replaceFragmentAvailableServicesFragment();
             }
         });
 

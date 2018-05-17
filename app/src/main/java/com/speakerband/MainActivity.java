@@ -272,6 +272,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     protected void onStart()
     {
         super.onStart();
+        // en teoria al volver de la otra activity tiene q poner tab 0
+        initRecyclerView(0);
+
         if(playIntent == null)
         {
             playIntent = new Intent(this, MusicService.class);
@@ -312,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
         stopService(playIntent);
 
-        if (musicService != null ) {
+        if (musicService != null) {
             getApplicationContext().unbindService(musicConnection);
             musicService.unbindService(musicConnection);
             musicService = null;
@@ -529,9 +532,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     {
         switch (item.getItemId())
         {
-            case R.id.action_shuffle:
-                musicService.setMezclar();
-                break;
             case R.id.action_end:
                 musicService = null;
                 finish();

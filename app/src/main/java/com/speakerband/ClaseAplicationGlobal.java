@@ -9,20 +9,21 @@ import java.util.List;
 public class ClaseAplicationGlobal extends Application {
 
 
-    // -------- Metodos que trabajan con  SharedPreferencesClass
-    //Variable para el metodo relacionados con SharedPreferencesClass
-    List<Song> _listSangDevice = null;
-    ArrayList<Song> _realList = null;
-    List<Song>  _listSelectionPreferences = null;
-    SharedPreferencesClass preferences = new SharedPreferencesClass();
 
-    public static ArrayList<Song> listSelection = new ArrayList<Song>();
-
+    public static ArrayList<Song> listSelection;
+    public static ArrayList<Song> listQueYaHasidoEnviada;
+    public static boolean estaEnElFragmentChat;
+    public static boolean estaEnElFragmentSong;
     public static WifiManager wifiManager;
+
+
 
     @Override
     public void onCreate() {
         super.onCreate();
+        preferences = new SharedPreferencesClass();
+        listSelection = new ArrayList<Song>();
+        listQueYaHasidoEnviada = new ArrayList<Song>();
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
     }
 
@@ -30,6 +31,14 @@ public class ClaseAplicationGlobal extends Application {
     {
         return wifiManager;
     }
+
+
+    // -------- Metodos que trabajan con  SharedPreferencesClass
+    //Variable para el metodo relacionados con SharedPreferencesClass
+    List<Song> _listSangDevice = null;
+    ArrayList<Song> _realList = null;
+    List<Song>  _listSelectionPreferences = null;
+    SharedPreferencesClass preferences;
 
     //Si las preferencias no es nula la genera nuevamente con las canciones existentes
     public void generarNuevamentePreferencias() {

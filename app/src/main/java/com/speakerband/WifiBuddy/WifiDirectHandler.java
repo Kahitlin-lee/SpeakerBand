@@ -304,17 +304,30 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
     @Override
+    public boolean onUnbind(Intent intent) {
+        desregistrarTodaActividad();
+        return super.onUnbind(intent);
+    }
+
+    @Override
     public void onDestroy() {
+        desregistrarTodaActividad();
         super.onDestroy();
-        stopServiceDiscovery();
-        removeGroup();
-        removePersistentGroups();
-        removeService();
-        unregisterP2pReceiver();
-        unregisterP2p();
-        unregisterWifiReceiver();
-        unregisterWifi();
-        Log.i(TAG, "Wifi Handler service destroyed");
+    }
+
+    public void desregistrarTodaActividad()
+    {
+        if (wifiP2pManager != null) {
+            stopServiceDiscovery();
+            removeGroup();
+            removePersistentGroups();
+            removeService();
+            unregisterP2pReceiver();
+            unregisterP2p();
+            unregisterWifiReceiver();
+            unregisterWifi();
+            Log.i(TAG, "Wifi Handler service destroyed");
+        }
     }
 
     /**
@@ -693,6 +706,8 @@ public class WifiDirectHandler extends NonStopIntentService implements
     public IBinder onBind(Intent intent) {
         return binder;
     }
+
+
 
     @Override
     protected void onHandleIntent(Intent intent) {

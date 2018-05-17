@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
@@ -27,14 +26,12 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.speakerband.ClaseAplicationGlobal;
-import com.speakerband.MainActivity;
 import com.speakerband.R;
 import com.speakerband.Song;
+import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 
@@ -42,20 +39,11 @@ import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.speakerband.WifiBuddy.CommunicationManager;
 import com.speakerband.WifiBuddy.WifiDirectHandler;
-
-import static com.speakerband.network.MessageType.SONG_START;
-import static com.speakerband.ClaseAplicationGlobal.listSelection;
 
 
 
@@ -78,11 +66,6 @@ public class ChatFragment extends ListFragment
     //variables de los botones
     private Button sendButton;
     private ImageButton cameraButton;
-    private ImageButton sendSongButton;
-    private ImageButton playButton;
-    private ImageButton sincronizaButton;
-
-    private ProgressBar progressBarDos;
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
@@ -102,19 +85,10 @@ public class ChatFragment extends ListFragment
     {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
 
-        progressBarDos = (ProgressBar)view.findViewById(R.id.barraProgreso2);
-
         sendButton = (Button) view.findViewById(R.id.sendButton);
         sendButton.setEnabled(false);
 
         cameraButton = (ImageButton) view.findViewById(R.id.cameraButton);
-
-        //Agrego y anlazo el boton para pasar una cancion
-        sendSongButton = (ImageButton) view.findViewById(R.id.songButton);
-        // Boton que sicroniza las canciones
-        sincronizaButton = (ImageButton) view.findViewById(R.id.sincronizaButton);
-        // Boton que le da el play a las canciones
-        playButton = (ImageButton) view.findViewById(R.id.play);
 
         textMessageEditText = (EditText) view.findViewById(R.id.textMessageEditText);
         textMessageEditText.addTextChangedListener(new TextWatcher()
@@ -131,7 +105,7 @@ public class ChatFragment extends ListFragment
             }
         });
 
-        // COge la clase aplication general para todas 
+        // COge la clase aplication general para todas
         mApplication = (ClaseAplicationGlobal) getActivity().getApplication();
 
         //el adaptador es solo usado para los mensajes de texto
@@ -198,23 +172,6 @@ public class ChatFragment extends ListFragment
             }
         });
 
-        //evento del boton  enviar una cancion
-        sendSongButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                pushSong();
-            }
-        });
-
-        //evento del boton  reproducir la cancion desde el dispositivo lider
-        playButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v)
-            {
-                if (_communicationManager != null)
-                    playSign();
-            }
-        });
 
         toolbar = (Toolbar) getActivity().findViewById(R.id.mainToolbar);
 
@@ -239,8 +196,7 @@ public class ChatFragment extends ListFragment
         Song _song = null;
 
 
-        switch(message.messageType)
-        {
+        switch(message.messageType) {
             case TEXT:
                 Log.i(TAG, "Text message received");
                 //aca esta cogiendo el mensaje
@@ -255,34 +211,7 @@ public class ChatFragment extends ListFragment
                 //lo envia al metodo que crea nuevamente la imagen
                 loadPhoto(imageView, bitmap.getWidth(), bitmap.getHeight());
                 break;
-            //cancion
-            //Comienza a recibir la cancion
-            case SONG_START:
-                Log.i(TAG, "SongPath");
-                progressBarDos.setVisibility(View.VISIBLE);
-                try
-                {
-                    in = new ByteArrayInputStream(message.content);
-                    ObjectInputStream is = new ObjectInputStream(in);
-                    _song = loadSong(is);
-                    writeSong(_song);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                break;
-            //La cancion se termina de llegar
-            case SONG_END:
-                procesoDeGuardarPreferenciasEnUnHiloSecundario();
-                Log.i(TAG, "Han llegado todas las cancion");
-                Toast.makeText(getContext(),
-                        "Han llegado todas las cancion", Toast.LENGTH_SHORT).show();
-                escribirMenssgeEnElChat("Han llegado todas las cancion");
-                progressBarDos.setVisibility(View.GONE);
-                break;
         }
-        // matarTodosLoshilos();
-        //sendSongButton.setEnabled(true);
     }
 
     /**
@@ -291,7 +220,7 @@ public class ChatFragment extends ListFragment
      * e internamente en el otro metodo pushMenssage
      * @param message
      */
-    public void pullMessage(String message)
+    private void pullMessage(String message)
     {
         adapter.add(message);
         adapter.notifyDataSetChanged();
@@ -323,72 +252,6 @@ public class ChatFragment extends ListFragment
         envioMensajesAlOtroDispositivoParaDescarga(MessageType.IMAGE, byteArray);
         Log.i(TAG, "Attempting to send image");
     }
-
-    /**
-     * Envia la cancion trozo a trozo
-     */
-    public void pushSong()
-    {
-        byte[] byteArraySong = null;
-
-        progressBarDos.setVisibility(View.VISIBLE);
-
-        Thread thread;
-
-        //recorrerlo he ir enviando cancion a cancion
-        for(int  x = 0 ; x < listSelection.size() ; x++) {
-            listSelection.get(x).readFile();
-
-            byteArraySong = convertirObjetoArrayBytes(listSelection.get(x));
-
-            thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_START, byteArraySong);
-
-            if(dormirApp3Segundos(thread)) {
-                escribirMenssgeEnElChat("Se ha enviado una cancion" + listSelection.get(x).getTitle());
-                Toast.makeText(getContext(),
-                        "Se ha enviado una cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
-            } else {
-                escribirMenssgeEnElChat("No se ha enviado una cancion" + listSelection.get(x).getTitle());
-                Toast.makeText(getContext(),
-                        "No se ha podido enviar la cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        if(listSelection.size() <= 0)
-            Toast.makeText(getContext(),
-                    "No hay canciones para enviar", Toast.LENGTH_SHORT).show();
-
-
-        thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.SONG_END, byteArraySong);
-        if(thread != null)
-            thread.interrupt();
-
-        //sendSongButton.setEnabled(false);
-
-       progressBarDos.setVisibility(View.GONE);
-        //pd.dismiss();
-    }
-
-    /**
-     * Metodo que convierte cualquier objeto en un array de bytes
-     * @param object
-     * @return
-     */
-    public byte[] convertirObjetoArrayBytes (Object object)
-    {
-        //implementa un flujo de salida en el que los datos se escriben en una matriz de bytes
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        //convertir la cancion en bytes
-        try
-        {
-            ObjectOutputStream os = new ObjectOutputStream(stream);
-            os.writeObject(object);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return stream.toByteArray();
-    }
-
 
     /**
      * ArrayAdapter para administrar mensajes de chat.
@@ -487,101 +350,8 @@ public class ChatFragment extends ListFragment
         imageDialog.show();
     }
 
-    //Variable para los metodos para enviar alchivo a trozos uasadas en los metodos loadSongPath,
-    // loadSong, writeSong,
-    private ArrayList<byte[]> arrayTrozos;
-
-    /**
-     * Comenza a recibir la cancCION
-     * lee el objeto
-     * @param is
-     * @throws IOException
-     */
-    private Song loadSong(ObjectInputStream is) throws IOException
-    {
-        Song _song = null;
-        try
-        {
-            _song = (Song)is.readObject();
-        } catch (IOException e) {
-            e.printStackTrace();//writeabortemexeption
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return _song;
-    }
-
-    /**
-     * Escribe el array de canciones en memoria
-     */
-    private void writeSong(Song s)
-    {
-        try
-        {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            outputStream.write(s.getSongBytes());
-            s.setSongBytes(outputStream.toByteArray());
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        s.setUri(writeSongOnExternalMemory(s , "Download"));
-
-        if (!listSelection.contains(s))
-            listSelection.add(s);
-
-    }
-
-
-    /**
-     * Metodo que escribe un archivo de musica en la memoria externa
-     * TODO mejorar esta explicaicon del metodo
-     * @param song
-     * @param nombreFicheroDondeSeEscribe nombre del fichero donde se escribira la cancion
-     * @return
-     */
-    public String writeSongOnExternalMemory(Song song, String nombreFicheroDondeSeEscribe)
-    {
-        File path = Environment.getExternalStoragePublicDirectory(nombreFicheroDondeSeEscribe);
-        File file = new File(path, song.getTitleWithExtension());
-        FileOutputStream fileOutputStream = null; // save
-        if ((!file.exists()) && path.exists()) {
-            try {
-                fileOutputStream = new FileOutputStream(file);
-                fileOutputStream.write(song.getSongBytes());
-                fileOutputStream.flush();
-                fileOutputStream.close();
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            // Get length of file in bytes
-            long fileSizeInBytes = file.length();
-            // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
-            long fileSizeInKB = fileSizeInBytes / 1024;
-            // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-            long fileSizeInMB = fileSizeInKB / 1024;
-
-            escribirMenssgeEnElChat("Se ha guardado la cancion " + song.getTitle() + " en la carpeta de descargas");
-
-            return file.getAbsolutePath();
-        }
-        return null;
-    }
-
-    private void playSign()
-    {
-       MainActivity.musicService.setSong(listSelection.get(0));
-       MainActivity.musicService.playSong();
-    }
-
-    // TODOS los metodos que usan hilos.
-
-    ArrayList <Thread> threads = new ArrayList();
+    // TODOS los metodos que usan hilos Clases.
+    ArrayList <Thread> threadsDeLaClas = new ArrayList();
 
     /**
      * Metodo que simula la descarga de 4 archivos al pulsar el botón de descarga
@@ -605,53 +375,10 @@ public class ChatFragment extends ListFragment
         };
 
         thread = new Thread(runnable);
-        threads.add(thread);
+        threadsDeLaClas.add(thread);
         thread.start();
 
         return thread;
-    }
-
-    /**
-     *
-     */
-    public Boolean dormirApp3Segundos(Thread t)
-    {
-        try {
-            Thread.sleep (3000);
-            if(!t.isInterrupted()) {
-                t.interrupt();
-            }
-        }
-        catch (InterruptedException ex) {
-            Log.d ("", ex.toString ());
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     *
-     */
-    public void procesoDeGuardarPreferenciasEnUnHiloSecundario()
-    {
-        Thread thread;
-
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (listSelection!=null) {
-                        mApplication.eliminarYRegenrearLaPreferencess(listSelection);
-                    }
-                }catch (Exception e) {
-                    Log.e(TAG, "Error" + e.getMessage());
-                }
-            }
-        };
-
-        thread = new Thread(runnable);
-        threads.add(thread);
-        thread.start();
     }
 
     @Override
@@ -667,7 +394,7 @@ public class ChatFragment extends ListFragment
     }
 
     public void matarTodosLoshilos() {
-        for (Thread tr : threads ) {
+        for (Thread tr : threadsDeLaClas ) {
             if(tr != null)
                 tr.interrupt();
         }

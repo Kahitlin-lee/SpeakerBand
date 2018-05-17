@@ -16,7 +16,7 @@
             android:id="@+id/mainToolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorToolbar"
+            android:background="#424242"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
     </android.support.design.widget.AppBarLayout>
 
@@ -31,7 +31,59 @@
             android:layout_height="wrap_content"
             android:text="Device name\nConnection status"
             android:id="@+id/thisDeviceInfoTextView"
-            android:textColor="#ffffff"
+            android:textColor="#FAFAFA"
             android:textAlignment="center" />
+    </LinearLayout>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/layoutbotones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:paddingBottom="140sp"
+        android:layout_marginTop="100dp"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:id="@+id/findingService"
+            android:text="@string/finding_services"
+            android:layout_centerVertical="true" >
+        </TextView>
+
+        <Button
+            android:id="@+id/chat"
+            style="@android:style/Widget.DeviceDefault.Light.Button.Borderless.Small"
+            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:enabled="true"
+            android:background="@drawable/mi_boton"
+            android:text="@string/abrir_chat" />
+
+        <Button
+            android:id="@+id/sincronizarCanciones"
+            style="@android:style/Widget.DeviceDefault.Light.Button.Borderless.Small"
+            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:enabled="true"
+            android:background="@drawable/mi_boton"
+            android:text="@string/abrir_sync_canciones"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:id="@+id/explicaBotones"
+            android:text="@string/finding_services"
+            android:layout_centerVertical="true" >
+        </TextView>
+
     </LinearLayout>
 </FrameLayout>

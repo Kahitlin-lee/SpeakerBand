@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.speakerband.WifiBuddy.DnsSdService;
+import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 /**
@@ -46,6 +47,7 @@ public class AvailableServicesFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_available_services, container, false);
         toolbar = (Toolbar) getActivity().findViewById(R.id.mainToolbar);
         deviceList = (ListView)rootView.findViewById(R.id.device_list);
+
         prepareResetButton(rootView);
         setServiceList();
         services.clear();

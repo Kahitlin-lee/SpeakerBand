@@ -4,15 +4,8 @@
     tools:context="com.speakerband.MainActivity">
 
     <item
-        android:id="@+id/action_shuffle"
-        android:icon="@drawable/rand"
-        android:orderInCategory="1"
-        app:showAsAction="always"
-        android:title="@string/titleShuffle"/>
-
-    <item
         android:id="@+id/action_end"
-        android:icon="@drawable/end"
+        android:icon="@drawable/cancel3"
         android:orderInCategory="2"
         app:showAsAction="always"
         android:title="@string/titleEnd"/>

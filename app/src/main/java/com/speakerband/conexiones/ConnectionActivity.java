@@ -1,4 +1,4 @@
-package com.speakerband.connection;
+package com.speakerband.conexiones;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -27,8 +27,10 @@ import android.widget.Toast;
 import com.speakerband.MainActivity;
 import com.speakerband.R;
 
-import edu.rit.se.wifibuddy.DnsSdService;
-import edu.rit.se.wifibuddy.WifiDirectHandler;
+import com.speakerband.WifiBuddy.DnsSdService;
+import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
+import com.speakerband.connection.SongsFragment;
 
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentChat;
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentSong;
@@ -321,23 +323,28 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
     protected void onPause() {
         super.onPause();
-//        Log.i(TAG, "Pausing MainActivity");
-//        if (wifiDirectHandlerBound) {
-//            Log.i(TAG, "WifiDirectHandler service unbound");
-//            unbindService(wifiServiceConnection);
-//            wifiDirectHandlerBound = false;
-//        }
+        Log.i(TAG, "Pausing MainActivity");
+        if (wifiDirectHandlerBound) {
+            Log.i(TAG, "WifiDirectHandler service unbound");
+            unbindService(wifiServiceConnection);
+            wifiDirectHandlerBound = false;
+        }
         Log.i(TAG, "MainActivity paused");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        //   super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "Resuming MainActivity");
-//        Intent intent = new Intent(this, WifiDirectHandler.class);
-//        if(!wifiDirectHandlerBound) {
-//            bindService(intent, wifiServiceConnection, BIND_AUTO_CREATE);
-//        }
+        Intent intent = new Intent(this, WifiDirectHandler.class);
+        if(!wifiDirectHandlerBound) {
+            bindService(intent, wifiServiceConnection, BIND_AUTO_CREATE);
+        }
         Log.i(TAG, "MainActivity resumed");
     }
 
@@ -354,14 +361,14 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     protected void onStop() {
         super.onStop();
         Log.i(TAG, "Stopping MainActivity");
-        // TODO no se si esto dara problemas aca
-//        getApplicationContext().unbindService(wifiServiceConnection);
-//        if(wifiDirectHandlerBound) {
-//            Intent intent = new Intent(this, WifiDirectHandler.class);
-//            stopService(intent);
-//            unbindService(wifiServiceConnection);
-//            wifiDirectHandlerBound = false;
-//        }
+
+        //getApplicationContext().unbindService(wifiServiceConnection);
+        if(wifiDirectHandlerBound) {
+            Intent intent = new Intent(this, WifiDirectHandler.class);
+            stopService(intent);
+            unbindService(wifiServiceConnection);
+            wifiDirectHandlerBound = false;
+        }
         Log.i(TAG, "MainActivity stopped");
     }
 
@@ -413,10 +420,10 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
                 // ELiminamos los fragment que ya no usamos de la pila/cola
                 if(mainFragment != null)
-                    getSupportFragmentManager().beginTransaction().remove(mainFragment).commit();
+                    getSupportFragmentManager().beginTransaction().remove(mainFragment).commitAllowingStateLoss();
 
                 if(availableServicesFragment != null)
-                    getSupportFragmentManager().beginTransaction().remove(availableServicesFragment).commit();
+                    getSupportFragmentManager().beginTransaction().remove(availableServicesFragment).commitAllowingStateLoss();
 
                 // crea los que si usamos
                 if (chatFragment == null) {

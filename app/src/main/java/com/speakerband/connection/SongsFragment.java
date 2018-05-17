@@ -24,6 +24,8 @@ import com.speakerband.ClaseAplicationGlobal;
 import com.speakerband.MainActivity;
 import com.speakerband.R;
 import com.speakerband.Song;
+import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 
@@ -39,13 +41,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import edu.rit.se.wifibuddy.CommunicationManager;
-import edu.rit.se.wifibuddy.WifiDirectHandler;
-
 import static com.speakerband.ClaseAplicationGlobal.listQueYaHasidoEnviada;
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
 import static com.speakerband.network.MessageType.SONG_START;
+import com.speakerband.WifiBuddy.CommunicationManager;
 
 public class SongsFragment extends ListFragment
 {

@@ -1,4 +1,4 @@
-package com.speakerband.connection;
+package com.speakerband.conexiones;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -12,8 +12,8 @@ import com.speakerband.R;
 import java.util.List;
 import java.util.Map;
 
-import edu.rit.se.wifibuddy.DnsSdService;
-import edu.rit.se.wifibuddy.DnsSdTxtRecord;
+import com.speakerband.WifiBuddy.DnsSdService;
+import com.speakerband.WifiBuddy.DnsSdTxtRecord;
 
 /**
  *

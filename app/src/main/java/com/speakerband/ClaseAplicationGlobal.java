@@ -1,6 +1,7 @@
 package com.speakerband;
 
 import android.app.Application;
+import android.net.wifi.WifiManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,8 @@ public class ClaseAplicationGlobal extends Application {
     public static ArrayList<Song> listQueYaHasidoEnviada;
     public static boolean estaEnElFragmentChat;
     public static boolean estaEnElFragmentSong;
+    public static WifiManager wifiManager;
+
 
 
     @Override
@@ -21,7 +24,12 @@ public class ClaseAplicationGlobal extends Application {
         preferences = new SharedPreferencesClass();
         listSelection = new ArrayList<Song>();
         listQueYaHasidoEnviada = new ArrayList<Song>();
+        wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+    }
 
+    public WifiManager getWifiManager()
+    {
+        return wifiManager;
     }
 
 

@@ -1,4 +1,4 @@
-package com.speakerband.connection;
+package com.speakerband.conexiones;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -31,6 +31,7 @@ import android.widget.TextView;
 import com.speakerband.ClaseAplicationGlobal;
 import com.speakerband.R;
 import com.speakerband.Song;
+import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 
@@ -41,8 +42,8 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.rit.se.wifibuddy.CommunicationManager;
-import edu.rit.se.wifibuddy.WifiDirectHandler;
+import com.speakerband.WifiBuddy.CommunicationManager;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 
 

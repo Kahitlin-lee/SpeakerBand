@@ -1,4 +1,4 @@
-package com.speakerband.connection;
+package com.speakerband.conexiones;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -16,7 +16,7 @@ import com.speakerband.R;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import edu.rit.se.wifibuddy.WifiDirectHandler;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 /**
  * DialogFragment that shows the WifiDirectHandler log messages

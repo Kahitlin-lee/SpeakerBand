@@ -48,14 +48,14 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".connection.ConnectionActivity"
+        <activity android:name=".conexiones.ConnectionActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
 
         <service android:name="com.speakerband.MusicService" />
         <!-- TODO No sé si este servicio nos va a dar problemas ya que se importa desde la librería directamente-->
-        <service android:name="edu.rit.se.wifibuddy.WifiDirectHandler" />
+        <service android:name="com.speakerband.WifiBuddy.WifiDirectHandler" />
 
     </application>
 </manifest>

@@ -26,7 +26,7 @@ import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.speakerband.connection.ConnectionActivity;
+import com.speakerband.conexiones.ConnectionActivity;
 import com.speakerband.utils.UtilList;
 
 import java.util.ArrayList;
@@ -275,6 +275,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         // en teoria al volver de la otra activity tiene q poner tab 0
         initRecyclerView(0);
 
+        //TODO El bug está relacionado con playIntent porque
         if(playIntent == null)
         {
             playIntent = new Intent(this, MusicService.class);
@@ -316,8 +317,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         stopService(playIntent);
 
         if (musicService != null) {
-            getApplicationContext().unbindService(musicConnection);
-            musicService.unbindService(musicConnection);
+            musicService.unbindService(musicConnection);  //TODO Aquí esta el bug cuando cierras la app,
+                                                          //TODO dice que no está unido, raro, porque sí lo está!!!
             musicService = null;
         }
 

@@ -99,8 +99,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                     chatFragment = new ChatFragment();
                 }
                 estaEnElFragmentChat = true;
-                replaceFragment(chatFragment);
                 desapareceLayour();
+                replaceFragment(chatFragment);
             }
         });
 
@@ -113,8 +113,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 songsFragment = new SongsFragment();
                 }
                 estaEnElFragmentSong= true;
-                replaceFragment(songsFragment);
                 desapareceLayour();
+                replaceFragment(songsFragment);
             }
         });
     }

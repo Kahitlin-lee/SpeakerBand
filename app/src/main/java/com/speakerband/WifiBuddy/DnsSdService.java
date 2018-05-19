@@ -19,7 +19,9 @@ public class DnsSdService{
 
     public String getInstanceName() { return instanceName; }
     public WifiP2pDevice getSrcDevice() {
-        return srcDevice;
+        //if(srcDevice!=null)
+        // TODO reresa nulo que lo vea juanpe
+            return srcDevice;
     }
 
     @Override

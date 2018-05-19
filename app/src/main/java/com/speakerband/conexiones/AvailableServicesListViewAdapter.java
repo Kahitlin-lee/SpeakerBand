@@ -8,12 +8,11 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.speakerband.R;
+import com.speakerband.WifiBuddy.DnsSdService;
+import com.speakerband.WifiBuddy.DnsSdTxtRecord;
 
 import java.util.List;
 import java.util.Map;
-
-import com.speakerband.WifiBuddy.DnsSdService;
-import com.speakerband.WifiBuddy.DnsSdTxtRecord;
 
 /**
  *
@@ -42,7 +41,7 @@ class AvailableServicesListViewAdapter extends BaseAdapter
         TextView deviceInfoTextView = (TextView) convertView.findViewById(R.id.deviceInfo);
         TextView connectTextView = (TextView) convertView.findViewById(R.id.connect);
         connectTextView.setText("Connect");
-
+        //TODO peta regresa null
         String sourceDeviceName = service.getSrcDevice().deviceName;
         if (sourceDeviceName.equals("")) {
             sourceDeviceName = "Android Device";

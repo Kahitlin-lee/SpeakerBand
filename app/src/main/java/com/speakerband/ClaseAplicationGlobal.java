@@ -12,6 +12,7 @@ public class ClaseAplicationGlobal extends Application {
 
     public static ArrayList<Song> listSelection;
     public static ArrayList<Song> listQueYaHasidoEnviada;
+    public static ArrayList<Song> listQueYaHanLlegado;
     public static boolean estaEnElFragmentChat;
     public static boolean estaEnElFragmentSong;
     public static WifiManager wifiManager;
@@ -66,10 +67,8 @@ public class ClaseAplicationGlobal extends Application {
                     && !_listSelectionPreferences.isEmpty())
                 for (Song s : _listSangDevice) {
                     for (Song sS : _listSelectionPreferences) {
-                        if (sS.getUri() != null && s.getUri() != null) {
-                            if (sS.getUri().equals(s.getUri())) {
-                                _realList.add(s);
-                            }
+                        if (sS.getUri().equals(s.getUri())) {
+                            _realList.add(s);
                         }
                     }
                 }

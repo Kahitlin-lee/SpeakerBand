@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.List;
 
 public class SharedPreferencesClass
 {
+    @Expose
     private static final String LIST_SELECTION = "LIST_SELECTION";
 
     public SharedPreferencesClass() {
@@ -43,6 +45,9 @@ public class SharedPreferencesClass
         editor.putString(LIST_SELECTION, jsonFavorites);
 
         editor.apply();
+
+
+
     }
 
     /**

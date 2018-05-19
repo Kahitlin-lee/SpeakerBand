@@ -6,6 +6,8 @@ package com.speakerband;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 
+import com.google.gson.annotations.Expose;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,13 +22,21 @@ public class Song implements Serializable
 {
     // Dentro de la declaración de la clase, agrega tres variables de instancia para
     // los datos que deseamos guardar de cada pista
+    @Expose
     private long id;
+    @Expose
     private String title;
+    @Expose
     private String album;
+    @Expose
     private String artist;
+    @Expose
     private String uri;
+    @Expose
     private byte[] songFile;
+    @Expose
     private String titleWithExtension;
+    @Expose
     private long songSize;
 
     /**

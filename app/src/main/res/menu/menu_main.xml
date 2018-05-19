@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.speakerband.MainActivity">
 
+
     <item
         android:id="@+id/action_end"
         android:icon="@drawable/cancel3"

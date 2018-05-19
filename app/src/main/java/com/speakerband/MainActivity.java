@@ -73,9 +73,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         //variables que se ocultan y se muestran dependiendo de si hay cancioones en las listas o no
         textListSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
-        textListSelectionEmpty.setVisibility(View.GONE);
+        textListSelectionEmpty.setVisibility(View.INVISIBLE);
         textListEmpty = (TextView) findViewById(R.id.list_empty);
-        textListEmpty.setVisibility(View.GONE);
+        textListEmpty.setVisibility(View.INVISIBLE);
 
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
@@ -124,8 +124,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         //TODO no funciona correctamente y estoy arta de mirarlo y saber por que
         showHideTextDependingOnList(textListEmpty, songList);
-        textListSelectionEmpty.setVisibility(View.GONE);
-        if (songList == listSelection) {
+        textListSelectionEmpty.setVisibility(View.INVISIBLE);
+        if (songList.equals(listSelection)) {
             showHideTextDependingOnList(textListSelectionEmpty, songList);
         }
     }
@@ -138,10 +138,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     private void showHideTextDependingOnList(TextView text, List<Song> songList)
     {
-        if(songList.isEmpty() || songList == null) {
+        if(songList.isEmpty()) {
             text.setVisibility(View.VISIBLE);
         }else{
-            text.setVisibility(View.GONE);
+            text.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -250,6 +250,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             musicIsConnected = true;
         }
 
+        public boolean isServiceConnected() {
+            musicIsConnected = false;
+            return musicIsConnected;
+        }
+
         /**
          * Metodo por si nos desconectamos el servicio
          * @param name
@@ -318,9 +323,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         stopService(playIntent);
 
         if (musicService != null) {
-            musicService.unbindService(musicConnection);  //TODO Aquí esta el bug cuando cierras la app,
-                                                          //TODO dice que no está unido, raro, porque sí lo está!!!
-            musicService = null;
+            if (musicConnection != null) {
+                if(musicIsConnected) {
+                    getApplicationContext().unbindService(musicConnection);
+                    musicService.unbindService(musicConnection);  //TODO Aquí esta el bug cuando cierras la app,
+                    //TODO dice que no está unido, raro, porque sí lo está!!!
+                    musicService = null;
+                }
+            }
         }
 
         super.onDestroy();
@@ -489,7 +499,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 String thisUri = _musicCursor.getString(uriDataColumn);
 
                 song = new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri);
-                if (_currentList != null) {
+                if (_currentList != null && !_currentList.isEmpty()) {
                     for (Song s : _currentList)
                     {
                         if (s.getUri().equals(song.getUri())) {
@@ -604,7 +614,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public void start()
     {
-        musicService.pausePlayer();
+        musicService.pausePlay();
     }
 
     /**
@@ -614,7 +624,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public void pause()
     {
         playbackPaused = true;
-        musicService.pausePlayer();
+        musicService.pausePlay();
     }
 
     /**

@@ -50,7 +50,10 @@ public class MusicService extends Service implements
     public static final String BROADCAST_PLAYBACK_STOP = "stop";
     public static final String BROADCAST_PLAYBACK_PAUSE = "pause";
 
+    private boolean isPrepared = false;
+
     /**
+     *
      * Para la manipulación de notificaciones
      */
     final BroadcastReceiver broadcastReceiver = new BroadcastReceiver()
@@ -246,7 +249,7 @@ public class MusicService extends Service implements
         notIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendInt = PendingIntent.getActivity(this, 0,
                 notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
+        isPrepared = true;
         showNotification();
         //startForeground(NOTIFY_ID, not);
     }
@@ -334,7 +337,7 @@ public class MusicService extends Service implements
     /**
      *
      */
-    public void pausePlayer(){
+    public void pausePlay(){
         if(mediaPlayer.isPlaying())
             mediaPlayer.pause();
         else
@@ -344,7 +347,7 @@ public class MusicService extends Service implements
     /**
      *
      */
-    public void pause(){
+    public void pausar(){
         mediaPlayer.pause();
     }
 
@@ -420,8 +423,14 @@ public class MusicService extends Service implements
     @Override
     public void onDestroy()
     {
-        stopForeground(true);
-        nm.cancel(NOTIFY_ID);
-        mediaPlayer.stop();
+        if(nm!=null){
+            stopForeground(true);
+            nm.cancel(NOTIFY_ID);
+            mediaPlayer.stop();
+            stopForeground(true);
+            unregisterReceiver(broadcastReceiver);
+        }
+        super.onDestroy();
+
     }
 }

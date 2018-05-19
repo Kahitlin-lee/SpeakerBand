@@ -415,6 +415,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 layoutBotones.setVisibility(View.VISIBLE);
 
                 // ELiminamos los fragment que ya no usamos de la pila/cola
+                // TODO     java.lang.IllegalStateException: Activity has been destroyed
                 if(mainFragment != null)
                     getSupportFragmentManager().beginTransaction().remove(mainFragment).commitAllowingStateLoss();
 

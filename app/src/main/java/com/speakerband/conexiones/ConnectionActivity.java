@@ -24,17 +24,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.speakerband.MainActivity;
 import com.speakerband.R;
-
 import com.speakerband.WifiBuddy.DnsSdService;
 import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.WifiBuddy.WifiDirectHandler;
-import com.speakerband.connection.SongsFragment;
 
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentChat;
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentSong;
-import static com.speakerband.ClaseAplicationGlobal.listQueYaHasidoEnviada;
 
 /**
  * Actividad que  que es un contenedor para Fragment y la ActionBar.
@@ -471,11 +467,9 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             chatFragment.getView().setVisibility(View.INVISIBLE);
             aparececeLayour();
             estaEnElFragmentChat = false;
-        }else  {
+        } else {
             super.onBackPressed();
-
-            listQueYaHasidoEnviada.clear();
-            startActivity(new Intent(ConnectionActivity.this, MainActivity.class));
+            finish();
         }
     }
 }

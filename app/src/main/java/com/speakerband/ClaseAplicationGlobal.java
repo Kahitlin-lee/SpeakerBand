@@ -21,7 +21,7 @@ public class ClaseAplicationGlobal extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        preferences = new SharedPreferencesClass();
+
         listSelection = new ArrayList<Song>();
         listQueYaHasidoEnviada = new ArrayList<Song>();
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -38,12 +38,13 @@ public class ClaseAplicationGlobal extends Application {
     List<Song> _listSangDevice = null;
     ArrayList<Song> _realList = null;
     List<Song>  _listSelectionPreferences = null;
-    SharedPreferencesClass preferences;
+    SharedPreferencesClass preferences = new SharedPreferencesClass();
 
     //Si las preferencias no es nula la genera nuevamente con las canciones existentes
-    public void generarNuevamentePreferencias() {
+    public void generarNuevamentePreferenciasYListSeleccion() {
         if(preferences.getListSelectionPreferences(getApplicationContext()) != null) {
             eliminarYRegenrearLaPreferencess(saberSiExisteLasCancionesDeListaDePreferenciasEnELMovil());
+            listSelection = saberSiExisteLasCancionesDeListaDePreferenciasEnELMovil();
         }
     }
 

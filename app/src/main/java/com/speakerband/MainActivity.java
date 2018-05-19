@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         //variables que se ocultan y se muestran dependiendo de si hay cancioones en las listas o no
         textListSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
         textListSelectionEmpty.setVisibility(View.GONE);
@@ -81,7 +82,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         requerirPermisos.showWarningWhenNeeded(MainActivity.this, getIntent());
 
         mApplication = (ClaseAplicationGlobal) getApplicationContext ();
-        mApplication.generarNuevamentePreferencias();
+        // TODO arreglar que las preferencias tarden tanto siempre
+        mApplication.generarNuevamentePreferenciasYListSeleccion();
 
         //Tabs
         tabs();
@@ -174,14 +176,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         public void onLongClick(View v, int position)
         {
             song = songList.get(position);
-            if(!listSelection.contains(song)) {
+            if (!listSelection.contains(song)) {
                 listSelection.add(song);
                 //Agregamos la nueva cancion a SharedPreferencesClass desde La clase global aplication
                 mApplication.agregarUnaCancionAPreferencess(song);
                 Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
-            } else {
+            } else
                 Toast.makeText(MainActivity.this, R.string.song_exist_list_selection, Toast.LENGTH_SHORT).show();
-            }
         }
     };
 

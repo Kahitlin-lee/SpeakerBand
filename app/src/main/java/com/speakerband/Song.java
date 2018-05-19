@@ -3,11 +3,15 @@ package com.speakerband;
 /**
  * Created by g_electra on 26/9/17.
  */
+import android.os.Build;
+import android.support.annotation.RequiresApi;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * He hecho la clase Serializable de caso contrario saltaria la NotSerializableException
@@ -160,10 +164,35 @@ public class Song implements Serializable
         return uri;
     }
 
-
-
-
     public String getTitleWithExtension() { return titleWithExtension; }
 
     public void setUri (String uriuri) { this.uri = uriuri; }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object)
+            return true;
+        if (!(object instanceof Song))
+            return false;
+
+        Song that = (Song) object;
+        return super.equals(that)
+                && this.id == that.id
+                && this.title.equals(that.title)
+                && this.album.equals(that.album)
+                && this.artist.equals(that.artist)
+                && this.uri.equals(that.uri);
+    }
+
+    // just omitted null checks
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, title, album, artist, uri);
+    }
+
+
+
+
 }

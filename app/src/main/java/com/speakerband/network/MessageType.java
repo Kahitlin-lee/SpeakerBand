@@ -16,5 +16,9 @@ public enum MessageType
     //Tipo de cuando ya a terminado de enviar la cancion
     SONG_END,
     //Señal para que re reproduzcan las canciones
-    PLAY
+    PLAY,
+
+    PREPARE_PLAY,
+
+    PREPARADO
 }

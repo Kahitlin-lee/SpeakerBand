@@ -275,7 +275,6 @@ public class MusicService extends Service implements
                 .setOngoing(true)
                 .setContentIntent(contentIntent)  // El intentdel click de entrada
                 .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), MainActivity.class), 0))
-                .addAction(R.drawable.stop3, "Stop", makePendingIntent(BROADCAST_PLAYBACK_STOP))
                 .addAction(R.drawable.pause, "Pause/Play", makePendingIntent(BROADCAST_PLAYBACK_PAUSE));
 
         //nm.notify(NOTIFY_ID, notification.build( )); al usar este sigue cusando elimino la app
@@ -340,6 +339,13 @@ public class MusicService extends Service implements
             mediaPlayer.pause();
         else
             mediaPlayer.start();
+    }
+
+    /**
+     *
+     */
+    public void pause(){
+        mediaPlayer.pause();
     }
 
     /**

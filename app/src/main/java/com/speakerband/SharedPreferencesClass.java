@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.Expose;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +16,8 @@ import java.util.List;
 
 public class SharedPreferencesClass
 {
-    @Expose
     private static final String LIST_SELECTION = "LIST_SELECTION";
+    private Gson gson = new Gson();
 
     public SharedPreferencesClass() {
 
@@ -39,15 +38,11 @@ public class SharedPreferencesClass
                 Context.MODE_PRIVATE);
         editor = settings.edit();
 
-        Gson gson = new Gson();
         String jsonFavorites = gson.toJson(listSelectionPreferences);
 
         editor.putString(LIST_SELECTION, jsonFavorites);
 
         editor.apply();
-
-
-
     }
 
     /**
@@ -93,7 +88,6 @@ public class SharedPreferencesClass
 
         if (settings.contains(LIST_SELECTION)) {
             String jsonFavorites = settings.getString(LIST_SELECTION, null);
-            Gson gson = new Gson();
             if(!jsonFavorites.equals(null)) {
                 Song[] favoriteItems = gson.fromJson(jsonFavorites,
                         Song[].class);

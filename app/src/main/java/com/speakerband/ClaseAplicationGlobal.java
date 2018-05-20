@@ -3,6 +3,8 @@ package com.speakerband;
 import android.app.Application;
 import android.net.wifi.WifiManager;
 
+import com.speakerband.utils.UtilList;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +14,6 @@ public class ClaseAplicationGlobal extends Application {
 
     public static ArrayList<Song> listSelection;
     public static ArrayList<Song> listQueYaHasidoEnviada;
-    public static ArrayList<Song> listQueYaHanLlegado;
     public static boolean estaEnElFragmentChat;
     public static boolean estaEnElFragmentSong;
     public static WifiManager wifiManager;
@@ -45,7 +46,8 @@ public class ClaseAplicationGlobal extends Application {
     public void generarNuevamentePreferenciasYListSeleccion() {
         if(preferences.getListSelectionPreferences(getApplicationContext()) != null) {
             eliminarYRegenrearLaPreferencess(saberSiExisteLasCancionesDeListaDePreferenciasEnELMovil());
-            listSelection = saberSiExisteLasCancionesDeListaDePreferenciasEnELMovil();
+            UtilList.sortByName(saberSiExisteLasCancionesDeListaDePreferenciasEnELMovil());
+            listSelection = (ArrayList<Song>) UtilList.sortByName(saberSiExisteLasCancionesDeListaDePreferenciasEnELMovil());
         }
     }
 
@@ -95,6 +97,14 @@ public class ClaseAplicationGlobal extends Application {
      */
     public void agregarUnaCancionAPreferencess(Song song) {
         preferences.addUnaSongListSelectionPreferences(getApplicationContext(), song);
+    }
+
+    /**
+     * Agrega una cancion a la preferencias desde cualquier parte de la aplicacion
+     * @param
+     */
+    public void saveNuevaListaPreferencess(ArrayList<Song> _nuevaLista) {
+        eliminarYRegenrearLaPreferencess(_nuevaLista);
     }
 
     /**

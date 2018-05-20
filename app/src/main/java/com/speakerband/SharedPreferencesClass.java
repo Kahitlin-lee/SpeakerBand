@@ -5,7 +5,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +39,9 @@ public class SharedPreferencesClass
         settings = context.getSharedPreferences(LIST_SELECTION,
                 Context.MODE_PRIVATE);
         editor = settings.edit();
+
+        //Comprobaremos que las canciones no contienen el array de bytes de la canción al completo.
+        listSelectionPreferences=comprobarListaCanciones(listSelectionPreferences);
 
         String jsonFavorites = gson.toJson(listSelectionPreferences);
 
@@ -81,22 +86,46 @@ public class SharedPreferencesClass
     protected ArrayList<Song> getListSelectionPreferences(Context context)
     {
         SharedPreferences settings;
-        List<Song> listSelectionPreferences;
 
         settings = context.getSharedPreferences(LIST_SELECTION,
                 Context.MODE_PRIVATE);
 
         if (settings.contains(LIST_SELECTION)) {
             String jsonFavorites = settings.getString(LIST_SELECTION, null);
+
             if(!jsonFavorites.equals(null)) {
-                Song[] favoriteItems = gson.fromJson(jsonFavorites,
-                        Song[].class);
-                listSelectionPreferences = Arrays.asList(favoriteItems);
-                listSelectionPreferences = new ArrayList<Song>(listSelectionPreferences);
-                return (ArrayList<Song>) listSelectionPreferences;
+//                Song[] favoriteItems = gson.fromJson(jsonFavorites, Song[].class);
+//                listSelectionPreferences = Arrays.asList(favoriteItems);
+//                listSelectionPreferences = new ArrayList<Song>(listSelectionPreferences);
+                Type type = new TypeToken<ArrayList<Song>>() {}.getType();
+                ArrayList<Song> arrayList = gson.fromJson(jsonFavorites, type);
+
+                return arrayList;
             } else
             return null;
         } else
             return null;
     }
+
+    //Comprobar que la lista de canciones no contengan los bites de la canción en sí para
+    //evitar guardarlos en SharedPreferences.
+    public  ArrayList<Song> comprobarListaCanciones (ArrayList<Song> lista)
+    {
+        if (lista == null )
+            return lista;
+
+        ArrayList<Song> nuevaLista = new ArrayList<Song>();
+
+        for (Song song: lista)
+        {
+                if ( song.getSongBytes() == null || song.getSongBytes().length == 0)
+                    nuevaLista.add(song);
+                else
+                    nuevaLista.add(new Song (song.getId(),song.getTitle(),song.getAlbum(),song.getArtist(),song.getUri()));
+        }
+
+        return nuevaLista;
+    }
+
+
 }

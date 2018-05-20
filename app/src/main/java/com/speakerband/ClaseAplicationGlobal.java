@@ -104,6 +104,7 @@ public class ClaseAplicationGlobal extends Application {
      * @param
      */
     public void saveNuevaListaPreferencess(ArrayList<Song> _nuevaLista) {
+
         eliminarYRegenrearLaPreferencess(_nuevaLista);
     }
 

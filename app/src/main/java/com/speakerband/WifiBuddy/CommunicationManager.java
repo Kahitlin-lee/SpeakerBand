@@ -59,7 +59,7 @@ public class CommunicationManager implements Runnable {
                     if (bytes == -1) { break; }
 
                     // Send the obtained bytes to the UI Activity
-                    Log.i(TAG, "Rec:" + Arrays.toString(buffer));
+                    // Log.i(TAG, "Rec:" + Arrays.toString(buffer));  --> Provoca una excepcion de memoria.
                     handler.obtainMessage(WifiDirectHandler.MESSAGE_READ,
                             bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {

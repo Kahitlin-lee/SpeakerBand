@@ -202,7 +202,4 @@ public class Song implements Serializable
         return Objects.hash(id, title, album, artist, uri);
     }
 
-
-
-
 }

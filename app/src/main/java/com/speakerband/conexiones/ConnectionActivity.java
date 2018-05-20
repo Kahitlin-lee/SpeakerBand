@@ -329,11 +329,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        //   super.onSaveInstanceState(outState);
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "Resuming MainActivity");

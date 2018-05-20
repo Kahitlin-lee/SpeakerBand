@@ -890,7 +890,7 @@ public class WifiDirectHandler extends NonStopIntentService implements
                 byte[] readBuf = (byte[]) msg.obj;
                 // construct a string from the valid bytes in the buffer
                 String receivedMessage = new String(readBuf, 0, msg.arg1);
-                Log.i(TAG, "Received message: " + receivedMessage);
+                //Log.i(TAG, "Received message: " + receivedMessage);   --> Esto puede petar la memoria.
                 Intent messageReceivedIntent = new Intent(Action.MESSAGE_RECEIVED);
                 messageReceivedIntent.putExtra(MESSAGE_KEY, readBuf);
                 localBroadcastManager.sendBroadcast(messageReceivedIntent);

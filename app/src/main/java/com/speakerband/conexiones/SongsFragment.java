@@ -177,14 +177,14 @@ public class SongsFragment extends ListFragment
             case SONG_END:
                 if (siCancion) {
                     // TODO hay que arreglar lo de las preferecnias
-                    //mApplication.saveNuevaListaPreferencess(listSelection);
+                    mApplication.saveNuevaListaPreferencess(listSelection);
                     Log.i(TAG, "Han llegado todas las cancion");
                     Toast.makeText(getContext(),
                             "Han llegado todas las cancion", Toast.LENGTH_SHORT).show();
                     escribirMenssge("Han llegado todas las cancion");
                     siCancion = false;
                 } else {
-                    //mApplication.saveNuevaListaPreferencess(listSelection);
+                    mApplication.saveNuevaListaPreferencess(listSelection);
                     Log.i(TAG, "No hay canciones o se han enviado todas ya");
                     Toast.makeText(getContext(),
                             "No hay canciones o se han enviado todas ya", Toast.LENGTH_SHORT).show();

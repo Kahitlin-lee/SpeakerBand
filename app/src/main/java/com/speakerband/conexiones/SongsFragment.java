@@ -206,7 +206,7 @@ public class SongsFragment extends ListFragment
     public void prepararListaReploduccionParaPlay() {
         if(!listSelection.isEmpty()) {
             MainActivity.musicService.setSong(listSelection.get(0));
-
+            MainActivity.musicService.playSong();
             MainActivity.musicService.pausar();
 
             Thread thread;

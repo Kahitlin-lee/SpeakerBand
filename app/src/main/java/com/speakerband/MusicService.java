@@ -426,7 +426,6 @@ public class MusicService extends Service implements
         if(nm!=null){
             stopForeground(true);
             nm.cancel(NOTIFY_ID);
-            mediaPlayer.stop();
             stopForeground(true);
             unregisterReceiver(broadcastReceiver);
         }

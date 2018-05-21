@@ -24,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.speakerband.ClaseAplicationGlobal;
 import com.speakerband.R;
 import com.speakerband.WifiBuddy.DnsSdService;
 import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
@@ -55,6 +56,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     private Button abrirChatButton;
     private Button abrirCancionesButton;
     private LinearLayout layoutBotones;
+    private ClaseAplicationGlobal mApplication;
 
 
 
@@ -86,6 +88,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
         Intent intent = new Intent(this, WifiDirectHandler.class);
         bindService(intent, wifiServiceConnection, BIND_AUTO_CREATE);
+
+        mApplication = (ClaseAplicationGlobal) getApplicationContext ();
 
         // Establecer el Oyente Click para el botón abrirChatButton
         abrirChatButton.setOnClickListener(new View.OnClickListener() {
@@ -352,7 +356,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     protected void onStop() {
         super.onStop();
         Log.i(TAG, "Stopping MainActivity");
-
+        mApplication.eliminarYGenrearListaConCommitDePreferencess();
         //getApplicationContext().unbindService(wifiServiceConnection);
         if(wifiDirectHandlerBound) {
             Intent intent = new Intent(this, WifiDirectHandler.class);
@@ -367,6 +371,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "Destroying MainActivity");
+        mApplication.eliminarYGenrearListaConCommitDePreferencess();
         if (wifiDirectHandlerBound) {
             Log.i(TAG, "WifiDirectHandler service unbound");
             unbindService(wifiServiceConnection);
@@ -410,7 +415,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 layoutBotones.setVisibility(View.VISIBLE);
 
                 // ELiminamos los fragment que ya no usamos de la pila/cola
-                // TODO     java.lang.IllegalStateException: Activity has been destroyed
+                // TODO     java.lang.IllegalStateException: Activity has been destroyed sale cada tanto
                 if(mainFragment != null)
                     getSupportFragmentManager().beginTransaction().remove(mainFragment).commitAllowingStateLoss();
 
@@ -456,16 +461,31 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     public void onBackPressed() {
 
         if (estaEnElFragmentSong) {
-            songsFragment.getView().setVisibility(View.INVISIBLE);
-            aparececeLayour();
-            estaEnElFragmentSong = false;
+            if(songsFragment!=null) {
+                songsFragment.getView().setVisibility(View.INVISIBLE);
+                aparececeLayour();
+                estaEnElFragmentSong = false;
+                mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
+            }
         } else if (estaEnElFragmentChat) {
-            chatFragment.getView().setVisibility(View.INVISIBLE);
-            aparececeLayour();
-            estaEnElFragmentChat = false;
+            if(chatFragment!=null) {
+                chatFragment.getView().setVisibility(View.INVISIBLE);
+                aparececeLayour();
+                estaEnElFragmentChat = false;
+                mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
+            }
         } else {
             super.onBackPressed();
+            mApplication.eliminarYGenrearListaConCommitDePreferencess();
+            if (wifiDirectHandlerBound) {
+                Log.i(TAG, "WifiDirectHandler service unbound");
+                unbindService(wifiServiceConnection);
+                wifiDirectHandlerBound = false;
+                Log.i(TAG, "MainActivity destroyed");
+            }
             finish();
         }
     }
+
+
 }

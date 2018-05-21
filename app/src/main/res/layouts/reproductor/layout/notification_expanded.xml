@@ -91,7 +91,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:scaleType="fitCenter"
-                android:src="@drawable/play2"
+                android:src="@drawable/pause_round_button"
                 android:contentDescription="@string/play_pause" />
             <ImageButton
                 android:id="@+id/next"

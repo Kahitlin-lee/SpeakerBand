@@ -348,7 +348,8 @@ public class MusicService extends Service implements
      *
      */
     public void pausar(){
-        mediaPlayer.pause();
+        if(mediaPlayer.isPlaying())
+            mediaPlayer.pause();
     }
 
     /**

@@ -9,7 +9,6 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -50,6 +49,31 @@ public class SharedPreferencesClass
         editor.apply();
     }
 
+
+    /**
+     * Metodo que salva la lista de canciones de la lista de seleccion en el SharedPreferences
+     * @param context
+     * @param listSelectionPreferences
+     */
+    protected void saveListSelectionPreferencesConCOmmit(Context context, ArrayList<Song> listSelectionPreferences)
+    {
+        SharedPreferences settings;
+        SharedPreferences.Editor editor;
+
+        settings = context.getSharedPreferences(LIST_SELECTION,
+                Context.MODE_PRIVATE);
+        editor = settings.edit();
+
+        //Comprobaremos que las canciones no contienen el array de bytes de la canción al completo.
+        listSelectionPreferences=comprobarListaCanciones(listSelectionPreferences);
+
+        String jsonFavorites = gson.toJson(listSelectionPreferences);
+
+        editor.putString(LIST_SELECTION, jsonFavorites);
+
+        editor.commit();
+    }
+
     /**
      * Metodo que agrega una cancion a la lista de seleccion del SharedPreferences
      * @param context
@@ -75,7 +99,7 @@ public class SharedPreferencesClass
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.clear();
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -107,8 +131,12 @@ public class SharedPreferencesClass
             return null;
     }
 
-    //Comprobar que la lista de canciones no contengan los bites de la canción en sí para
-    //evitar guardarlos en SharedPreferences.
+    /**
+     *  Comprobar que la lista de canciones no contengan los bites de la canción en sí para
+     *  evitar guardarlos en SharedPreferences.
+     * @param lista
+     * @return
+     */
     public  ArrayList<Song> comprobarListaCanciones (ArrayList<Song> lista)
     {
         if (lista == null )
@@ -126,6 +154,4 @@ public class SharedPreferencesClass
 
         return nuevaLista;
     }
-
-
 }

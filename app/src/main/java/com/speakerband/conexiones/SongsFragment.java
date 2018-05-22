@@ -20,7 +20,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.speakerband.ClaseAplicationGlobal;
 import com.speakerband.MainActivity;
 import com.speakerband.R;
 import com.speakerband.Song;
@@ -43,7 +42,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.speakerband.ClaseAplicationGlobal.listQueYaHasidoEnviada;
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
 import static com.speakerband.network.MessageType.SONG_START;
 
@@ -68,7 +66,6 @@ public class SongsFragment extends ListFragment
 
     public CommunicationManager _communicationManager;
 
-    private ClaseAplicationGlobal mApplication;
 
     /**
      *
@@ -82,15 +79,17 @@ public class SongsFragment extends ListFragment
     {
         View view = inflater.inflate(R.layout.fragment_songs, container, false);
 
-        //Agrego y anlazo el boton para pasar una cancion
+        // Boton que envia las canciones
         sendSongButton = (ImageButton) view.findViewById(R.id.songButton);
         // Boton que sicroniza las canciones
         sincronizaButton = (ImageButton) view.findViewById(R.id.sincronizaButton);
         // Boton que le da el play a las canciones
         playButton = (ImageButton) view.findViewById(R.id.play);
 
-        // Coge la clase aplication general para todas
-        mApplication = (ClaseAplicationGlobal) getActivity().getApplication();
+        // Los botones tendran un orden de uso especifico
+        //sincronizaButton.setVisibility(View.INVISIBLE);
+        // playButton.setVisibility(View.INVISIBLE);
+        // sendSongButton.setVisibility(View.VISIBLE);
 
         //el adaptador es solo usado para los mensajes de texto
         ListView messagesListView = (ListView) view.findViewById(android.R.id.list);
@@ -135,6 +134,31 @@ public class SongsFragment extends ListFragment
     }
 
     /**
+     * El fragment se ha adjuntado al Activity
+     */
+    @Override
+    public void onAttach(Context context)
+    {
+        super.onAttach(context);
+        try {
+            handlerAccessor = ((WiFiDirectHandlerAccessor) getActivity());
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString() + " must implement WiFiDirectHandlerAccessor");
+        }
+    }
+
+
+    /**
+     *
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        toolbar.setTitle("Songs");
+
+    }
+
+    /**
      *
      */
     public interface MessageTarget {
@@ -166,11 +190,9 @@ public class SongsFragment extends ListFragment
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     _song = loadSong(is);
-                    if(!listSelection.contains(_song)) {
-                        if(_song!=null) {
-                            writeSong(_song);
-                            yaSeHaENviadoEsaCancion = true;
-                        }
+                    if(_song!=null) {
+                        writeSong(_song);
+                        yaSeHaENviadoEsaCancion = true;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -278,25 +300,24 @@ public class SongsFragment extends ListFragment
 
         Thread thread;
 
-        //recorrerlo he ir enviando cancion a cancion
+        //Recorre la lista de seleccion y  envia cancion a cancion
         for(int  x = 0 ; x < listSelection.size() ; x++) {
+            // Esto no hay que tacarlo
             listSelection.get(x).readFile();
-            // TODO Esto no esta bien hecho,
-            if(!(listQueYaHasidoEnviada.contains(listSelection.get(x)))) {
 
-                byteArraySong = convertirObjetoArrayBytes(listSelection.get(x));
+            // Pasa la cancion que se va a enviar a Bytes
+            byteArraySong = convertirObjetoArrayBytes(listSelection.get(x));
 
-                thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_START, byteArraySong);
-                listQueYaHasidoEnviada.add(listSelection.get(x));
-                if(dormirApp3Segundos(thread)) {
-                    escribirMenssge("Se ha enviado la cancion : " + listSelection.get(x).getTitle());
-                    Toast.makeText(getContext(),
-                            "Se ha enviado una cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
-                } else {
-                    escribirMenssge("No se ha enviado la cancion : " + listSelection.get(x).getTitle());
-                    Toast.makeText(getContext(),
-                            "No se ha podido enviar la cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
-                }
+            thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_START, byteArraySong);
+
+            if(dormirApp3Segundos(thread)) {
+                escribirMenssge("Si la cancion no existia en el otro movil, ha sido enviado. \n Cancion : " + listSelection.get(x).getTitle());
+                Toast.makeText(getContext(),
+                        "Se ha enviado una cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
+            } else {
+                escribirMenssge("No se ha enviado la cancion : " + listSelection.get(x).getTitle());
+                Toast.makeText(getContext(),
+                        "No se ha podido enviar la cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -339,10 +360,7 @@ public class SongsFragment extends ListFragment
 
 
     /**
-     * ArrayAdapter para administrar mensajes de chat.
-     * Solo lo utiliza para los mensajes de texto
-     * 2º lugar donde pasa al mandar el mensaje y recibir mensaje
-     * mas bien es cuando lo pienta en en movil
+     * Metodo para los mensajes que se iran mostrando sobre la ejecucion de este Fragmen
      */
     public class SongMessageAdapter extends ArrayAdapter<String>
     {
@@ -375,48 +393,6 @@ public class SongsFragment extends ListFragment
                 }
             }
             return v;
-        }
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void onResume() {
-        super.onResume();
-        toolbar.setTitle("Songs");
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void onPause() {
-        super.onPause();
-        // TODO Por fin he arreglado este pete del null, solo espero que no afecte a la conexion
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        View focusedView = getActivity().getCurrentFocus();
-        /*
-         * If no view is focused, an NPE will be thrown
-         *
-         * Maxim Dmitriev
-         */
-        if (focusedView != null) {
-            imm.hideSoftInputFromWindow(textMessageEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-        }
-    }
-
-    /**
-     * This is called when the Frarment is opened and is attached to MainActivity
-     */
-    @Override
-    public void onAttach(Context context)
-    {
-        super.onAttach(context);
-        try {
-            handlerAccessor = ((WiFiDirectHandlerAccessor) getActivity());
-        } catch (ClassCastException e) {
-            throw new ClassCastException(getActivity().toString() + " must implement WiFiDirectHandlerAccessor");
         }
     }
 
@@ -455,7 +431,7 @@ public class SongsFragment extends ListFragment
         {
             e.printStackTrace();
         }
-        //Esto es porque si la cancion ya esta en la carpeta de descargas no se escribe de nuevo y peta
+        //Esto es porque si la cancion ya esta en la carpeta de descargas no se escribe de nuevo y y al no existir y hacer un set peta
         String uri = writeSongOnExternalMemory(s , "Download");
         if(uri != null) {
             s.setUri(uri);
@@ -583,26 +559,15 @@ public class SongsFragment extends ListFragment
     /**
      *
      */
-    public void procesoDeGuardarPreferenciasEnUnHiloSecundario()
-    {
-        Thread thread;
-
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (listSelection!=null) {
-
-                    }
-                }catch (Exception e) {
-                    Log.e(TAG, "Error" + e.getMessage());
-                }
-            }
-        };
-
-        thread = new Thread(runnable);
-        threadsDeLaClas.add(thread);
-        thread.start();
+    @Override
+    public void onPause() {
+        super.onPause();
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        View focusedView = getActivity().getCurrentFocus();
+        // TODO Con esta linea Por fin he arreglado este pete del null, solo espero que no afecte a la conexion
+        if (focusedView != null) {
+            imm.hideSoftInputFromWindow(textMessageEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 
     /**
@@ -611,7 +576,7 @@ public class SongsFragment extends ListFragment
     @Override
     public void onStop() {
         super.onStop();
-        listQueYaHasidoEnviada.clear();
+        //listQueYaHasidoEnviada.clear();
         matarTodosLoshilos();
     }
 
@@ -621,7 +586,7 @@ public class SongsFragment extends ListFragment
     @Override
     public void onDestroy() {
         super.onDestroy();
-        listQueYaHasidoEnviada.clear();
+        //listQueYaHasidoEnviada.clear();
         matarTodosLoshilos();
     }
 

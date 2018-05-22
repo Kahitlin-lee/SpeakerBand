@@ -13,7 +13,6 @@ public class ClaseAplicationGlobal extends Application {
 
 
     public static ArrayList<Song> listSelection;
-    public static ArrayList<Song> listQueYaHasidoEnviada;
     public static boolean estaEnElFragmentChat;
     public static boolean estaEnElFragmentSong;
     public static WifiManager wifiManager;
@@ -25,7 +24,6 @@ public class ClaseAplicationGlobal extends Application {
         super.onCreate();
 
         listSelection = new ArrayList<Song>();
-        listQueYaHasidoEnviada = new ArrayList<Song>();
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
     }
 

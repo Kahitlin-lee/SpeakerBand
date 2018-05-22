@@ -111,8 +111,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "\n");
-         if (songsFragment == null) {
-                songsFragment = new SongsFragment();
+                if (songsFragment == null) {
+                    songsFragment = new SongsFragment();
                 }
                 estaEnElFragmentSong= true;
                 desapareceLayour();
@@ -460,15 +460,19 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
         if (estaEnElFragmentSong) {
             if(songsFragment!=null) {
-                songsFragment.getView().setVisibility(View.INVISIBLE);
-                aparececeLayour();
-                estaEnElFragmentSong = false;
+                if(songsFragment.getView()!=null) {
+                    songsFragment.getView().setVisibility(View.INVISIBLE);
+                    aparececeLayour();
+                    estaEnElFragmentSong = false;
+                }
             }
         } else if (estaEnElFragmentChat) {
             if(chatFragment!=null) {
-                chatFragment.getView().setVisibility(View.INVISIBLE);
-                aparececeLayour();
-                estaEnElFragmentChat = false;
+                if(songsFragment.getView()!=null) {
+                    chatFragment.getView().setVisibility(View.INVISIBLE);
+                    aparececeLayour();
+                    estaEnElFragmentChat = false;
+                }
             }
         } else {
             super.onBackPressed();

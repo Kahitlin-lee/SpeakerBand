@@ -49,10 +49,12 @@ import static com.speakerband.network.MessageType.SONG_START;
 
 public class SongsFragment extends ListFragment
 {
+    //
     private EditText textMessageEditText;
     private SongsFragment.SongMessageAdapter adapter = null;
     private List<String> items = new ArrayList<>();
     private ArrayList<String> messages = new ArrayList<>();
+
     //instancia de la interfaz WiFiDirectHandlerAccessor
     private WiFiDirectHandlerAccessor handlerAccessor;
     private Toolbar toolbar;
@@ -87,7 +89,7 @@ public class SongsFragment extends ListFragment
         // Boton que le da el play a las canciones
         playButton = (ImageButton) view.findViewById(R.id.play);
 
-        // COge la clase aplication general para todas
+        // Coge la clase aplication general para todas
         mApplication = (ClaseAplicationGlobal) getActivity().getApplication();
 
         //el adaptador es solo usado para los mensajes de texto
@@ -132,6 +134,9 @@ public class SongsFragment extends ListFragment
         return view;
     }
 
+    /**
+     *
+     */
     public interface MessageTarget {
         Handler getHandler();
     }
@@ -200,6 +205,9 @@ public class SongsFragment extends ListFragment
         }
     }
 
+    /**
+     *
+     */
     public void prepararListaReploduccionParaPlay() {
         if(!listSelection.isEmpty()) {
             MainActivity.musicService.setSong(listSelection.get(0));
@@ -219,6 +227,9 @@ public class SongsFragment extends ListFragment
         }
     }
 
+    /**
+     *
+     */
     public void ponerListaEnPlay() {
         if(!listSelection.isEmpty()) {
             Thread thread;
@@ -367,12 +378,18 @@ public class SongsFragment extends ListFragment
         }
     }
 
+    /**
+     *
+     */
     @Override
     public void onResume() {
         super.onResume();
         toolbar.setTitle("Songs");
     }
 
+    /**
+     *
+     */
     @Override
     public void onPause() {
         super.onPause();
@@ -512,6 +529,9 @@ public class SongsFragment extends ListFragment
     }
 
     // TODOS los metodos que usan hilos Clases.
+    /**
+     *
+     */
     ArrayList <Thread> threadsDeLaClas = new ArrayList();
 
     /**
@@ -585,6 +605,9 @@ public class SongsFragment extends ListFragment
         thread.start();
     }
 
+    /**
+     *
+     */
     @Override
     public void onStop() {
         super.onStop();
@@ -592,6 +615,9 @@ public class SongsFragment extends ListFragment
         matarTodosLoshilos();
     }
 
+    /**
+     *
+     */
     @Override
     public void onDestroy() {
         super.onDestroy();

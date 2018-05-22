@@ -463,18 +463,15 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 songsFragment.getView().setVisibility(View.INVISIBLE);
                 aparececeLayour();
                 estaEnElFragmentSong = false;
-                mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
             }
         } else if (estaEnElFragmentChat) {
             if(chatFragment!=null) {
                 chatFragment.getView().setVisibility(View.INVISIBLE);
                 aparececeLayour();
                 estaEnElFragmentChat = false;
-                mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
             }
         } else {
             super.onBackPressed();
-            mApplication.eliminarYGenrearListaConCommitDePreferencess();
             if (wifiDirectHandlerBound) {
                 Log.i(TAG, "WifiDirectHandler service unbound");
                 unbindService(wifiServiceConnection);

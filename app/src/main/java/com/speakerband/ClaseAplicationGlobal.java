@@ -112,28 +112,9 @@ public class ClaseAplicationGlobal extends Application {
      * Agrega una cancion a la preferencias desde cualquier parte de la aplicacion
      * @param
      */
-    public ArrayList<Song> getListaPreferenciasP() {
-
-        return preferences.getListSelectionPreferences(getApplicationContext());
-    }
-
-    /**
-     * Agrega una cancion a la preferencias desde cualquier parte de la aplicacion
-     * @param
-     */
     public void salvarTodasLasCancionesEnLaListaDePreferencess() {
         if(!listSelection.isEmpty())
             preferences.saveListSelectionPreferences(getApplicationContext(), listSelection);
     }
 
-    /**
-     * Agrega una cancion a la preferencias desde cualquier parte de la aplicacion
-     * @param
-     */
-    public void eliminarYGenrearListaConCommitDePreferencess() {
-        if(!listSelection.isEmpty()) {
-            preferences.removeSongFromListSelectionPreferences(getApplicationContext());
-            preferences.saveListSelectionPreferencesConCOmmit(getApplicationContext(), listSelection);
-        }
-    }
 }

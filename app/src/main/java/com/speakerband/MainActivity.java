@@ -179,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             if (!listSelection.contains(song)) {
                 listSelection.add(song);
                 //Agregamos la nueva cancion a SharedPreferencesClass desde La clase global aplication
+
                 mApplication.agregarUnaCancionAPreferencess(song);
                 Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
             } else
@@ -520,6 +521,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     //---------------
+
 
     /**
      *

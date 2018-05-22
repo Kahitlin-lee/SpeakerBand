@@ -356,7 +356,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     protected void onStop() {
         super.onStop();
         Log.i(TAG, "Stopping MainActivity");
-        mApplication.eliminarYGenrearListaConCommitDePreferencess();
         //getApplicationContext().unbindService(wifiServiceConnection);
         if(wifiDirectHandlerBound) {
             Intent intent = new Intent(this, WifiDirectHandler.class);
@@ -371,7 +370,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "Destroying MainActivity");
-        mApplication.eliminarYGenrearListaConCommitDePreferencess();
         if (wifiDirectHandlerBound) {
             Log.i(TAG, "WifiDirectHandler service unbound");
             unbindService(wifiServiceConnection);

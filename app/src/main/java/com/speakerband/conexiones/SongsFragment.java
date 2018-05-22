@@ -161,14 +161,11 @@ public class SongsFragment extends ListFragment
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     _song = loadSong(is);
-                    //listSelection = mApplication.getListaPreferenciasP();
-                    //if(!listSelection.isEmpty()) {
-                        if(!listSelection.contains(_song)) {
-                            if(_song!=null) {
-                                writeSong(_song);
-                                yaSeHaENviadoEsaCancion = true;
-                            }
-                        //}
+                    if(!listSelection.contains(_song)) {
+                        if(_song!=null) {
+                            writeSong(_song);
+                            yaSeHaENviadoEsaCancion = true;
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -178,14 +175,12 @@ public class SongsFragment extends ListFragment
             //La cancion se termina de llegar
             case SONG_END:
                 if (yaSeHaENviadoEsaCancion) {
-                    mApplication.saveNuevaListaPreferencess(listSelection);
                     Log.i(TAG, "Han llegado todas las cancion");
                     Toast.makeText(getContext(),
                             "Han llegado todas las cancion", Toast.LENGTH_SHORT).show();
                     escribirMenssge("Han llegado todas las cancion");
                     yaSeHaENviadoEsaCancion = false;
                 } else {
-                    mApplication.saveNuevaListaPreferencess(listSelection);
                     Log.i(TAG, "No hay canciones o se han enviado todas ya");
                     Toast.makeText(getContext(),
                             "No hay canciones o se han enviado todas ya", Toast.LENGTH_SHORT).show();
@@ -447,10 +442,6 @@ public class SongsFragment extends ListFragment
         String uri = writeSongOnExternalMemory(s , "Download");
         if(uri != null) {
             s.setUri(uri);
-            if (!listSelection.contains(s)){
-                listSelection.add(s);
-                //mApplication.agregarUnaCancionAPreferencess(s);
-            }
         }
     }
 

@@ -13,6 +13,8 @@ public class ClaseAplicationGlobal extends Application {
 
 
     public static ArrayList<Song> listSelection;
+    public static ArrayList<Song> myList;
+    public static ArrayList<Song> listSelectionClinteParaReproducir;
     public static boolean estaEnElFragmentChat;
     public static boolean estaEnElFragmentSong;
     public static WifiManager wifiManager;
@@ -22,8 +24,9 @@ public class ClaseAplicationGlobal extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
         listSelection = new ArrayList<Song>();
+        myList = new ArrayList<Song>();
+        listSelectionClinteParaReproducir = new ArrayList<Song>();
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
     }
 
@@ -95,15 +98,6 @@ public class ClaseAplicationGlobal extends Application {
      */
     public void agregarUnaCancionAPreferencess(Song song) {
         preferences.addUnaSongListSelectionPreferences(getApplicationContext(), song);
-    }
-
-    /**
-     * Agrega una cancion a la preferencias desde cualquier parte de la aplicacion
-     * @param
-     */
-    public void saveNuevaListaPreferencess(ArrayList<Song> _nuevaLista) {
-
-        eliminarYRegenrearLaPreferencess(_nuevaLista);
     }
 
     /**

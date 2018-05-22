@@ -124,7 +124,7 @@ public class AvailableServicesFragment extends Fragment
     public void onResume() {
         super.onResume();
         if (toolbar != null) {
-            toolbar.setTitle("Buscand Moviles Para Conectar");
+            toolbar.setTitle("Buscando Moviles Para Conectar");
         }
     }
 

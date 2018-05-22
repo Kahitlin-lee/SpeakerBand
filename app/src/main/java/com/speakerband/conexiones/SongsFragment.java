@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
+import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
 import static com.speakerband.network.MessageType.SONG_START;
 
 public class SongsFragment extends ListFragment
@@ -52,6 +53,7 @@ public class SongsFragment extends ListFragment
     private SongsFragment.SongMessageAdapter adapter = null;
     private List<String> items = new ArrayList<>();
     private ArrayList<String> messages = new ArrayList<>();
+
 
     //instancia de la interfaz WiFiDirectHandlerAccessor
     private WiFiDirectHandlerAccessor handlerAccessor;
@@ -79,6 +81,8 @@ public class SongsFragment extends ListFragment
     {
         View view = inflater.inflate(R.layout.fragment_songs, container, false);
 
+        listSelectionClinteParaReproducir = new ArrayList<>();
+
         // Boton que envia las canciones
         sendSongButton = (ImageButton) view.findViewById(R.id.songButton);
         // Boton que sicroniza las canciones
@@ -87,9 +91,9 @@ public class SongsFragment extends ListFragment
         playButton = (ImageButton) view.findViewById(R.id.play);
 
         // Los botones tendran un orden de uso especifico
-        //sincronizaButton.setVisibility(View.INVISIBLE);
-        // playButton.setVisibility(View.INVISIBLE);
-        // sendSongButton.setVisibility(View.VISIBLE);
+        sincronizaButton.setVisibility(View.INVISIBLE);
+        playButton.setVisibility(View.INVISIBLE);
+        sendSongButton.setVisibility(View.VISIBLE);
 
         //el adaptador es solo usado para los mensajes de texto
         ListView messagesListView = (ListView) view.findViewById(android.R.id.list);
@@ -164,7 +168,6 @@ public class SongsFragment extends ListFragment
     public interface MessageTarget {
         Handler getHandler();
     }
-    Boolean yaSeHaENviadoEsaCancion = null;
 
     /**
      * deserializa lo que llegue
@@ -190,9 +193,9 @@ public class SongsFragment extends ListFragment
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     _song = loadSong(is);
-                    if(_song!=null) {
-                        writeSong(_song);
-                        yaSeHaENviadoEsaCancion = true;
+                    writeSong(_song);
+                    if(!listSelectionClinteParaReproducir.contains(_song)) {
+                        listSelectionClinteParaReproducir.add(_song);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -201,22 +204,16 @@ public class SongsFragment extends ListFragment
                 break;
             //La cancion se termina de llegar
             case SONG_END:
-                if (yaSeHaENviadoEsaCancion) {
-                    Log.i(TAG, "Han llegado todas las cancion");
+                if (!listSelectionClinteParaReproducir.isEmpty()) {
+                    Log.i(TAG, "Han llegado todas las cancion si es que no existien ya en el movil");
                     Toast.makeText(getContext(),
                             "Han llegado todas las cancion", Toast.LENGTH_SHORT).show();
-                    escribirMenssge("Han llegado todas las cancion");
-                    yaSeHaENviadoEsaCancion = false;
-                } else {
-                    Log.i(TAG, "No hay canciones o se han enviado todas ya");
-                    Toast.makeText(getContext(),
-                            "No hay canciones o se han enviado todas ya", Toast.LENGTH_SHORT).show();
-                    escribirMenssge("No hay canciones o se han enviado todas ya");
+                    escribirMenssge("Han llegado todas las cancion si es que no existien ya en el movil");
                 }
-                yaSeHaENviadoEsaCancion = false;
+                cambiarBotonesUnaVezYaTenemosTodasLasCanciones();
                 break;
             case PREPARE_PLAY:
-                prepararListaReploduccionParaPlay();
+                prepararMovilParaReploduccionParaPlay();
                 break;
             case PLAY:
                 play();
@@ -230,11 +227,20 @@ public class SongsFragment extends ListFragment
     /**
      *
      */
-    public void prepararListaReploduccionParaPlay() {
-        if(!listSelection.isEmpty()) {
-            MainActivity.musicService.setSong(listSelection.get(0));
-            MainActivity.musicService.playSong();
-            MainActivity.musicService.pausar();
+    private void cambiarBotonesUnaVezYaTenemosTodasLasCanciones() {
+        // Los botones tendran un orden de uso especifico
+        sincronizaButton.setVisibility(View.INVISIBLE);
+        playButton.setVisibility(View.VISIBLE);
+        sendSongButton.setVisibility(View.INVISIBLE);
+    }
+
+    /**
+     *
+     */
+    public void prepararMovilParaReploduccionParaPlay() {
+        if(!listSelectionClinteParaReproducir.isEmpty()) {
+            //MainActivity.musicService.setSong(listSelectionClinteParaReproducir.get(0));
+            //MainActivity.musicService.pausePlay();
 
             Thread thread;
             byte[] byteArrayPrepararPlay = ("preparar play").getBytes();
@@ -259,9 +265,10 @@ public class SongsFragment extends ListFragment
             thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PLAY, byteArrayPrepararPlay);
             if (thread != null)
                 thread.interrupt();
-
             MainActivity.musicService.setSong(listSelection.get(0));
             MainActivity.musicService.playSong();
+            //escribirMenssge("Se esta reproduciendo " + listSelection.get(MainActivity.musicService.getPosn()).getTitle());
+
         } else {
             escribirMenssge("No hay canciones que reproducir ");
             Toast.makeText(getContext(),
@@ -311,7 +318,7 @@ public class SongsFragment extends ListFragment
             thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_START, byteArraySong);
 
             if(dormirApp3Segundos(thread)) {
-                escribirMenssge("Si la cancion no existia en el otro movil, ha sido enviado. \n Cancion : " + listSelection.get(x).getTitle());
+                escribirMenssge("Si la cancion no existia en el otro movil, ha sido enviada. \n Cancion : " + listSelection.get(x).getTitle());
                 Toast.makeText(getContext(),
                         "Se ha enviado una cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
             } else {
@@ -336,6 +343,7 @@ public class SongsFragment extends ListFragment
             if(thread != null)
                 thread.interrupt();
         }
+        cambiarBotonesUnaVezYaTenemosTodasLasCanciones();
     }
 
     /**
@@ -474,7 +482,7 @@ public class SongsFragment extends ListFragment
 
             return file.getAbsolutePath();
         }
-        return null;
+        return file.getAbsolutePath();
     }
 
     /**
@@ -498,10 +506,9 @@ public class SongsFragment extends ListFragment
      */
     private void play()
     {
-        if(!listSelection.isEmpty()) {
-            MainActivity.musicService.setSong(listSelection.get(0));
-            MainActivity.musicService.playSong();
-        }
+        MainActivity.musicService.setSong(listSelectionClinteParaReproducir.get(0));
+        MainActivity.musicService.playSong();
+        //escribirMenssge("Se esta reproduciendo " + listSelectionClinteParaReproducir.get(MainActivity.musicService.getPosn()).getTitle());
     }
 
     // TODOS los metodos que usan hilos Clases.

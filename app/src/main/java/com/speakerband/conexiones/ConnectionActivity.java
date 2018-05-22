@@ -32,6 +32,7 @@ import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentChat;
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentSong;
+import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
 
 /**
  * Actividad que  que es un contenedor para Fragment y la ActionBar.
@@ -103,6 +104,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 estaEnElFragmentChat = true;
                 desapareceLayour();
                 replaceFragment(chatFragment);
+                if(chatFragment.getView()!=null)
+                    chatFragment.getView().setVisibility(View.VISIBLE);
             }
         });
 
@@ -111,12 +114,14 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "\n");
-                if (songsFragment == null) {
-                    songsFragment = new SongsFragment();
+         if (songsFragment == null) {
+                songsFragment = new SongsFragment();
                 }
                 estaEnElFragmentSong= true;
                 desapareceLayour();
                 replaceFragment(songsFragment);
+                if(songsFragment.getView()!=null)
+                    songsFragment.getView().setVisibility(View.VISIBLE);
             }
         });
     }
@@ -457,22 +462,17 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
     @Override
     public void onBackPressed() {
-
         if (estaEnElFragmentSong) {
             if(songsFragment!=null) {
-                if(songsFragment.getView()!=null) {
-                    songsFragment.getView().setVisibility(View.INVISIBLE);
-                    aparececeLayour();
-                    estaEnElFragmentSong = false;
-                }
+                songsFragment.getView().setVisibility(View.INVISIBLE);
+                aparececeLayour();
+                estaEnElFragmentSong = false;
             }
-        } else if (estaEnElFragmentChat) {
+        } else if(estaEnElFragmentChat) {
             if(chatFragment!=null) {
-                if(songsFragment.getView()!=null) {
-                    chatFragment.getView().setVisibility(View.INVISIBLE);
-                    aparececeLayour();
-                    estaEnElFragmentChat = false;
-                }
+                chatFragment.getView().setVisibility(View.INVISIBLE);
+                aparececeLayour();
+                estaEnElFragmentChat = false;
             }
         } else {
             super.onBackPressed();
@@ -482,9 +482,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 wifiDirectHandlerBound = false;
                 Log.i(TAG, "MainActivity destroyed");
             }
+            listSelectionClinteParaReproducir.clear();
             finish();
         }
     }
-
-
 }

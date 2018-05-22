@@ -252,7 +252,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
 
         public boolean isServiceConnected() {
-            musicIsConnected = false;
             return musicIsConnected;
         }
 
@@ -326,8 +325,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         if (musicService != null) {
             if (musicConnection != null) {
                 if(musicIsConnected) {
-                    getApplicationContext().unbindService(musicConnection);
-                    musicService.unbindService(musicConnection);  //TODO Aquí esta el bug cuando cierras la app,
+                    unbindService(musicConnection);
+                    //musicService.unbindService(musicConnection);  //TODO Aquí esta el bug cuando cierras la app,
                     //TODO dice que no está unido, raro, porque sí lo está!!!
                     musicService = null;
                 }

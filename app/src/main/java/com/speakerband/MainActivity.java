@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
+import static com.speakerband.ClaseAplicationGlobal.myList;
 
 /**
  * Activity principal
@@ -179,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             if (!listSelection.contains(song)) {
                 listSelection.add(song);
                 //Agregamos la nueva cancion a SharedPreferencesClass desde La clase global aplication
+
                 mApplication.agregarUnaCancionAPreferencess(song);
                 Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
             } else
@@ -296,6 +298,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     protected void onResume()
     {
         super.onResume();
+        initRecyclerView(0);
         if (paused) {
             setController();
             paused = false;
@@ -444,6 +447,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         if (_musicCursor != null )
             _musicCursor.close();
+        myList.addAll(list);
         return list;
     }
 
@@ -519,6 +523,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     //---------------
+
 
     /**
      *
@@ -671,6 +676,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         return false;
     }
 
+
+
     /**
      *
      * @return
@@ -711,7 +718,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public int getAudioSessionId() {
         return 0;
     }
-
 
 
 }

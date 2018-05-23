@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item android:id="@+id/pass_list"
         android:title="@string/pass_to_list"
          />
+    <item
+        android:id="@+id/action_exit"
+        android:title="Borrar Cancion de la lista de reproduccion"
+        />
 
 </menu>

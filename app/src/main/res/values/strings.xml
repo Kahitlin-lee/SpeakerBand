@@ -1,28 +1,28 @@
 <resources>
     <string name="app_name">SpeakerBand</string>
-    <string name="action_settings">Settings</string>
-    <string name="titleShuffle">Shuffle</string>
-    <string name="titleEnd">END</string>
-    <string name="permission_menssage">SpeakerBand necesita permisos de lectura para mostrar tu biblioteca musical en la aplicaion</string>
+    <string name="action_settings">Configuración</string>
+    <string name="titleShuffle">Aleatorio</string>
+    <string name="titleEnd">FIN</string>
+    <string name="permission_menssage">SpeakerBand necesita permisos de lectura para mostrar tu biblioteca musical en la aplicación</string>
 
-    <string name="remote_service_started">Musica</string>
+    <string name="remote_service_started">Música</string>
     <string name="cover_art">Carátula</string>
     <string name="close_notification">Cerrar notificación</string>
-    <string name="next_song">Next track</string>
+    <string name="next_song">Próxima Canción</string>
     <string name="pass_to_list">Añadir a la lista de reproduccion</string>
     <string name="play_pause">Reproducir/Pausar</string>
-    <string name="previous_song">Previous track</string>
+    <string name="previous_song">Canción anterior</string>
 
-    <string name="list_selection_empty">Para agregar una cancion a la lista que quiere compartir, haga un click largo sobre la cancion elegida en sus listas de canciones</string>
-    <string name="list_empty">No tiene musica en su dispositivo</string>
+    <string name="list_selection_empty">Para agregar una canción a la lista que quiere compartir, haga un click largo sobre la cancion elegida en sus listas de canciones</string>
+    <string name="list_empty">No tiene música en su dispositivo</string>
 
 
     <!-- toast de la app -->
-    <string name="song_add">Cacion agregada a la lista de reproducccion</string>
-    <string name="song_exist_list_selection">La cancion ya existe en la lista de seleccion</string>
-    <string name="carpeta_creada">Carpeta de la aplicacion creada con exito o ya existente</string>
-    <string name="carpeta_no_creada">No se ha podido crear la carpeta de la aplicacion</string>
-    <string name="carpeta_encontrada">La carpeta ha sido encontrada </string>
+    <string name="song_add">Canción agregada a la lista de reproducción</string>
+    <string name="song_exist_list_selection">La canción ya existe en la lista de selección</string>
+    <string name="carpeta_creada">Carpeta de la aplicación creada con éxito o ya existente</string>
+    <string name="carpeta_no_creada">No se ha podido crear la carpeta de la aplicación</string>
+    <string name="carpeta_encontrada">La carpeta ha sido encontrada</string>
     <string name="carpeta_no_encontrada">Carpeta no encontrada</string>
 
 
@@ -36,12 +36,12 @@
     <string name="action_exit">Salir</string>
     <string name="action_close">Cerrar</string>
     <string name="action_refresh">Refrescar</string>
-    <string name="action_register_service">Registrar Servicio Local</string>
-    <string name="action_discover_services">Dercubrir Servicio Local</string>
+    <string name="action_register_service">Ser visible para los demás</string>
+    <string name="action_discover_services">Buscar amigos</string>
     <string name="action_register_no_prompt">Registrar Servicio No-Prompt</string>
     <string name="type_message">Escribe mensaje</string>
     <string name="send">➤</string>
-    <string name="finding_services">Encontrar servicios</string>
+    <string name="finding_services">Encontrando servicios</string>
     <string name="elige_opcion">Selecciona una de las siguientes opciones:</string>
     <string name="abrir_chat">Chat</string>
     <string name="abrir_sync_canciones">Canciones</string>

@@ -17,14 +17,13 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import com.speakerband.R;
+import com.speakerband.WifiBuddy.DnsSdService;
+import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import com.speakerband.WifiBuddy.DnsSdService;
-import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
-import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 /**
  * ListFragment that shows a list of available discovered services
@@ -125,7 +124,7 @@ public class AvailableServicesFragment extends Fragment
     public void onResume() {
         super.onResume();
         if (toolbar != null) {
-            toolbar.setTitle("Service Discovery");
+            toolbar.setTitle("Buscando Moviles Para Conectar");
         }
     }
 

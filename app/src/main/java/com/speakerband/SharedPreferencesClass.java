@@ -17,11 +17,19 @@ import java.util.List;
 
 public class SharedPreferencesClass
 {
+    /**
+     *
+     */
     private static final String LIST_SELECTION = "LIST_SELECTION";
+    /**
+     *
+     */
     private Gson gson = new Gson();
 
+    /**
+     *
+     */
     public SharedPreferencesClass() {
-
         super();
     }
 
@@ -47,31 +55,6 @@ public class SharedPreferencesClass
         editor.putString(LIST_SELECTION, jsonFavorites);
 
         editor.apply();
-    }
-
-
-    /**
-     * Metodo que salva la lista de canciones de la lista de seleccion en el SharedPreferences
-     * @param context
-     * @param listSelectionPreferences
-     */
-    protected void saveListSelectionPreferencesConCOmmit(Context context, ArrayList<Song> listSelectionPreferences)
-    {
-        SharedPreferences settings;
-        SharedPreferences.Editor editor;
-
-        settings = context.getSharedPreferences(LIST_SELECTION,
-                Context.MODE_PRIVATE);
-        editor = settings.edit();
-
-        //Comprobaremos que las canciones no contienen el array de bytes de la canción al completo.
-        listSelectionPreferences=comprobarListaCanciones(listSelectionPreferences);
-
-        String jsonFavorites = gson.toJson(listSelectionPreferences);
-
-        editor.putString(LIST_SELECTION, jsonFavorites);
-
-        editor.commit();
     }
 
     /**

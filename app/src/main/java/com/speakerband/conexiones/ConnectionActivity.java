@@ -329,8 +329,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     protected void onStop() {
         super.onStop();
         Log.i(TAG, "Stopping MainActivity");
-        mApplication.eliminarYGenrearListaConCommitDePreferencess();
-        //getApplicationContext().unbindService(wifiServiceConnection);
         if(wifiDirectHandlerBound) {
             stopService(intentWifiDirect);
             unbindService(wifiServiceConnection);
@@ -343,7 +341,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "Destroying MainActivity");
-        mApplication.eliminarYGenrearListaConCommitDePreferencess();
         if (wifiDirectHandlerBound) {
             Log.i(TAG, "WifiDirectHandler service unbound");
             stopService(intentWifiDirect);
@@ -437,19 +434,15 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
         if (estaEnElFragmentSong) {
             if(songsFragment!=null) {
-                //songsFragment.getView().setVisibility(View.INVISIBLE);
                 eliminarFragment();
                 aparececeLayout();
                 estaEnElFragmentSong = false;
-                mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
             }
         } else if (estaEnElFragmentChat) {
             if(chatFragment!=null) {
-                //chatFragment.getView().setVisibility(View.INVISIBLE);
                 eliminarFragment();
                 aparececeLayout();
                 estaEnElFragmentChat = false;
-                mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
             }
         } else {
 

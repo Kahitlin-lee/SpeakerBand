@@ -17,8 +17,11 @@ public class MusicController extends MediaController
         super(contexto);
     }
 
-    public void hide(){}
-
+    @Override
+    public void hide() {
+        super.hide();
+    }
+    
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         return super.dispatchKeyEvent(event);

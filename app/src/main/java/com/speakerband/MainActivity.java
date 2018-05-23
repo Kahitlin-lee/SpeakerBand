@@ -587,8 +587,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             @Override
             public boolean dispatchKeyEvent(KeyEvent event) {
                 if(event.getKeyCode() == KeyEvent.KEYCODE_BACK){
-                    super.hide();//Oculta el mediaController
-                    ((MainActivity) getContext()).finish(); //Cierra el activity
+
+                    if(controller.isShown()) {
+                        controller.hide();//Oculta el mediaController
+                    }
+                    else
+                        ((MainActivity) getContext()).finish(); //Cierra el activity
+
                     return true;
                 }
                 //Si no presiona el back button, pues sigue funcionando igual.

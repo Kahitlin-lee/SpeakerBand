@@ -148,11 +148,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     }
 
-    @Override
-    public void onBackPressed() {
-    }
 
-        private RecyclerViewOnItemClickListener listItemClickListener = new RecyclerViewOnItemClickListener()
+    private RecyclerViewOnItemClickListener listItemClickListener = new RecyclerViewOnItemClickListener()
     {
         /**
          * Click siempre para reproducir la cancion
@@ -561,6 +558,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     //Metodo de MusicController ,
 

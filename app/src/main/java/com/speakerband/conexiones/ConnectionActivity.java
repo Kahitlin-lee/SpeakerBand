@@ -384,14 +384,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 Log.i(TAG, "Service conectado");
                 layoutBotones.setVisibility(View.VISIBLE);
 
-                // ELiminamos los fragment que ya no usamos de la pila/cola
-                // TODO     java.lang.IllegalStateException: Activity has been destroyed sale cada tanto
-//                if(mainFragment != null)
-//                    getSupportFragmentManager().beginTransaction().remove(mainFragment).commitAllowingStateLoss();
-//
-//                if(availableServicesFragment != null)
-//                    getSupportFragmentManager().beginTransaction().remove(availableServicesFragment).commitAllowingStateLoss();
-
                 eliminarTodosFragments();
 
                 // crea los que si usamos
@@ -424,7 +416,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 // Wi-Fi ha sido activado o desactivado
                 Log.i(TAG, "Wi-Fi state changed");
                 //puede q esto joda porque lo elimino antes
-                mainFragment.handleWifiStateChanged();
+                if(mainFragment != null)
+                     mainFragment.handleWifiStateChanged();
             }
         }
     }

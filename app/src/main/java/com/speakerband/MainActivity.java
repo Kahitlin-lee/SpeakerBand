@@ -15,6 +15,7 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,6 +24,8 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.MediaController;
 import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
@@ -64,6 +67,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     private ClaseAplicationGlobal mApplication;
 
+    private TabLayout tabsLayout;
+
+    private Button conexionBoton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -72,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
 
         //variables que se ocultan y se muestran dependiendo de si hay cancioones en las listas o no
         textListSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
@@ -87,6 +93,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         mApplication = (ClaseAplicationGlobal) getApplicationContext ();
         // TODO arreglar que las preferencias tarden tanto siempre
         mApplication.generarNuevamentePreferenciasYListSeleccion();
+
+        conexionBoton = (Button) findViewById(R.id.conexionBoton);
+        conexionBoton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                    Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
+                    startActivity(intent);
+            }
+        });
 
         //Tabs
         tabs();
@@ -196,27 +211,24 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     private void tabs()
     {
-        TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
-        //Agrego las tabs que tendra mi aplicacion
-        tabs.addTab(tabs.newTab().setText("SONGS"));
-        tabs.addTab(tabs.newTab().setText("ARTIST"));
-        tabs.addTab(tabs.newTab().setText("LIST"));
-        tabs.addTab(tabs.newTab().setText("CONNECTION"));
-        //Para tab con movimiento
-        tabs.setTabMode(TabLayout.MODE_SCROLLABLE);
+        tabsLayout = (TabLayout) findViewById(R.id.tabs);
 
-        tabs.addOnTabSelectedListener(
+        //Agrego las tabs que tendra mi aplicacion
+        tabsLayout.addTab(tabsLayout.newTab().setText(getResources().getString(R.string.canciones)));
+        tabsLayout.addTab(tabsLayout.newTab().setText(getResources().getString(R.string.artistas)));
+        tabsLayout.addTab(tabsLayout.newTab().setText(getResources().getString(R.string.sincronizacion)));
+        //  tabsLayout.addTab(tabsLayout.newTab().setText(getResources().getString(R.string.conexion)));
+
+        //Para tab con movimiento
+        tabsLayout.setTabMode(TabLayout.MODE_FIXED);
+
+        tabsLayout.addOnTabSelectedListener(
                 new TabLayout.OnTabSelectedListener()
                 {
                     @Override
                     public void onTabSelected(TabLayout.Tab tab)
                     {
-                        if (tab.getText() == "CONNECTION"){
-                            Intent intent = new Intent(MainActivity.this, ConnectionActivity.class);
-                            startActivity(intent);
-                        }else{
                             initRecyclerView(tab.getPosition());
-                        }
                     }
 
                     @Override

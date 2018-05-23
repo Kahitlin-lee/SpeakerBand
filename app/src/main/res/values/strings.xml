@@ -48,4 +48,9 @@
     <string name="conectar">Conectar</string>
     <string name="dispositivos">Dispositivos</string>
     <string name="informacion">Informacion</string>
+    <string name="canciones">Canciones</string>
+    <string name="artistas">Artistas</string>
+    <string name="sincronizacion">ListaSincro</string>
+    <string name="conexion">Conexión</string>
+
 </resources>

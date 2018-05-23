@@ -56,4 +56,34 @@
         </LinearLayout>
     </RelativeLayout>
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/colorAccent"
+        app:layout_constraintBottom_toTopOf="@+id/conexionBoton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <Button
+        android:id="@+id/conexionBoton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/styleButtonDefault"
+        android:background="#757575"
+        android:text="@string/conexion"
+        app:layout_constraintBottom_toTopOf="@+id/lineafondo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ImageView
+        android:id="@+id/lineafondo"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/colorAccent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
 </android.support.constraint.ConstraintLayout>

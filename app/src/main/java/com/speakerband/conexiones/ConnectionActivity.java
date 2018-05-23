@@ -47,7 +47,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     private SongsFragment songsFragment = null;
     private LogsDialogFragment logsDialogFragment;
     private MainFragment mainFragment;
-    private AvailableServicesFragment availableServicesFragment;
 
     private TextView deviceInfoTextView;
     private static final String TAG = WifiDirectHandler.TAG + "MainActivity";
@@ -113,12 +112,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                         replaceFragment(songsFragment);
                     }
                 });
-
-//        //Vamos a resetear el wifi.
-//        if (wifiManager.isWifiEnabled()) {
-//            wifiManager.setWifiEnabled(false);
-//            wifiManager.setWifiEnabled(true);
-//        }
 
         registerCommunicationReceiver();
 
@@ -286,9 +279,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             if(mainFragment != null)
                 getSupportFragmentManager().beginTransaction().remove(mainFragment).commitAllowingStateLoss();
 
-            if(availableServicesFragment != null)
-                getSupportFragmentManager().beginTransaction().remove(availableServicesFragment).commitAllowingStateLoss();
-
             eliminarTodosFragments();
 
             if (chatFragment == null) {
@@ -446,8 +436,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 Log.i(TAG, "MainActivity destroyed");
             }
             super.onBackPressed();
-
-            //           finish();
+            finish();
         }
     }
 
@@ -467,29 +456,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         }
     }
 
-    // ------- ES MAS SEGURO PARA LA APP HACER ESTE METODO EN VEZ DE GENreal por cada uno desde el activity papa (este)
-    // que el uno que cree los fragment sea el pardre
-    /**
-     * Cambiamos a Fragment en el 'fragment_container'
-     * @param fragment Fragment to add
-     */
-    /**
-     * Cambiamos a Fragment en el 'fragment_container'
-     */
-    public void replaceFragmentAvailableServicesFragment()
-    {
-        if (availableServicesFragment == null) {
-            availableServicesFragment = new AvailableServicesFragment();
-        }
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, availableServicesFragment);
-        transaction.addToBackStack(null);
-
-        // Commit de la transaction
-        transaction.commit();
-    }
-
     // --- Dejo uno generico para usar en la propia clase Connection
     /**
      * Cambiamos a Fragment en el 'fragment_container'
@@ -504,6 +470,4 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         // Commit de la transaction
         transaction.commit();
     }
-
-
 }

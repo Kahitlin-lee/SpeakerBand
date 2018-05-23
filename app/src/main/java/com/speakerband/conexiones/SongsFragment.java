@@ -1,10 +1,13 @@
 package com.speakerband.conexiones;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -456,6 +459,7 @@ public class SongsFragment extends ListFragment
     public String writeSongOnExternalMemory(Song song, String nombreFicheroDondeSeEscribe)
     {
         File path = Environment.getExternalStoragePublicDirectory(nombreFicheroDondeSeEscribe);
+        String url = path +"/"+ song.getTitleWithExtension();
         File file = new File(path, song.getTitleWithExtension());
         FileOutputStream fileOutputStream = null; // save
         if ((!file.exists()) && path.exists()) {
@@ -479,6 +483,18 @@ public class SongsFragment extends ListFragment
             long fileSizeInMB = fileSizeInKB / 1024;
 
             escribirMenssge("Se ha guardado la cancion " + song.getTitle() + " en la carpeta de descargas");
+
+            // retrieve more metadata, duration etc.
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.Audio.AudioColumns.DATA, url);
+            contentValues.put(MediaStore.Audio.AudioColumns.TITLE, song.getTitleWithExtension());
+            contentValues.put(MediaStore.Audio.AudioColumns.DISPLAY_NAME, song.getTitleWithExtension());
+            contentValues.put(MediaStore.Audio.AudioColumns.ALBUM,  song.getAlbum());
+            contentValues.put(MediaStore.Audio.AudioColumns.ARTIST, song.getArtist());
+
+            // more columns should be filled from here
+            Uri uri = getActivity().getContentResolver().insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues);
+            Log.d(TAG, uri.toString());
 
             return file.getAbsolutePath();
         }
@@ -563,19 +579,6 @@ public class SongsFragment extends ListFragment
         return true;
     }
 
-    /**
-     *
-     */
-    @Override
-    public void onPause() {
-        super.onPause();
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        View focusedView = getActivity().getCurrentFocus();
-        // TODO Con esta linea Por fin he arreglado este pete del null, solo espero que no afecte a la conexion
-        if (focusedView != null) {
-            imm.hideSoftInputFromWindow(textMessageEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-        }
-    }
 
     /**
      *

@@ -19,9 +19,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.MediaController;
 import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -146,7 +148,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     }
 
-    private RecyclerViewOnItemClickListener listItemClickListener = new RecyclerViewOnItemClickListener()
+    @Override
+    public void onBackPressed() {
+    }
+
+        private RecyclerViewOnItemClickListener listItemClickListener = new RecyclerViewOnItemClickListener()
     {
         /**
          * Click siempre para reproducir la cancion
@@ -564,8 +570,21 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     private void setController()
     {
-        // instanciar el controlador:
-        controller = new MusicController(this);
+        // Instanciar el controlador:
+        controller = new MusicController(this){
+
+            //Manejar el BACK button cuando el reproductor de música está activo
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent event) {
+                if(event.getKeyCode() == KeyEvent.KEYCODE_BACK){
+                    super.hide();//Oculta el mediaController
+                    ((MainActivity) getContext()).finish(); //Cierra el activity
+                    return true;
+                }
+                //Si no presiona el back button, pues sigue funcionando igual.
+                return super.dispatchKeyEvent(event);
+            }
+        };
         controller.setMediaPlayer(this);
         controller.setAnchorView(findViewById(R.id.linear));
         controller.setEnabled(true);
@@ -582,6 +601,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 playPrev();
             }
         });
+
+
     }
 
     //  Métodos que llamamos cuando establecemos el controlador:

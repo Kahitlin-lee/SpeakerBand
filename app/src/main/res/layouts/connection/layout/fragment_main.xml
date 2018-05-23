@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="70sp"
-    android:layout_marginTop="?attr/actionBarSize" >
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_marginTop="?attr/actionBarSize"
-            android:paddingBottom="70sp"
+            android:paddingBottom="30dp"
             android:background="#FAFAFA"
             tools:context="com.speakerband.MainActivity"
             tools:showIn="@layout/activity_main"
             >
+
             <Switch
                 style="@style/styleSwitchDefault"
                 android:id="@+id/toggleWifiSwitch"
-                android:text="@string/action_toggle_wifi" />
+                android:text="@string/action_toggle_wifi"
+                android:layout_marginTop="70dp"/>
 
             <Switch
                 style="@style/styleSwitchDefault"
@@ -28,6 +28,7 @@
                 android:text="@string/action_register_service"
                 android:checked="false"
                 android:enabled="false" />
+
             <Switch
                 style="@style/styleSwitchDefault"
                 android:id="@+id/noPromptServiceRegistrationSwitch"
@@ -35,14 +36,108 @@
                 android:background="#616161"
                 android:checked="false"
                 android:enabled="false"
-                android:visibility="invisible" />
+                android:visibility="gone" />
 
             <Button
-                style="@style/styleButtonDefault"
-                android:text="@string/action_discover_services"
                 android:id="@+id/discoverServicesButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/styleButtonDefault"
                 android:background="#757575"
-                android:enabled="false" />
+                android:enabled="false"
+                android:text="@string/action_discover_services"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+
+        <RelativeLayout
+            android:id="@+id/dispositivos_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/colorAccent"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin2"
+            android:layout_marginRight="@dimen/activity_horizontal_margin2"
+            android:padding="2dp"
+            android:visibility="gone">
+
+            <RelativeLayout
+                android:id="@+id/dispositivos_disponibles"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@android:color/white"
+                android:layout_alignParentTop="true"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:id="@+id/findingServices"
+                    android:text="@string/finding_services"
+                    android:layout_centerVertical="true"
+                    android:textColor="#757575"
+                    android:layout_marginLeft="5dp"
+                   >
+                </TextView>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_toEndOf="@id/findingServices"
+                    android:layout_toRightOf="@id/findingServices"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_centerVertical="true"
+                    style="?android:attr/progressBarStyle"
+                     >
+                </ProgressBar>
+
+                <Button
+                    style="@style/styleButtonDefault"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:text="@string/action_refresh"
+                    android:id="@+id/reset_button"
+                    android:background="#757575"
+                    android:layout_toEndOf="@id/progressBar"
+                    android:layout_toRightOf="@id/findingServices"
+                    android:layout_margin="5dp"
+                    >
+                </Button>
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="@color/colorAccent"
+                    android:layout_below="@id/reset_button"/>
+            </RelativeLayout>
+
+            <ListView
+                android:id="@+id/device_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:listitem="@layout/service_item"
+                android:layout_weight="1"
+                android:background="@android:color/white"
+                android:layout_below="@+id/dispositivos_disponibles"
+                >
+            </ListView>
+
+            <!--<ImageView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:visibility="invisible"-->
+                <!--android:background="@android:color/white"/>     android:layout_below="@id/dispositivos_disponibles"-->
+            </RelativeLayout>
+
+
     </LinearLayout>
+
+
 
 </FrameLayout>

@@ -1,6 +1,7 @@
 package com.speakerband;
 
 import android.content.Context;
+import android.view.KeyEvent;
 import android.widget.MediaController;
 
 /**
@@ -17,4 +18,9 @@ public class MusicController extends MediaController
     }
 
     public void hide(){}
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        return super.dispatchKeyEvent(event);
+    }
 }

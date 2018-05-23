@@ -41,8 +41,11 @@
     <string name="action_register_no_prompt">Registrar Servicio No-Prompt</string>
     <string name="type_message">Escribe mensaje</string>
     <string name="send">➤</string>
-    <string name="finding_services">Encontrando servicios</string>
+    <string name="finding_services">Encontrando \namigos</string>
     <string name="elige_opcion">Selecciona una de las siguientes opciones:</string>
     <string name="abrir_chat">Chat</string>
     <string name="abrir_sync_canciones">Canciones</string>
+    <string name="conectar">Conectar</string>
+    <string name="dispositivos">Dispositivos</string>
+    <string name="informacion">Informacion</string>
 </resources>

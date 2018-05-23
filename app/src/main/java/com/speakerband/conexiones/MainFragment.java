@@ -1,9 +1,13 @@
 package com.speakerband.conexiones;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,12 +15,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
 
 import com.speakerband.R;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
+import com.speakerband.WifiBuddy.DnsSdService;
 import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.WifiBuddy.WifiDirectHandler;
 
@@ -31,9 +41,16 @@ public class MainFragment extends Fragment
     private Switch serviceRegistrationSwitch;
     private Switch noPromptServiceRegistrationSwitch;
     private Button discoverServicesButton;
+    private RelativeLayout listaDispositivosLayout;
     private ConnectionActivity mainActivity;
     private Toolbar toolbar;
     private static final String TAG = WifiDirectHandler.TAG + "MainFragment";
+
+    private List<DnsSdService> services = new ArrayList<>();
+    private AvailableServicesListViewAdapter servicesListAdapter;
+    private ListView deviceList;
+
+    private View viewRoot;
 
     /**
      * Establece el diseño de la interfaz de usuario,
@@ -44,18 +61,22 @@ public class MainFragment extends Fragment
                              Bundle savedInstanceState)
     {
         // Establece el diseño para la interfaz de usuario
-        final View view = inflater.inflate(R.layout.fragment_main, container, false);
+        viewRoot = inflater.inflate(R.layout.fragment_main, container, false);
 
         // Inicializa Switches
-        toggleWifiSwitch = (Switch) view.findViewById(R.id.toggleWifiSwitch);
-        serviceRegistrationSwitch = (Switch) view.findViewById(R.id.serviceRegistrationSwitch);
-        noPromptServiceRegistrationSwitch = (Switch) view.findViewById(R.id.noPromptServiceRegistrationSwitch);
+        toggleWifiSwitch = (Switch) viewRoot.findViewById(R.id.toggleWifiSwitch);
+        serviceRegistrationSwitch = (Switch) viewRoot.findViewById(R.id.serviceRegistrationSwitch);
+        noPromptServiceRegistrationSwitch = (Switch) viewRoot.findViewById(R.id.noPromptServiceRegistrationSwitch);
+        listaDispositivosLayout = (RelativeLayout) viewRoot.findViewById(R.id.dispositivos_layout);
 
         // Inicializa Discover Services Button
-        discoverServicesButton = (Button) view.findViewById(R.id.discoverServicesButton);
+        discoverServicesButton = (Button) viewRoot.findViewById(R.id.discoverServicesButton);
 
         toolbar = (Toolbar) getActivity().findViewById(R.id.mainToolbar);
         toolbar.setTitle("Wi-Fi Direct Handler");
+
+        deviceList = (ListView)viewRoot.findViewById(R.id.device_list);
+
 
         // Set Toggle escuchador para Wi-Fi Switch
         toggleWifiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -112,11 +133,85 @@ public class MainFragment extends Fragment
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "\nDiscover Services Button Pressed");
-                mainActivity.replaceFragmentAvailableServicesFragment();
+                activarBusquedaAmigos();
+                listaDispositivosLayout.setVisibility(View.VISIBLE);
             }
         });
 
-        return view;
+        updateToggles();
+
+        return viewRoot;
+    }
+
+    private void activarBusquedaAmigos()
+    {
+        prepareResetButton(viewRoot);
+        setServiceList();
+        services.clear();
+        servicesListAdapter.notifyDataSetChanged();
+        Log.d("TIMING", "Discovering started " + (new Date()).getTime());
+        registerLocalP2pReceiver();
+        getHandler().continuouslyDiscoverServices();
+    }
+
+    private void prepareResetButton(View view){
+        Button resetButton = (Button)view.findViewById(R.id.reset_button);
+        resetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resetServiceDiscovery();
+            }
+        });
+    }
+
+    /**
+     * Sets the service list adapter to display available services
+     */
+    private void setServiceList() {
+        servicesListAdapter = new AvailableServicesListViewAdapter((ConnectionActivity) getActivity(), services);
+        deviceList.setAdapter(servicesListAdapter);
+    }
+
+    /**
+     * Onclick Method for the the reset button to clear the services list
+     * and start discovering services again
+     */
+    private void resetServiceDiscovery(){
+        // Clear the list, notify the list adapter, and start discovering services again
+        Log.i(TAG, "Restableciendo el  servicio");
+        services.clear();
+        servicesListAdapter.notifyDataSetChanged();
+        getHandler().resetServiceDiscovery();
+    }
+
+    private void registerLocalP2pReceiver() {
+        Log.i(TAG, "Registro del receptor de difusión P2P local");
+        MainFragment.WifiDirectReceiver p2pBroadcastReceiver = new MainFragment.WifiDirectReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiDirectHandler.Action.DNS_SD_SERVICE_AVAILABLE);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(p2pBroadcastReceiver, intentFilter);
+        Log.i(TAG, "Receptor de difusión local P2P registrado");
+    }
+
+
+    /**
+     * Receptor para recibir intents del WifiDirectHandler para actualizar la IU
+     * when Wi-Fi Direct commands are completed
+     */
+    public class WifiDirectReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get the intent sent by WifiDirectHandler when a service is found
+            if (intent.getAction().equals(WifiDirectHandler.Action.DNS_SD_SERVICE_AVAILABLE)) {
+                String serviceKey = intent.getStringExtra(WifiDirectHandler.SERVICE_MAP_KEY);
+                DnsSdService service = getHandler().getDnsSdServiceMap().get(serviceKey);
+                Log.d("TIMING", "Service Discovered and Accessed " + (new Date()).getTime());
+                // Add the service to the UI and update
+                servicesListAdapter.addUnique(service);
+                // TODO Capture an intent that indicates the peer list has changed
+                // and see if we need to remove anything from our list
+            }
+        }
     }
 
 
@@ -135,17 +230,16 @@ public class MainFragment extends Fragment
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
         try {
             wifiDirectHandlerAccessor = ((WiFiDirectHandlerAccessor) getActivity());
         } catch (ClassCastException e) {
             throw new ClassCastException(getActivity().toString() + " must implement WiFiDirectHandlerAccessor");
         }
-        updateToggles();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     /**

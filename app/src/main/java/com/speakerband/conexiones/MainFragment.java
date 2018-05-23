@@ -54,7 +54,8 @@ public class MainFragment extends Fragment
         // Inicializa Discover Services Button
         discoverServicesButton = (Button) view.findViewById(R.id.discoverServicesButton);
 
-        updateToggles();
+        toolbar = (Toolbar) getActivity().findViewById(R.id.mainToolbar);
+        toolbar.setTitle("Wi-Fi Direct Handler");
 
         // Set Toggle escuchador para Wi-Fi Switch
         toggleWifiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -115,8 +116,6 @@ public class MainFragment extends Fragment
             }
         });
 
-        toolbar = (Toolbar) getActivity().findViewById(R.id.mainToolbar);
-
         return view;
     }
 
@@ -136,17 +135,17 @@ public class MainFragment extends Fragment
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        try {
-            wifiDirectHandlerAccessor = ((WiFiDirectHandlerAccessor) getActivity());
-        } catch (ClassCastException e) {
-            throw new ClassCastException(getActivity().toString() + " must implement WiFiDirectHandlerAccessor");
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        toolbar.setTitle("Wi-Fi Direct Handler");
+        try {
+            wifiDirectHandlerAccessor = ((WiFiDirectHandlerAccessor) getActivity());
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString() + " must implement WiFiDirectHandlerAccessor");
+        }
+        updateToggles();
     }
 
     /**

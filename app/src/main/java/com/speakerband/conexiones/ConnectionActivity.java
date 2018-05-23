@@ -23,15 +23,14 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.speakerband.ClaseAplicationGlobal;
 import com.speakerband.R;
 import com.speakerband.WifiBuddy.DnsSdService;
 import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.WifiBuddy.WifiDirectHandler;
-
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentChat;
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentSong;
+import static com.speakerband.ClaseAplicationGlobal.wifiManager;
 
 /**
  * Actividad que  que es un contenedor para Fragment y la ActionBar.
@@ -58,6 +57,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     private LinearLayout layoutBotones;
     private ClaseAplicationGlobal mApplication;
 
+    private CommunicationReceiver communicationReceiver;
+    private Intent intentWifiDirect;
 
 
     /**
@@ -76,18 +77,11 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         abrirCancionesButton = (Button) findViewById(R.id.sincronizarCanciones);
         layoutBotones = (LinearLayout) findViewById(R.id.layoutbotones);
         layoutBotones.setVisibility(View.INVISIBLE);
+        deviceInfoTextView = (TextView) findViewById(R.id.thisDeviceInfoTextView);
 
         // Inicializa ActionBar
         Toolbar toolbar = (Toolbar) findViewById(R.id.mainToolbar);
         setSupportActionBar(toolbar);
-
-        deviceInfoTextView = (TextView) findViewById(R.id.thisDeviceInfoTextView);
-
-        registerCommunicationReceiver();
-        Log.i(TAG, "MainActivity creado");
-
-        Intent intent = new Intent(this, WifiDirectHandler.class);
-        bindService(intent, wifiServiceConnection, BIND_AUTO_CREATE);
 
         mApplication = (ClaseAplicationGlobal) getApplicationContext ();
 
@@ -95,13 +89,13 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         abrirChatButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "\nSe abre el fragment del char");
+                Log.i(TAG, "\nSe abre el fragment del chat");
                 // se supone que ya exite el objeto , creado al conectarnos
                 if (chatFragment == null) {
                     chatFragment = new ChatFragment();
                 }
                 estaEnElFragmentChat = true;
-                desapareceLayour();
+                desapareceLayout();
                 replaceFragment(chatFragment);
             }
         });
@@ -110,50 +104,81 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         abrirCancionesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "\n");
-         if (songsFragment == null) {
-                songsFragment = new SongsFragment();
-                }
-                estaEnElFragmentSong= true;
-                desapareceLayour();
-                replaceFragment(songsFragment);
-            }
-        });
+                 Log.i(TAG, "\n");
+                 if (songsFragment == null) {
+                        songsFragment = new SongsFragment();
+                        }
+                        estaEnElFragmentSong= true;
+                        desapareceLayout();
+                        replaceFragment(songsFragment);
+                    }
+                });
+
+//        //Vamos a resetear el wifi.
+//        if (wifiManager.isWifiEnabled()) {
+//            wifiManager.setWifiEnabled(false);
+//            wifiManager.setWifiEnabled(true);
+//        }
+
+        registerCommunicationReceiver();
+
+        if (intentWifiDirect == null)
+            intentWifiDirect = new Intent(this, WifiDirectHandler.class);
+
+        if(!wifiDirectHandlerBound) {
+            bindService(intentWifiDirect, wifiServiceConnection, BIND_AUTO_CREATE);
+        }
+
+
+        Log.i(TAG, "MainActivity creado");
     }
 
-    /**
-     *
-     */
-    private void desapareceLayour() {
-        abrirCancionesButton.setEnabled(false);
-        abrirChatButton.setEnabled(false);
-        layoutBotones.setVisibility(View.INVISIBLE);
-    }
-
-    /**
-     *
-     */
-    private void aparececeLayour() {
-        abrirCancionesButton.setEnabled(true);
-        abrirChatButton.setEnabled(true);
-        layoutBotones.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * Configura CommunicationReceiver para recibir intents disparados de WifiDirectHandler
-     * Se utiliza para actualizar la interfaz de usuario y recibir mensajes de comunicación
-     */
-    private void registerCommunicationReceiver()
+    @Override
+    protected void onResume()
     {
-        CommunicationReceiver communicationReceiver = new CommunicationReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(WifiDirectHandler.Action.SERVICE_CONNECTED);
-        filter.addAction(WifiDirectHandler.Action.MESSAGE_RECEIVED);
-        filter.addAction(WifiDirectHandler.Action.DEVICE_CHANGED);
-        filter.addAction(WifiDirectHandler.Action.WIFI_STATE_CHANGED);
-        LocalBroadcastManager.getInstance(this).registerReceiver(communicationReceiver, filter);
-        Log.i(TAG, "Communication Receiver registered");
+        Log.i(TAG, "Resuming MainActivity");
+
+
+        super.onResume();
+
+        Log.i(TAG, "MainActivity resumed");
     }
+
+        /**
+         *
+         */
+        private void desapareceLayout() {
+            abrirCancionesButton.setEnabled(false);
+            abrirChatButton.setEnabled(false);
+            layoutBotones.setVisibility(View.INVISIBLE);
+        }
+
+        /**
+         *
+         */
+        private void aparececeLayout() {
+            abrirCancionesButton.setEnabled(true);
+            abrirChatButton.setEnabled(true);
+            layoutBotones.setVisibility(View.VISIBLE);
+        }
+
+        /**
+         * Configura CommunicationReceiver para recibir intents disparados de WifiDirectHandler
+         * Se utiliza para actualizar la interfaz de usuario y recibir mensajes de comunicación
+         */
+        private void registerCommunicationReceiver()
+        {
+            if(communicationReceiver == null)
+                communicationReceiver = new CommunicationReceiver();
+
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(WifiDirectHandler.Action.SERVICE_CONNECTED);
+            filter.addAction(WifiDirectHandler.Action.MESSAGE_RECEIVED);
+            filter.addAction(WifiDirectHandler.Action.DEVICE_CHANGED);
+            filter.addAction(WifiDirectHandler.Action.WIFI_STATE_CHANGED);
+            LocalBroadcastManager.getInstance(this).registerReceiver(communicationReceiver, filter);
+            Log.i(TAG, "Communication Receiver registered");
+        }
 
     /**
      * Agrega al  Main Menu de ActionBar
@@ -181,7 +206,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 logsDialogFragment.show(getFragmentManager(), "dialog");
                 return true;
             case R.id.action_exit:
-                finish();
+                //finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -213,7 +238,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             Log.i(TAG, "WifiDirectHandler service bound");
 
             // Agregar MainFragment al 'fragment_container' cuando wifiDirectHandler está vinculado
-            mainFragment = new MainFragment();
+            if(mainFragment == null)
+                mainFragment = new MainFragment();
             replaceFragment(mainFragment);
 
             deviceInfoTextView.setText(wifiDirectHandler.getThisDeviceInfo());
@@ -232,43 +258,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             Log.i(TAG, "WifiDirectHandler service unbound");
         }
     };
-    // ------- ES MAS SEGURO PARA LA APP HACER ESTE METODO EN VEZ DE GENreal por cada uno desde el activity papa (este)
-    // que el uno que cree los fragment sea el pardre
-    /**
-     * Cambiamos a Fragment en el 'fragment_container'
-     * @param fragment Fragment to add
-     */
-    /**
-     * Cambiamos a Fragment en el 'fragment_container'
-     */
-    public void replaceFragmentAvailableServicesFragment()
-    {
-        if (availableServicesFragment == null) {
-            availableServicesFragment = new AvailableServicesFragment();
-        }
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, availableServicesFragment);
-        transaction.addToBackStack(null);
-
-        // Commit de la transaction
-        transaction.commit();
-    }
-
-    // --- Dejo uno generico para usar en la propia clase Connection
-    /**
-     * Cambiamos a Fragment en el 'fragment_container'
-     * @param fragment Fragment to add
-     */
-    public void replaceFragment(Fragment fragment)
-    {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, fragment);
-        transaction.addToBackStack(null);
-
-        // Commit de la transaction
-        transaction.commit();
-    }
 
     /**
      * Regresa el wifiDirectHandler
@@ -294,10 +284,12 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
             // ELiminamos los fragment que ya no usamos de la pila/cola
             if(mainFragment != null)
-                getSupportFragmentManager().beginTransaction().remove(mainFragment).commit();
+                getSupportFragmentManager().beginTransaction().remove(mainFragment).commitAllowingStateLoss();
 
             if(availableServicesFragment != null)
-                getSupportFragmentManager().beginTransaction().remove(availableServicesFragment).commit();
+                getSupportFragmentManager().beginTransaction().remove(availableServicesFragment).commitAllowingStateLoss();
+
+            eliminarTodosFragments();
 
             if (chatFragment == null) {
                 chatFragment = new ChatFragment();
@@ -321,37 +313,18 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         }
     }
 
+
     protected void onPause() {
         super.onPause();
         Log.i(TAG, "Pausing MainActivity");
         if (wifiDirectHandlerBound) {
             Log.i(TAG, "WifiDirectHandler service unbound");
+            stopService(intentWifiDirect);
             unbindService(wifiServiceConnection);
             wifiDirectHandlerBound = false;
         }
         Log.i(TAG, "MainActivity paused");
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(TAG, "Resuming MainActivity");
-        Intent intent = new Intent(this, WifiDirectHandler.class);
-        if(!wifiDirectHandlerBound) {
-            bindService(intent, wifiServiceConnection, BIND_AUTO_CREATE);
-        }
-        Log.i(TAG, "MainActivity resumed");
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.i(TAG, "Starting MainActivity");
-//        Intent intent = new Intent(this, WifiDirectHandler.class);
-//        bindService(intent, wifiServiceConnection, BIND_AUTO_CREATE);
-        Log.i(TAG, "MainActivity started");
-    }
-
     @Override
     protected void onStop() {
         super.onStop();
@@ -359,8 +332,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         mApplication.eliminarYGenrearListaConCommitDePreferencess();
         //getApplicationContext().unbindService(wifiServiceConnection);
         if(wifiDirectHandlerBound) {
-            Intent intent = new Intent(this, WifiDirectHandler.class);
-            stopService(intent);
+            stopService(intentWifiDirect);
             unbindService(wifiServiceConnection);
             wifiDirectHandlerBound = false;
         }
@@ -374,6 +346,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         mApplication.eliminarYGenrearListaConCommitDePreferencess();
         if (wifiDirectHandlerBound) {
             Log.i(TAG, "WifiDirectHandler service unbound");
+            stopService(intentWifiDirect);
             unbindService(wifiServiceConnection);
             wifiDirectHandlerBound = false;
             Log.i(TAG, "MainActivity destroyed");
@@ -416,11 +389,13 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
                 // ELiminamos los fragment que ya no usamos de la pila/cola
                 // TODO     java.lang.IllegalStateException: Activity has been destroyed sale cada tanto
-                if(mainFragment != null)
-                    getSupportFragmentManager().beginTransaction().remove(mainFragment).commitAllowingStateLoss();
+//                if(mainFragment != null)
+//                    getSupportFragmentManager().beginTransaction().remove(mainFragment).commitAllowingStateLoss();
+//
+//                if(availableServicesFragment != null)
+//                    getSupportFragmentManager().beginTransaction().remove(availableServicesFragment).commitAllowingStateLoss();
 
-                if(availableServicesFragment != null)
-                    getSupportFragmentManager().beginTransaction().remove(availableServicesFragment).commitAllowingStateLoss();
+                eliminarTodosFragments();
 
                 // crea los que si usamos
                 if (chatFragment == null) {
@@ -462,29 +437,86 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
         if (estaEnElFragmentSong) {
             if(songsFragment!=null) {
-                songsFragment.getView().setVisibility(View.INVISIBLE);
-                aparececeLayour();
+                //songsFragment.getView().setVisibility(View.INVISIBLE);
+                eliminarFragment();
+                aparececeLayout();
                 estaEnElFragmentSong = false;
                 mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
             }
         } else if (estaEnElFragmentChat) {
             if(chatFragment!=null) {
-                chatFragment.getView().setVisibility(View.INVISIBLE);
-                aparececeLayour();
+                //chatFragment.getView().setVisibility(View.INVISIBLE);
+                eliminarFragment();
+                aparececeLayout();
                 estaEnElFragmentChat = false;
                 mApplication.salvarTodasLasCancionesEnLaListaDePreferencess();
             }
         } else {
-            super.onBackPressed();
-            mApplication.eliminarYGenrearListaConCommitDePreferencess();
+
             if (wifiDirectHandlerBound) {
                 Log.i(TAG, "WifiDirectHandler service unbound");
                 unbindService(wifiServiceConnection);
                 wifiDirectHandlerBound = false;
                 Log.i(TAG, "MainActivity destroyed");
             }
-            finish();
+            super.onBackPressed();
+
+            //           finish();
         }
+    }
+
+    public void eliminarFragment()
+    {
+        int numeroFragments = getSupportFragmentManager().getBackStackEntryCount();
+        if( numeroFragments != 0)
+            getSupportFragmentManager().popBackStack();
+    }
+
+    public void eliminarTodosFragments()
+    {
+        int numeroFragments = getSupportFragmentManager().getBackStackEntryCount();
+        for (int i=0; i<numeroFragments; i++)
+        {
+                getSupportFragmentManager().popBackStackImmediate();
+        }
+    }
+
+    // ------- ES MAS SEGURO PARA LA APP HACER ESTE METODO EN VEZ DE GENreal por cada uno desde el activity papa (este)
+    // que el uno que cree los fragment sea el pardre
+    /**
+     * Cambiamos a Fragment en el 'fragment_container'
+     * @param fragment Fragment to add
+     */
+    /**
+     * Cambiamos a Fragment en el 'fragment_container'
+     */
+    public void replaceFragmentAvailableServicesFragment()
+    {
+        if (availableServicesFragment == null) {
+            availableServicesFragment = new AvailableServicesFragment();
+        }
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, availableServicesFragment);
+        transaction.addToBackStack(null);
+
+        // Commit de la transaction
+        transaction.commit();
+    }
+
+    // --- Dejo uno generico para usar en la propia clase Connection
+    /**
+     * Cambiamos a Fragment en el 'fragment_container'
+     * @param fragment Fragment to add
+     */
+    public void replaceFragment(Fragment fragment)
+    {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.addToBackStack(null);
+
+        // Commit de la transaction
+        transaction.commit();
     }
 
 

@@ -50,8 +50,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="20sp"
-            android:id="@+id/findingService"
-            android:text="@string/finding_services"
+            android:id="@+id/textoIndicativo"
+            android:text="@string/elige_opcion"
             android:layout_centerVertical="true" >
         </TextView>
 
@@ -75,15 +75,6 @@
             android:background="@drawable/mi_boton"
             android:text="@string/abrir_sync_canciones"
             />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:id="@+id/explicaBotones"
-            android:text="@string/finding_services"
-            android:layout_centerVertical="true" >
-        </TextView>
 
     </LinearLayout>
 </FrameLayout>

@@ -16,7 +16,7 @@ public class OwnerSocketHandler extends Thread {
     private ServerSocket serverSocket = null;
     private final int THREAD_COUNT = 10;
     private Handler handler;
-    private static final String TAG = WifiDirectHandler.TAG + "OwnerSocketHandler";
+    private static final String TAG = WifiDirectHandler.TAG + "Ownerw";
 
     public OwnerSocketHandler(Handler handler) throws IOException {
         try {

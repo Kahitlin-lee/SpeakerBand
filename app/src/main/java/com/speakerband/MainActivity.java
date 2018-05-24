@@ -447,7 +447,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         if (_musicCursor != null )
             _musicCursor.close();
-        myList.addAll(list);
+
+        myList = list;
         return list;
     }
 

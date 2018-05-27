@@ -11,6 +11,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.speakerband.ClaseAplicationGlobal.listSelection;
+
 /**
  * Created by g_electra on 29/11/17.
  */
@@ -68,6 +70,21 @@ public class SharedPreferencesClass
         if (listSelectionPreferences == null)
             listSelectionPreferences = new ArrayList<Song>();
         listSelectionPreferences.add(song);
+        saveListSelectionPreferences(context, (ArrayList<Song>) listSelectionPreferences);
+        Log.d("SharedPerefencesClass", "Guardando cancion en la lista del shared preferences");
+    }
+
+    /**
+     * Metodo que agrega una cancion a la lista de seleccion del SharedPreferences
+     * @param context
+     * @param song
+     */
+    public void removeUnaSongListSelectionPreferences(Context context, Song song)
+    {
+        List<Song> listSelectionPreferences = getListSelectionPreferences(context);
+        if (listSelectionPreferences == null)
+            listSelectionPreferences = new ArrayList<Song>();
+        listSelectionPreferences.remove(listSelection.indexOf(song));
         saveListSelectionPreferences(context, (ArrayList<Song>) listSelectionPreferences);
         Log.d("SharedPerefencesClass", "Guardando cancion en la lista del shared preferences");
     }

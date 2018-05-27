@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private ClaseAplicationGlobal mApplication;
 
     private TabLayout tabsLayout;
+    private int tabPosition;
 
     private Button conexionBoton;
 
@@ -177,21 +178,32 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         /**
          * Long clcli que agrega las canciones a la lista de preferencias
+         * O la quita si es que estamos en la tab de lista de seleccion
          * @param v
-         * @param position
+         * @param songPosition
          */
         @Override
-        public void onLongClick(View v, int position)
+        public void onLongClick(View v, int songPosition)
         {
-            song = songList.get(position);
-            if (!listSelection.contains(song)) {
-                listSelection.add(song);
-                //Agregamos la nueva cancion a SharedPreferencesClass desde La clase global aplication
+            if(tabPosition == 2) {
+                song = songList.get(songPosition);
+                if (listSelection.contains(song)) {
+                    mApplication.eliminarUnaCancionAPreferencess(song);
+                    listSelection.remove(listSelection.indexOf(song));
+                    Toast.makeText(MainActivity.this, R.string.song_remove, Toast.LENGTH_SHORT).show();
+                }
+                initRecyclerView(2);
+            } else {
+                song = songList.get(songPosition);
+                if (!listSelection.contains(song)) {
+                    listSelection.add(song);
+                    //Agregamos la nueva cancion a SharedPreferencesClass desde La clase global aplication
 
-                mApplication.agregarUnaCancionAPreferencess(song);
-                Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
-            } else
-                Toast.makeText(MainActivity.this, R.string.song_exist_list_selection, Toast.LENGTH_SHORT).show();
+                    mApplication.agregarUnaCancionAPreferencess(song);
+                    Toast.makeText(MainActivity.this, R.string.song_add, Toast.LENGTH_SHORT).show();
+                } else
+                    Toast.makeText(MainActivity.this, R.string.song_exist_list_selection, Toast.LENGTH_SHORT).show();
+            }
         }
     };
 
@@ -208,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         tabsLayout.addTab(tabsLayout.newTab().setText(getResources().getString(R.string.sincronizacion)));
         //  tabsLayout.addTab(tabsLayout.newTab().setText(getResources().getString(R.string.conexion)));
 
-        //Para tab con movimiento
+        //Para tab con movimiento    TODO MODE_SCROLLABLE
         tabsLayout.setTabMode(TabLayout.MODE_FIXED);
 
         tabsLayout.addOnTabSelectedListener(
@@ -217,7 +229,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     @Override
                     public void onTabSelected(TabLayout.Tab tab)
                     {
-                            initRecyclerView(tab.getPosition());
+                        initRecyclerView(tab.getPosition());
+                        tabPosition = tab.getPosition();
                     }
 
                     @Override

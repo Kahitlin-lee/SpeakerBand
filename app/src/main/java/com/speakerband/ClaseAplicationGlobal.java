@@ -97,12 +97,22 @@ public class ClaseAplicationGlobal extends Application {
         preferences.saveListSelectionPreferences(getApplicationContext(), _realList );
     }
 
+
+
     /**
      * Agrega una cancion a la preferencias desde cualquier parte de la aplicacion
      * @param
      */
     public void agregarUnaCancionAPreferencess(Song song) {
         preferences.addUnaSongListSelectionPreferences(getApplicationContext(), song);
+    }
+
+    /**
+     * Elimina una cancion a la preferencias desde cualquier parte de la aplicacion
+     * @param
+     */
+    public void eliminarUnaCancionAPreferencess(Song song) {
+        preferences.removeUnaSongListSelectionPreferences(getApplicationContext(), song);
     }
 
     /**

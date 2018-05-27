@@ -19,6 +19,7 @@
 
     <!-- toast de la app -->
     <string name="song_add">Canción agregada a la lista de reproducción</string>
+    <string name="song_remove">Canción eliminada de la lista de reproducción</string>
     <string name="song_exist_list_selection">La canción ya existe en la lista de selección</string>
     <string name="carpeta_creada">Carpeta de la aplicación creada con éxito o ya existente</string>
     <string name="carpeta_no_creada">No se ha podido crear la carpeta de la aplicación</string>

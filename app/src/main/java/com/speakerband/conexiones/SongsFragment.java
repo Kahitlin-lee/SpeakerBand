@@ -31,6 +31,7 @@ import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.WifiBuddy.WifiDirectHandler;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
+import com.speakerband.utils.UtilList;
 
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -47,6 +48,7 @@ import java.util.List;
 
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
 import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
+import static com.speakerband.ClaseAplicationGlobal.myList;
 import static com.speakerband.network.MessageType.SONG_START;
 
 public class SongsFragment extends ListFragment
@@ -193,13 +195,23 @@ public class SongsFragment extends ListFragment
                 Log.i(TAG, "SongPath");
                 try
                 {
+                    Song s;
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     _song = loadSong(is);
+                    // TODO hacer q regrese la cancion y probar
                     writeSong(_song);
-                    if(!listSelectionClinteParaReproducir.contains(_song)) {
-                        listSelectionClinteParaReproducir.add(_song);
+                    s = encontrarLaCancionEnMilista(_song);
+                    if(s!=null) {
+                        if(!listSelectionClinteParaReproducir.contains(s)) {
+                            listSelectionClinteParaReproducir.add(s);
+                        }
+                    } else {
+                        if(!listSelectionClinteParaReproducir.contains(_song)) {
+                            listSelectionClinteParaReproducir.add(_song);
+                        }
                     }
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -209,10 +221,9 @@ public class SongsFragment extends ListFragment
             case SONG_END:
                 if (!listSelectionClinteParaReproducir.isEmpty()) {
                     Log.i(TAG, "Han llegado todas las cancion si es que no existien ya en el movil");
-                    Toast.makeText(getContext(),
-                            "Han llegado todas las cancion", Toast.LENGTH_SHORT).show();
                     escribirMenssge("Han llegado todas las cancion si es que no existien ya en el movil");
                 }
+                UtilList.sortByName(listSelectionClinteParaReproducir);
                 cambiarBotonesUnaVezYaTenemosTodasLasCanciones();
                 break;
             case PREPARE_PLAY:
@@ -225,6 +236,16 @@ public class SongsFragment extends ListFragment
                 ponerListaEnPlay();
                 break;
         }
+    }
+
+    //TODO Hacer lo mismo que esto pero de otra forma una vez esten todas las conciones enviadas
+    private Song encontrarLaCancionEnMilista(Song song){
+        for(int i = 0; i < myList.size(); i++){
+            if(myList.get(i).getTitle().equals(song.getTitle())) {
+                return myList.get(i);
+            }
+        }
+        return null;
     }
 
     /**
@@ -484,13 +505,14 @@ public class SongsFragment extends ListFragment
 
             escribirMenssge("Se ha guardado la cancion " + song.getTitle() + " en la carpeta de descargas");
 
-            // retrieve more metadata, duration etc.
             ContentValues contentValues = new ContentValues();
-            contentValues.put(MediaStore.Audio.AudioColumns.DATA, url);
-            contentValues.put(MediaStore.Audio.AudioColumns.TITLE, song.getTitleWithExtension());
-            contentValues.put(MediaStore.Audio.AudioColumns.DISPLAY_NAME, song.getTitleWithExtension());
+            contentValues.put(MediaStore.Audio.AudioColumns.TITLE, song.getTitle());
+            contentValues.put(MediaStore.Audio.AudioColumns._ID, song.getId());
             contentValues.put(MediaStore.Audio.AudioColumns.ALBUM,  song.getAlbum());
             contentValues.put(MediaStore.Audio.AudioColumns.ARTIST, song.getArtist());
+            contentValues.put(MediaStore.Audio.AudioColumns.DATA, url);
+
+            //contentValues.put(MediaStore.Audio.AudioColumns.DISPLAY_NAME, song.getTitleWithExtension());
 
             // more columns should be filled from here
             Uri uri = getActivity().getContentResolver().insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues);
@@ -579,6 +601,20 @@ public class SongsFragment extends ListFragment
         return true;
     }
 
+    /**
+     *
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        View focusedView = getActivity().getCurrentFocus();
+        // TODO Con esta linea Por fin he arreglado este pete del null, solo espero que no afecte a la conexion
+//        if (focusedView != null) {
+//            if(textMessageEditText.getWindowToken()== null)
+//                imm.hideSoftInputFromWindow(textMessageEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+//        }
+    }
 
     /**
      *

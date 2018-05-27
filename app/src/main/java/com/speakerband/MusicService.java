@@ -318,8 +318,6 @@ public class MusicService extends Service implements
         return mediaPlayer.getCurrentPosition();
     }
 
-
-
     /**
      *
      * @return

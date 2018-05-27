@@ -1,6 +1,7 @@
 package com.speakerband;
 
 import android.app.Application;
+import android.content.Context;
 import android.net.wifi.WifiManager;
 
 import com.speakerband.utils.UtilList;
@@ -18,6 +19,7 @@ public class ClaseAplicationGlobal extends Application {
     public static boolean estaEnElFragmentChat;
     public static boolean estaEnElFragmentSong;
     public static WifiManager wifiManager;
+    private static Context mContext;
 
 
 
@@ -28,6 +30,12 @@ public class ClaseAplicationGlobal extends Application {
         myList = new ArrayList<Song>();
         listSelectionClinteParaReproducir = new ArrayList<Song>();
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        mContext = getApplicationContext();
+
+    }
+
+    public static Context getContext() {
+        return mContext;
     }
 
     public WifiManager getWifiManager()
@@ -108,5 +116,6 @@ public class ClaseAplicationGlobal extends Application {
         if(!listSelection.isEmpty())
             preferences.saveListSelectionPreferences(getApplicationContext(), listSelection);
     }
+
 
 }

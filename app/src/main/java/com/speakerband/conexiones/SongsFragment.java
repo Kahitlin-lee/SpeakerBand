@@ -26,12 +26,12 @@ import android.widget.Toast;
 import com.speakerband.MainActivity;
 import com.speakerband.R;
 import com.speakerband.Song;
+import com.speakerband.SongCursor;
 import com.speakerband.WifiBuddy.CommunicationManager;
 import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.WifiBuddy.WifiDirectHandler;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
-import com.speakerband.utils.UtilList;
 
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -48,7 +48,6 @@ import java.util.List;
 
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
 import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
-import static com.speakerband.ClaseAplicationGlobal.myList;
 import static com.speakerband.network.MessageType.SONG_START;
 
 public class SongsFragment extends ListFragment
@@ -199,19 +198,9 @@ public class SongsFragment extends ListFragment
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     _song = loadSong(is);
-                    // TODO hacer q regrese la cancion y probar
+                    listSelectionClinteParaReproducir.add(_song);
                     writeSong(_song);
-                    s = encontrarLaCancionEnMilista(_song);
-                    if(s!=null) {
-                        if(!listSelectionClinteParaReproducir.contains(s)) {
-                            listSelectionClinteParaReproducir.add(s);
-                        }
-                    } else {
-                        if(!listSelectionClinteParaReproducir.contains(_song)) {
-                            listSelectionClinteParaReproducir.add(_song);
-                        }
-                    }
-
+                    //-----
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -219,11 +208,12 @@ public class SongsFragment extends ListFragment
                 break;
             //La cancion se termina de llegar
             case SONG_END:
+
                 if (!listSelectionClinteParaReproducir.isEmpty()) {
                     Log.i(TAG, "Han llegado todas las cancion si es que no existien ya en el movil");
                     escribirMenssge("Han llegado todas las cancion si es que no existien ya en el movil");
+                    SongCursor.encontrarLaCancionEnMilista();
                 }
-                UtilList.sortByName(listSelectionClinteParaReproducir);
                 cambiarBotonesUnaVezYaTenemosTodasLasCanciones();
                 break;
             case PREPARE_PLAY:
@@ -233,20 +223,12 @@ public class SongsFragment extends ListFragment
                 play();
                 break;
             case PREPARADO:
-                ponerListaEnPlay();
+                ponerListaDeCancionesDelLiderEnPlay();
                 break;
         }
     }
 
-    //TODO Hacer lo mismo que esto pero de otra forma una vez esten todas las conciones enviadas
-    private Song encontrarLaCancionEnMilista(Song song){
-        for(int i = 0; i < myList.size(); i++){
-            if(myList.get(i).getTitle().equals(song.getTitle())) {
-                return myList.get(i);
-            }
-        }
-        return null;
-    }
+
 
     /**
      *
@@ -258,13 +240,31 @@ public class SongsFragment extends ListFragment
         sendSongButton.setVisibility(View.INVISIBLE);
     }
 
+    // ------METODOS PARA PONER LAS CANCIONES EN PLAY EN ORDEN DE EJECUCION
     /**
-     *
+     * Cuando s epulsa el boton envia el mensaje al cliente para que pongo en play pause la cancion
+     */
+    private void preparePlay()
+    {
+        Thread thread;
+        byte[] byteArrayPrepararPlay  = ("preparar play").getBytes();
+
+        escribirMenssge("Preparando Play 1");
+        Toast.makeText(getContext(),
+                "Preparando Play", Toast.LENGTH_SHORT).show();
+        thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PREPARE_PLAY, byteArrayPrepararPlay);
+        if(thread != null)
+            thread.interrupt();
+    }
+
+    /**
+     * Pone la cancion del cliente en play/pause
      */
     public void prepararMovilParaReploduccionParaPlay() {
         if(!listSelectionClinteParaReproducir.isEmpty()) {
-            //MainActivity.musicService.setSong(listSelectionClinteParaReproducir.get(0));
-            //MainActivity.musicService.pausePlay();
+            MainActivity.musicService.setSong(listSelectionClinteParaReproducir.get(0));
+            MainActivity.musicService.playSong();
+            MainActivity.musicService.pausar();
 
             Thread thread;
             byte[] byteArrayPrepararPlay = ("preparar play").getBytes();
@@ -280,9 +280,9 @@ public class SongsFragment extends ListFragment
     }
 
     /**
-     *
+     * Pone la cancion del lider en play
      */
-    public void ponerListaEnPlay() {
+    public void ponerListaDeCancionesDelLiderEnPlay() {
         if(!listSelection.isEmpty()) {
             Thread thread;
             byte[] byteArrayPrepararPlay = ("preparar play").getBytes();
@@ -299,6 +299,17 @@ public class SongsFragment extends ListFragment
                     "No hay canciones que reproducir", Toast.LENGTH_SHORT).show();
         }
     }
+
+    /**
+     * Pone en play la cancion en el lider
+     */
+    private void play()
+    {
+        MainActivity.musicService.setSong(listSelectionClinteParaReproducir.get(0));
+        MainActivity.musicService.playSong();
+        //escribirMenssge("Se esta reproduciendo " + listSelectionClinteParaReproducir.get(MainActivity.musicService.getPosn()).getTitle());
+    }
+    //------------------------
 
     /**
      * Envia el texto
@@ -322,6 +333,7 @@ public class SongsFragment extends ListFragment
         Log.i(TAG, "Message: " + message);
     }
 
+    //--------- TODOS LOS METODOS DE OS ENVIOS/RECIBIR DE CANCIONES
     /**
      * Envia la cancion trozo a trozo
      */
@@ -521,32 +533,6 @@ public class SongsFragment extends ListFragment
             return file.getAbsolutePath();
         }
         return file.getAbsolutePath();
-    }
-
-    /**
-     *
-     */
-    private void preparePlay()
-    {
-        Thread thread;
-        byte[] byteArrayPrepararPlay  = ("preparar play").getBytes();
-
-        escribirMenssge("Preparando Play 1");
-        Toast.makeText(getContext(),
-                "Preparando Play", Toast.LENGTH_SHORT).show();
-        thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PREPARE_PLAY, byteArrayPrepararPlay);
-        if(thread != null)
-            thread.interrupt();
-    }
-
-    /**
-     *
-     */
-    private void play()
-    {
-        MainActivity.musicService.setSong(listSelectionClinteParaReproducir.get(0));
-        MainActivity.musicService.playSong();
-        //escribirMenssge("Se esta reproduciendo " + listSelectionClinteParaReproducir.get(MainActivity.musicService.getPosn()).getTitle());
     }
 
     // TODOS los metodos que usan hilos Clases.

@@ -196,7 +196,8 @@ public class MusicService extends Service implements
     }
 
     /**
-     *
+     * El método onCompletion se disparará cuando finalice una pista, incluyendo
+     * casos en los que el usuario haya elegido una pista nueva o haya saltado a las pistas siguiente / anterior
      * @param
      */
     @Override

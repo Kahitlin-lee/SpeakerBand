@@ -1,20 +1,14 @@
 package com.speakerband;
 
 
-import android.Manifest;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -31,11 +25,9 @@ import android.widget.Toast;
 import com.speakerband.conexiones.ConnectionActivity;
 import com.speakerband.utils.UtilList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
-import static com.speakerband.ClaseAplicationGlobal.myList;
 
 /**
  * Activity principal
@@ -385,7 +377,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     private List<Song> getSongListByType(Context context, int typeList, List<Song> listSelection)
     {
-        List<Song> songs = getSongList(context);
+        List<Song> songs = SongCursor.getSongList();
         switch (typeList){
             case 0:
                 songs = UtilList.sortByName(songs);
@@ -396,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             case 2:
                 // TODO De esta forma al hacer el long click es sobre la cancion en si buscada en el dispositivo y
                 // no sobre lo que indica la losta de preferencias, puede que de esta forma no la envie cortada
-                listSelection = getSongListSelection(context);
+                listSelection = SongCursor.getSongListSelection();
                 songs = listSelection;
                 break;
             default:

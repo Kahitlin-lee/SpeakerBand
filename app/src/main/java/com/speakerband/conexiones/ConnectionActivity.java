@@ -33,6 +33,7 @@ import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentChat;
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentSong;
+import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
 
 /**
  * Actividad que  que es un contenedor para Fragment y la ActionBar.
@@ -439,6 +440,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             }
             MainActivity.musicService.pausar();
             super.onBackPressed();
+            listSelectionClinteParaReproducir.clear();
             finish();
         }
     }

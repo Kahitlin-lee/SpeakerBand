@@ -14,7 +14,6 @@ public class ClaseAplicationGlobal extends Application {
 
 
     public static ArrayList<Song> listSelection;
-    public static ArrayList<Song> myList;
     public static ArrayList<Song> listSelectionClinteParaReproducir;
     public static boolean estaEnElFragmentChat;
     public static boolean estaEnElFragmentSong;
@@ -27,11 +26,9 @@ public class ClaseAplicationGlobal extends Application {
     public void onCreate() {
         super.onCreate();
         listSelection = new ArrayList<Song>();
-        myList = new ArrayList<Song>();
         listSelectionClinteParaReproducir = new ArrayList<Song>();
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         mContext = getApplicationContext();
-
     }
 
     public static Context getContext() {
@@ -68,7 +65,7 @@ public class ClaseAplicationGlobal extends Application {
         if(preferences.getListSelectionPreferences(getApplicationContext()) != null) {
             //Recuperamos la lista de seleccion
             // List con las canciones que hay en el dispositivo
-            _listSangDevice = MainActivity.getSongList(getApplicationContext());
+            _listSangDevice = SongCursor.getSongList();
             // List con las canciones que estan en las preferencias
             _listSelectionPreferences = new ArrayList<Song>(preferences.getListSelectionPreferences(getApplicationContext()));
             // List con las canciones que hay en el dispositivo

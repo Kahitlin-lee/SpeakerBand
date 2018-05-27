@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
-import static com.speakerband.ClaseAplicationGlobal.myList;
+import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
 
 public class SongCursor {
 
-    private ClaseAplicationGlobal mApplication  = (ClaseAplicationGlobal) getApplicationContext();
+    private static ClaseAplicationGlobal mApplicationAux;
 
     //Metodos que obtienen la musica local del movil y asi poder mostrarla
 
@@ -27,9 +27,11 @@ public class SongCursor {
      * Método auxiliar para obtener la información del archivo de audio:
      * Obtiene la lista de todas las canciones que estan en el dispositivo
      */
-    public static List<Song> getSongList(Context context)
+    public static List<Song> getSongList()
     {
         Cursor _musicCursor;
+        mApplicationAux = (ClaseAplicationGlobal) mApplicationAux.getContext ();
+        Context context = mApplicationAux.getContext ();
 
         ArrayList list = new ArrayList();
         if (android.support.v4.app.ActivityCompat.checkSelfPermission(context, android.Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -76,7 +78,6 @@ public class SongCursor {
         if (_musicCursor != null )
             _musicCursor.close();
 
-        myList = list;
         return list;
     }
 
@@ -86,11 +87,14 @@ public class SongCursor {
      * y las muestra en la pestaña correspondiente a las canciones de la lista de reproduccion
      *  que se comparten entre archivos.
      */
-    public List<Song> getSongListSelection(Context context)
+    public static List<Song>  getSongListSelection()
     {
         Cursor _musicCursor;
-
+        Context context = mApplicationAux.getContext ();
+        Song song;
         ArrayList list = new ArrayList();
+        mApplicationAux = (ClaseAplicationGlobal) mApplicationAux.getContext ();
+
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             return list;
@@ -119,7 +123,7 @@ public class SongCursor {
             int uriDataColumn = _musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
 
             // Lista de canciones que existen actualmente en la lista de preferencias
-            ArrayList<Song> _currentList = mApplication.saberSiExisteLasCancionesDeListaDePreferenciasEnELMovil();
+            ArrayList<Song> _currentList = mApplicationAux.saberSiExisteLasCancionesDeListaDePreferenciasEnELMovil();
 
             //add songs a la lista
             do
@@ -146,11 +150,75 @@ public class SongCursor {
 
         if (_musicCursor != null )
             _musicCursor.close();
-        // TODO solo por probar que sea el el preferences me este jodiendo el tamaño de las canvciones
+
         listSelection = list;
         return list;
     }
 
-    //---------------
+    /**
+     * Compara las canciones que se envian por el lider con las que estan en el movil
+     * que ya tienen guardadas las canciones enviadas por el lider
+     * y genera una nueva lista con las canciones en formato MediaStore para asi poder ser reproducidas.
+     * Pasa la lista real a reproducir al mismo array listSelectionClinteParaReproducir en vez de devolverlo c
+     * con un return
+     */
+    public static void encontrarLaCancionEnMilista(){
+        Cursor _musicCursor;
+        Context context = mApplicationAux.getContext ();
+        mApplicationAux = (ClaseAplicationGlobal) mApplicationAux.getContext ();
+        Song song;
+        ArrayList list = new ArrayList();
 
+        //instancia de ContentResolver
+        ContentResolver musicResolver = context.getContentResolver();
+        //EXTERNAL_CONTENT_URI : URI de estilo para el volumen de almacenamiento externo "primario".
+        Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+        //instancia de Cursor , usando la instancia de ContentResolver para buscar los archivos de música
+        _musicCursor = musicResolver.query(musicUri, null, null, null, null);
+
+        //iterar los resultados, primero chequeando que tenemos datos válidos:
+        if(_musicCursor != null && _musicCursor.moveToFirst())
+        {
+            //get Columnas
+            int titleColumn = _musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.TITLE);
+            int idColumn = _musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media._ID);
+            int albumColumn = _musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.ALBUM);
+            int artistColumn = _musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.ARTIST);
+            int uriDataColumn = _musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+
+            //add songs a la lista
+            do
+            {
+                long thisId = _musicCursor.getLong(idColumn);
+                String thisTitle = _musicCursor.getString(titleColumn);
+                String thisAlbum = _musicCursor.getString(albumColumn);
+                String thisArtist = _musicCursor.getString(artistColumn);
+                String thisUri = _musicCursor.getString(uriDataColumn);
+
+                song = new Song(thisId, thisTitle, thisAlbum, thisArtist, thisUri);
+                if (listSelectionClinteParaReproducir != null && !listSelectionClinteParaReproducir.isEmpty()) {
+                    for (Song s : listSelectionClinteParaReproducir)
+                    {
+                        if (s.getTitle().equals(song.getTitle())) {
+                            list.add(song);
+                        }
+                    }
+                }
+            }
+            while (_musicCursor.moveToNext());
+        }//Por defecto lo ordena por nombre de cancion
+        UtilList.sortByName(list);
+
+
+        if (_musicCursor != null )
+            _musicCursor.close();
+
+        listSelectionClinteParaReproducir = list;
+    }
+    //---------------
 }

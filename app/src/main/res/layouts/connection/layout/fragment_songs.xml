@@ -4,41 +4,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="70sp"
+    android:paddingBottom="100sp"
     android:foreground="?android:attr/selectableItemBackground">
 
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="50dip"
+        android:layout_marginBottom="47dip"
         android:transcriptMode="alwaysScroll"
-        android:listSelector="@android:color/transparent">
+        android:listSelector="@android:color/transparent"
+        android:background="#E0E0E0">
     </ListView>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dip"
+        android:layout_height="120dip"
         android:layout_gravity="bottom"
         android:gravity="center"
         >
 
+        <ImageButton
+            android:id="@+id/syncButton"
+            android:layout_width="170dip"
+            android:layout_height="60dip"
+            android:src="@drawable/my_selector_sync"
+            android:background="#BDBDBD"
+            android:paddingBottom="3sp"
+            />
 
         <ImageButton
-            android:id="@+id/songButton"
-            android:layout_width="100dip"
-            android:layout_height="50dip"
-            android:src="@drawable/sendd" />
-        <ImageButton
-            android:id="@+id/sincronizaButton"
-            android:layout_width="100dip"
-            android:layout_height="50dip"
-            android:src="@drawable/syncc" />
-        <ImageButton
-            android:id="@+id/play"
-            android:layout_width="100dip"
-            android:layout_height="50dip"
-            android:src="@drawable/playy" />
+            android:id="@+id/playButton"
+            android:layout_width="170dip"
+            android:layout_height="60dip"
+            android:src="@drawable/my_selector_play"
+            android:background="#BDBDBD"
+            android:paddingBottom="3sp"
+            />
 
     </LinearLayout>
 </FrameLayout>

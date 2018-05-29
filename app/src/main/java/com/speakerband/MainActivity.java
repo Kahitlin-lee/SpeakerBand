@@ -297,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     {
         super.onStart();
         // en teoria al volver de la otra activity tiene q poner tab 0
-        initRecyclerView(0);
+        initRecyclerView(2);
 
         //TODO El bug está relacionado con playIntent porque
         if(playIntent == null)

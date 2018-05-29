@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
@@ -64,9 +65,8 @@ public class SongsFragment extends ListFragment
     private Toolbar toolbar;
 
     //variables de los botones
-    private ImageButton sendSongButton;
+    private ImageButton syncButton;
     private ImageButton playButton;
-    private ImageButton sincronizaButton;
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
@@ -88,16 +88,17 @@ public class SongsFragment extends ListFragment
         listSelectionClinteParaReproducir = new ArrayList<>();
 
         // Boton que envia las canciones
-        sendSongButton = (ImageButton) view.findViewById(R.id.songButton);
-        // Boton que sicroniza las canciones
-        sincronizaButton = (ImageButton) view.findViewById(R.id.sincronizaButton);
+        syncButton = (ImageButton) view.findViewById(R.id.syncButton);
         // Boton que le da el play a las canciones
-        playButton = (ImageButton) view.findViewById(R.id.play);
+        playButton = (ImageButton) view.findViewById(R.id.playButton);
 
         // Los botones tendran un orden de uso especifico
-        sincronizaButton.setVisibility(View.INVISIBLE);
-        playButton.setVisibility(View.INVISIBLE);
-        sendSongButton.setVisibility(View.VISIBLE);
+        playButton.setEnabled(false);
+        syncButton.setEnabled(true);
+        //playButton.setColorFilter(Color.argb(255, 118, 118, 118)); // White Tint
+        playButton.setBackground(ResourcesCompat.getDrawable(getResources(),R.drawable.imageview_border, null));
+        syncButton.setBackground(ResourcesCompat.getDrawable(getResources(),R.drawable.imageview_border, null));
+
 
         //el adaptador es solo usado para los mensajes de texto
         ListView messagesListView = (ListView) view.findViewById(android.R.id.list);
@@ -113,7 +114,7 @@ public class SongsFragment extends ListFragment
             _communicationManager = handlerAccessor.getWifiHandler().getCommunicationManager();
 
         //evento del boton  enviar una cancion
-        sendSongButton.setOnClickListener(new View.OnClickListener() {
+        syncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pushSong();
@@ -211,7 +212,7 @@ public class SongsFragment extends ListFragment
 
                 if (!listSelectionClinteParaReproducir.isEmpty()) {
                     Log.i(TAG, "Han llegado todas las cancion si es que no existien ya en el movil");
-                    escribirMenssge("Han llegado todas las cancion si es que no existien ya en el movil");
+                    escribirMenssge("Han llegado todas las cancion si es que no existien ya en el movil \n El boton de sync queda deshabilitado");
                     SongCursor.encontrarLaCancionEnMilista();
                 }
                 cambiarBotonesUnaVezYaTenemosTodasLasCanciones();
@@ -228,16 +229,13 @@ public class SongsFragment extends ListFragment
         }
     }
 
-
-
     /**
      *
      */
     private void cambiarBotonesUnaVezYaTenemosTodasLasCanciones() {
         // Los botones tendran un orden de uso especifico
-        sincronizaButton.setVisibility(View.INVISIBLE);
-        playButton.setVisibility(View.VISIBLE);
-        sendSongButton.setVisibility(View.INVISIBLE);
+        playButton.setEnabled(true);
+        syncButton.setEnabled(false);
     }
 
     // ------METODOS PARA PONER LAS CANCIONES EN PLAY EN ORDEN DE EJECUCION
@@ -372,7 +370,7 @@ public class SongsFragment extends ListFragment
             if(thread != null)
                 thread.interrupt();
         } else {
-            escribirMenssge("Ya se han enviado todas las canciones ");
+            escribirMenssge("Ya se han sincronizado todas las canciones \n El boton de sync queda deshabilitado ");
             Toast.makeText(getContext(),
                     "Ya se han enviado todas las canciones", Toast.LENGTH_SHORT).show();
             thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.SONG_END, byteArraySong);

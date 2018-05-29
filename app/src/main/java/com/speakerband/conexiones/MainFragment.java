@@ -20,15 +20,14 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 
 import com.speakerband.R;
+import com.speakerband.WifiBuddy.DnsSdService;
+import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import com.speakerband.WifiBuddy.DnsSdService;
-import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
-import com.speakerband.WifiBuddy.WifiDirectHandler;
 
 /**
  * EL  Fragment principal de la aplicación, que contiene los interruptores
@@ -73,7 +72,7 @@ public class MainFragment extends Fragment
         discoverServicesButton = (Button) viewRoot.findViewById(R.id.discoverServicesButton);
 
         toolbar = (Toolbar) getActivity().findViewById(R.id.mainToolbar);
-        toolbar.setTitle("Wi-Fi Direct Handler");
+        toolbar.setTitle("Conectar con Amigos");
 
         deviceList = (ListView)viewRoot.findViewById(R.id.device_list);
 

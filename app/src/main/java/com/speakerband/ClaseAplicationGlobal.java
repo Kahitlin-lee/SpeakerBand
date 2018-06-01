@@ -20,6 +20,17 @@ public class ClaseAplicationGlobal extends Application {
     public static WifiManager wifiManager;
     private static Context mContext;
 
+    public static MusicService musicService;
+    //--
+    public static boolean musicIsConnected = false;
+    public static boolean soyElLider;
+
+    public static String sourceDeviceName;
+
+    public static boolean yaSePreguntoQuienEsElLider;
+    public static boolean yaSePreguntoQuienEsElLiderCliente;
+    public static String sourceDeviceNameOtroMovil;
+
 
 
     @Override
@@ -123,6 +134,7 @@ public class ClaseAplicationGlobal extends Application {
         if(!listSelection.isEmpty())
             preferences.saveListSelectionPreferences(getApplicationContext(), listSelection);
     }
+
 
 
 }

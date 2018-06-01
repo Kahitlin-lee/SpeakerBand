@@ -3,6 +3,7 @@ package com.speakerband.conexiones;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -13,27 +14,42 @@ import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.speakerband.ClaseAplicationGlobal;
-import com.speakerband.MainActivity;
 import com.speakerband.R;
+import com.speakerband.WifiBuddy.CommunicationManager;
 import com.speakerband.WifiBuddy.DnsSdService;
 import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.WifiBuddy.WifiDirectHandler;
+import com.speakerband.network.Message;
+import com.speakerband.network.MessageType;
+
+import org.apache.commons.lang3.SerializationUtils;
 
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentChat;
 import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentSong;
+import static com.speakerband.ClaseAplicationGlobal.getContext;
 import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
+import static com.speakerband.ClaseAplicationGlobal.musicService;
+import static com.speakerband.ClaseAplicationGlobal.sourceDeviceName;
+import static com.speakerband.ClaseAplicationGlobal.soyElLider;
+import static com.speakerband.ClaseAplicationGlobal.yaSePreguntoQuienEsElLider;
+import static com.speakerband.ClaseAplicationGlobal.yaSePreguntoQuienEsElLiderCliente;
+import static com.speakerband.ClaseAplicationGlobal.sourceDeviceNameOtroMovil;
+
 
 /**
  * Actividad que  que es un contenedor para Fragment y la ActionBar.
@@ -62,6 +78,10 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     private CommunicationReceiver communicationReceiver;
     private Intent intentWifiDirect;
 
+    private AlertDialog.Builder alertDialogBuilder;
+    private AlertDialog alertDialog;
+    private Boolean yoInvite;
+    private Boolean mensageDeEstaActivity;
 
     /**
      * Establece el diseño de la interfaz de usuario para la actividad.
@@ -80,6 +100,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         layoutBotones = (LinearLayout) findViewById(R.id.layoutbotones);
         layoutBotones.setVisibility(View.INVISIBLE);
         deviceInfoTextView = (TextView) findViewById(R.id.thisDeviceInfoTextView);
+
+
 
         // Inicializa ActionBar
         Toolbar toolbar = (Toolbar) findViewById(R.id.mainToolbar);
@@ -118,6 +140,11 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
         registerCommunicationReceiver();
 
+        yoInvite = false;
+        mensageDeEstaActivity = true;
+        yaSePreguntoQuienEsElLiderCliente = false;
+        yaSePreguntoQuienEsElLider = false;
+
         if (intentWifiDirect == null)
             intentWifiDirect = new Intent(this, WifiDirectHandler.class);
 
@@ -125,10 +152,12 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             bindService(intentWifiDirect, wifiServiceConnection, BIND_AUTO_CREATE);
         }
 
-
         Log.i(TAG, "MainActivity creado");
     }
 
+    /**
+     *
+     */
     @Override
     protected void onResume()
     {
@@ -231,6 +260,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
             wifiDirectHandler = binder.getService();
             wifiDirectHandlerBound = true;
+
             Log.i(TAG, "WifiDirectHandler service bound");
 
             // Agregar MainFragment al 'fragment_container' cuando wifiDirectHandler está vinculado
@@ -294,10 +324,10 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
             Log.i(TAG, "Conectados");
         } else if (service.getSrcDevice().status == WifiP2pDevice.AVAILABLE) {
-            String sourceDeviceName = service.getSrcDevice().deviceName;
             if (sourceDeviceName.equals("")) {
                 sourceDeviceName = "otro movil";
             }
+            yoInvite = true;
             Toast.makeText(this, "Invitamos " + sourceDeviceName + " A conectarse ", Toast.LENGTH_LONG).show();
             wifiDirectHandler.initiateConnectToService(service);
         } else {
@@ -379,6 +409,9 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
                 eliminarTodosFragments();
 
+                if(!yaSePreguntoQuienEsElLider && yoInvite)
+                    preguntarQuienEsELLider();
+
                 // crea los que si usamos
                 if (chatFragment == null) {
                     chatFragment = new ChatFragment();
@@ -404,6 +437,9 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                     //2º lugar donde pasa cuando llega
                     songsFragment.pullMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY), context);
                 }
+                if(mensageDeEstaActivity)
+                    pullMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY), context);
+
             } else if (intent.getAction().equals(WifiDirectHandler.Action.WIFI_STATE_CHANGED)) {
                 //3º lugar donde pasa cuando llega la foto, depues de esto la muestra
                 // Wi-Fi ha sido activado o desactivado
@@ -438,9 +474,10 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 wifiDirectHandlerBound = false;
                 Log.i(TAG, "MainActivity destroyed");
             }
-            MainActivity.musicService.pausar();
+            musicService.pausar();
             super.onBackPressed();
             listSelectionClinteParaReproducir.clear();
+            yaSePreguntoQuienEsElLider = false;
             finish();
         }
     }
@@ -474,5 +511,126 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
         // Commit de la transaction
         transaction.commit();
+    }
+
+
+    // SOBRE CONEXION ,  LIDER Y dialogo
+    /**
+     * deserializa lo que llegue
+     * 1º lugar donde pasa cuando llega la foto
+     * @param readMessage
+     * @param context
+     */
+    public void pullMessage(byte[] readMessage, Context context) {
+        Message message = SerializationUtils.deserialize(readMessage);
+
+        switch (message.messageType) {
+            case SOY_LIDER:
+                Log.i(TAG, "SongPath");
+                sourceDeviceNameOtroMovil = (new String(message.content));
+                yaSePreguntoQuienEsElLiderCliente = true;
+                yaSePreguntoQuienEsElLider = true;
+                soyElLider = false;
+                mensageDeEstaActivity = false;
+                preguntarQuienEsELLider();
+                break;
+        }
+    }
+
+    /**
+     * Metodo Llamado después onCreate(Bundle)- o después de onRestart()
+     * cuando la actividad se había detenido, pero ahora se muestra nuevamente al usuario.
+     * Será seguido por onResume().
+     * Queremos iniciar la instancia de Service cuando se inicia la instancia de Activity.
+     */
+    public void preguntarQuienEsELLider()
+    {
+
+        // get prompts.xml view
+        LayoutInflater li = LayoutInflater.from(ConnectionActivity.this.getApplicationContext());
+        View promptsView = li.inflate(R.layout.dialog_conection, null);
+
+        alertDialogBuilder = new AlertDialog.Builder(ConnectionActivity.this);
+
+        // set prompts.xml to alertdialog builder
+        alertDialogBuilder.setView(promptsView);
+
+        final EditText userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
+        final TextView text1 = (TextView) promptsView.findViewById(R.id.textView1);
+        final TextView text2 = (TextView) promptsView.findViewById(R.id.textView2);
+
+        if(yaSePreguntoQuienEsElLiderCliente) {
+            text2.setVisibility(View.INVISIBLE);
+        }
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("SI!!!",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                // get user input and set it to result
+                                // edit text
+                                yaSePreguntoQuienEsElLider = true;
+                                if(!yaSePreguntoQuienEsElLiderCliente) {
+                                    soyLider(userInput.getText().toString());
+                                }
+                                sourceDeviceName = userInput.getText().toString();
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                soyElLider = false;
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+    /**
+     * Metodo que simula la descarga de 4 archivos al pulsar el botón de descarga
+     */
+    private Thread envioMensajesAlOtroDispositivoParaDescarga(final MessageType tipo, final byte[] contenido)
+    {
+        Thread thread;
+        final CommunicationManager _communicationManager  = getWifiHandler().getCommunicationManager();
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //armamos el mensaje con el tipo de mensaje y la cantidad de bytes en array
+                    Message messageEnviar = new Message(tipo, contenido);
+                    //lo serializa, esto tambien en los todos casos
+                    _communicationManager.write(SerializationUtils.serialize(messageEnviar));
+                }catch (Exception e) {
+                    Log.e(TAG, "Error" + e.getMessage());
+                }
+            }
+        };
+
+        thread = new Thread(runnable);
+        thread.start();
+
+        return thread;
+
+    }
+
+
+    /**
+     * Metodo para el envio de quien es el lider
+     */
+    private  void soyLider(String nuevoNombre){
+        byte[] byteArrayPrepararPlay  = (nuevoNombre).getBytes();
+        soyElLider = true;
+        Toast.makeText(getContext(),
+                "Eres el lider del grupo!!", Toast.LENGTH_SHORT).show();
+        envioMensajesAlOtroDispositivoParaDescarga(MessageType.SOY_LIDER, byteArrayPrepararPlay);
     }
 }

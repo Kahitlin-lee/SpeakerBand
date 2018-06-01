@@ -2,7 +2,7 @@
     <string name="app_name">SpeakerBand</string>
     <string name="action_settings">Configuración</string>
     <string name="titleShuffle">Aleatorio</string>
-    <string name="titleEnd">FIN</string>
+    <string name="titleEnd">Exit!</string>
     <string name="permission_menssage">SpeakerBand necesita permisos de lectura para mostrar tu biblioteca musical en la aplicación</string>
 
     <string name="remote_service_started">Música</string>
@@ -34,6 +34,7 @@
     <!-- Actions -->
     <string name="action_toggle_wifi">Activar Wi-Fi</string>
     <string name="action_view_logs">Visualizar Logs</string>
+    <string name="ayuda">Ayuda</string>
     <string name="action_exit">Salir</string>
     <string name="action_close">Cerrar</string>
     <string name="action_refresh">Refrescar</string>

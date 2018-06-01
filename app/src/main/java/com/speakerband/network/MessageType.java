@@ -20,5 +20,12 @@ public enum MessageType
 
     PREPARE_PLAY,
 
-    PREPARADO
+    PREPARADO,
+
+    SOY_LIDER,
+
+    PAUSAR,
+
+    PASAR_CANCION
+
 }

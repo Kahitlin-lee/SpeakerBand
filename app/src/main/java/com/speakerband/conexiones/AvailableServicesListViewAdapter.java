@@ -14,6 +14,8 @@ import com.speakerband.WifiBuddy.DnsSdTxtRecord;
 import java.util.List;
 import java.util.Map;
 
+import static com.speakerband.ClaseAplicationGlobal.sourceDeviceName;
+
 /**
  *
  */
@@ -42,7 +44,7 @@ class AvailableServicesListViewAdapter extends BaseAdapter
         TextView connectTextView = (TextView) convertView.findViewById(R.id.connect);
         connectTextView.setText("Connect");
         //TODO peta regresa null
-        String sourceDeviceName = service.getSrcDevice().deviceName;
+        sourceDeviceName = service.getSrcDevice().deviceName;
         if (sourceDeviceName.equals("")) {
             sourceDeviceName = "Android Device";
         }

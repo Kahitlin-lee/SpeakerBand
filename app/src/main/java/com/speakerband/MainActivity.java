@@ -28,6 +28,7 @@ import com.speakerband.utils.UtilList;
 import java.util.List;
 
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
+import static com.speakerband.ClaseAplicationGlobal.musicService;
 
 /**
  * Activity principal
@@ -37,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     private RequestPermissions requerirPermisos;
     //--
-    public static MusicService musicService;
     private Intent playIntent;
     //--
     private boolean musicIsConnected = false;
@@ -246,44 +246,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         );
     }
 
-    /**
-     * Declaración e inicialización del objeto que representa al servicio
-     * que correrá en background para la reproducción de los audios. Al instanciarlo,
-     * sobreescribimos sus dos principales métodos para su inicialización.
-     */
-    private ServiceConnection musicConnection = new ServiceConnection()
-    {
-        /**
-         * Metodo de cuando el servicio esta conectado
-         * @param name
-         * @param service
-         */
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service)
-        {
-            MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
-            //obtenemos el servicio
-            musicService = binder.getService();
-            //pasamos la lista
-            musicService.setList(songList);
-            musicIsConnected = true;
-        }
-
-        public boolean isServiceConnected() {
-            return musicIsConnected;
-        }
-
-        /**
-         * Metodo por si nos desconectamos el servicio
-         * @param name
-         */
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            musicIsConnected = false;
-        }
-    };
-
-
     //Metodos del ciclo de vida de la aplicacon que no me gusta ponerlos asi todos juntos pero
     //de moemento asi se quedaran
     /**
@@ -440,6 +402,43 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
         return super.onOptionsItemSelected(item);
     }
+
+    /**
+     * Declaración e inicialización del objeto que representa al servicio
+     * que correrá en background para la reproducción de los audios. Al instanciarlo,
+     * sobreescribimos sus dos principales métodos para su inicialización.
+     */
+    private ServiceConnection musicConnection = new ServiceConnection()
+    {
+        /**
+         * Metodo de cuando el servicio esta conectado
+         * @param name
+         * @param service
+         */
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
+            MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
+            //obtenemos el servicio
+            musicService = binder.getService();
+            //pasamos la lista
+            musicService.setList(songList);
+            musicIsConnected = true;
+        }
+
+        public boolean isServiceConnected() {
+            return musicIsConnected;
+        }
+
+        /**
+         * Metodo por si nos desconectamos el servicio
+         * @param name
+         */
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            musicIsConnected = false;
+        }
+    };
 
 
     //Metodo de MusicController ,

@@ -31,7 +31,9 @@ import android.widget.TextView;
 import com.speakerband.ClaseAplicationGlobal;
 import com.speakerband.R;
 import com.speakerband.Song;
+import com.speakerband.WifiBuddy.CommunicationManager;
 import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
+import com.speakerband.WifiBuddy.WifiDirectHandler;
 import com.speakerband.network.Message;
 import com.speakerband.network.MessageType;
 
@@ -42,9 +44,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.speakerband.WifiBuddy.CommunicationManager;
-import com.speakerband.WifiBuddy.WifiDirectHandler;
-
+import static com.speakerband.ClaseAplicationGlobal.sourceDeviceName;
 
 
 /**
@@ -133,8 +133,9 @@ public class ChatFragment extends ListFragment
                 {
                     String message = textMessageEditText.getText().toString();
                     // Obtiene la primera palabra del nombre del dispositivo
-                    String author = handlerAccessor.getWifiHandler().getThisDevice().deviceName.split(" ")[0];
-                    byte[] messageBytes = (author + ": " + message).getBytes();
+                    // String author = handlerAccessor.getWifiHandler().getThisDevice().deviceName.split(" ")[0];
+                    String author = sourceDeviceName;
+                    byte[] messageBytes = (author + " : " + message).getBytes();
                     thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.TEXT, messageBytes);
                 }
                 else {
@@ -145,7 +146,7 @@ public class ChatFragment extends ListFragment
 
                 if (!message.equals(""))
                 {
-                    pullMessage("Me: " + message);
+                    pullMessage(sourceDeviceName + " : " + message);
                     messages.add(message);
                     Log.i(TAG, "Message: " + message);
                     textMessageEditText.setText("");
@@ -227,17 +228,6 @@ public class ChatFragment extends ListFragment
     }
 
     /**
-     *
-     * @param message
-     */
-    public void escribirMenssgeEnElChat(String message){
-        pullMessage("" + message);
-        messages.add(message);
-        Log.i(TAG, "Message: " + message);
-        textMessageEditText.setText("");
-    }
-
-    /**
      * 3º lugar por donde pasa para enviar la foto
      * Envia la imagen al cliente
      * Este metodo se implementa en ConnectionActivity
@@ -280,7 +270,7 @@ public class ChatFragment extends ListFragment
                 TextView nameText = (TextView) v.findViewById(android.R.id.text1);
                 if (nameText != null) {
                     nameText.setText(message);
-                    if (message.startsWith("Me: ")) {
+                    if (message.startsWith(sourceDeviceName)) {
                         // My message
                         nameText.setGravity(Gravity.RIGHT);
                     } else {

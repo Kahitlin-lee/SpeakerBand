@@ -13,6 +13,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,10 +22,11 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.speakerband.MainActivity;
+import com.speakerband.MusicController;
 import com.speakerband.R;
 import com.speakerband.Song;
 import com.speakerband.SongCursor;
@@ -49,16 +51,17 @@ import java.util.List;
 
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
 import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
+import static com.speakerband.ClaseAplicationGlobal.musicService;
+import static com.speakerband.ClaseAplicationGlobal.soyElLider;
 import static com.speakerband.network.MessageType.SONG_START;
 
-public class SongsFragment extends ListFragment
+public class SongsFragment extends ListFragment implements MediaPlayerControl
 {
     //
     private EditText textMessageEditText;
     private SongsFragment.SongMessageAdapter adapter = null;
     private List<String> items = new ArrayList<>();
     private ArrayList<String> messages = new ArrayList<>();
-
 
     //instancia de la interfaz WiFiDirectHandlerAccessor
     private WiFiDirectHandlerAccessor handlerAccessor;
@@ -70,7 +73,10 @@ public class SongsFragment extends ListFragment
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
-    public CommunicationManager _communicationManager;
+    private CommunicationManager _communicationManager;
+
+    private MusicController controller;
+    private boolean paused = false, playbackPaused = false, primerReproduccion;
 
 
     /**
@@ -83,7 +89,7 @@ public class SongsFragment extends ListFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.fragment_songs, container, false);
+        final View view = inflater.inflate(R.layout.fragment_songs, container, false);
 
         listSelectionClinteParaReproducir = new ArrayList<>();
 
@@ -126,6 +132,13 @@ public class SongsFragment extends ListFragment
             @Override
             public void onClick(View v)
             {
+                if(playbackPaused)
+                {
+                    setController(view);  //Creo que con que este en el onResume ya basta, se puede quitar
+                    playbackPaused = false;
+                }//muestra los controles de reproduccion
+                controller.show(0);
+
                 if (_communicationManager != null)
                     preparePlay();
                 else {
@@ -138,6 +151,10 @@ public class SongsFragment extends ListFragment
         });
 
         toolbar = (Toolbar) getActivity().findViewById(R.id.mainToolbar);
+
+        setController(view);
+
+        primerReproduccion = true;
 
         return view;
     }
@@ -164,7 +181,10 @@ public class SongsFragment extends ListFragment
     public void onResume() {
         super.onResume();
         toolbar.setTitle("Songs");
-
+        if (paused) {
+            setController(getView());
+            paused = false;
+        }
     }
 
     /**
@@ -209,13 +229,14 @@ public class SongsFragment extends ListFragment
                 break;
             //La cancion se termina de llegar
             case SONG_END:
-
                 if (!listSelectionClinteParaReproducir.isEmpty()) {
                     Log.i(TAG, "Han llegado todas las cancion si es que no existien ya en el movil");
                     escribirMenssge("Han llegado todas las cancion si es que no existien ya en el movil \n El boton de sync queda deshabilitado");
                     SongCursor.encontrarLaCancionEnMilista();
                 }
-                cambiarBotonesUnaVezYaTenemosTodasLasCanciones();
+                //Actualizamos el Servicio con toda la lista de canciones
+                if (musicService != null)
+                    musicService.setList(listSelectionClinteParaReproducir);
                 break;
             case PREPARE_PLAY:
                 prepararMovilParaReploduccionParaPlay();
@@ -225,6 +246,12 @@ public class SongsFragment extends ListFragment
                 break;
             case PREPARADO:
                 ponerListaDeCancionesDelLiderEnPlay();
+                break;
+            case PAUSAR:
+                    pause();
+                break;
+            case PASAR_CANCION:
+                    playNext();
                 break;
         }
     }
@@ -236,6 +263,16 @@ public class SongsFragment extends ListFragment
         // Los botones tendran un orden de uso especifico
         playButton.setEnabled(true);
         syncButton.setEnabled(false);
+    }
+
+    /**
+     *
+     */
+    private void botonesEnablesFalseCliente() {
+        // Los botones tendran un orden de uso especifico
+        playButton.setEnabled(false);
+        syncButton.setEnabled(false);
+        escribirMenssge("Eres miembro del grupo \n Disfruta de la musica del lider del grupo");
     }
 
     // ------METODOS PARA PONER LAS CANCIONES EN PLAY EN ORDEN DE EJECUCION
@@ -260,9 +297,12 @@ public class SongsFragment extends ListFragment
      */
     public void prepararMovilParaReploduccionParaPlay() {
         if(!listSelectionClinteParaReproducir.isEmpty()) {
-            MainActivity.musicService.setSong(listSelectionClinteParaReproducir.get(0));
-            MainActivity.musicService.playSong();
-            MainActivity.musicService.pausar();
+            if (musicService != null){
+                musicService.setList(listSelectionClinteParaReproducir);
+                musicService.setSong(listSelectionClinteParaReproducir.get(0));
+                musicService.playSong();
+                musicService.pausar();
+            }
 
             Thread thread;
             byte[] byteArrayPrepararPlay = ("preparar play").getBytes();
@@ -287,9 +327,14 @@ public class SongsFragment extends ListFragment
             thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PLAY, byteArrayPrepararPlay);
             if (thread != null)
                 thread.interrupt();
-            MainActivity.musicService.setSong(listSelection.get(0));
-            MainActivity.musicService.playSong();
-            //escribirMenssge("Se esta reproduciendo " + listSelection.get(MainActivity.musicService.getPosn()).getTitle());
+
+            if(primerReproduccion) {
+                musicService.setSong(listSelectionClinteParaReproducir.get(0));
+                primerReproduccion = false;
+            }
+
+            play();
+            escribirMenssge("Se esta reproduciendo " + listSelection.get(musicService.getPosn()).getTitle());
 
         } else {
             escribirMenssge("No hay canciones que reproducir ");
@@ -299,13 +344,54 @@ public class SongsFragment extends ListFragment
     }
 
     /**
-     * Pone en play la cancion en el lider
+     * Pone la cancion del lider en play
+     */
+    public void pausarCancion() {
+        if(!listSelection.isEmpty()) {
+            Thread thread;
+            byte[] byteArrayPrepararPlay = ("pausar cancion").getBytes();
+            thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PAUSAR, byteArrayPrepararPlay);
+            if (thread != null)
+                thread.interrupt();
+            escribirMenssge("Se ha pausado la cancion " + listSelection.get(musicService.getPosn()).getTitle());
+        } else {
+            escribirMenssge("No hay canciones que reproducir ");
+            Toast.makeText(getContext(),
+                    "No hay canciones que reproducir", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Pone la cancion del lider en play
+     */
+    public void pasarDeCancion() {
+        if(!listSelection.isEmpty()) {
+            Thread thread;
+            byte[] byteArrayPrepararPlay = ("pasar de cancion").getBytes();
+            thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PAUSAR, byteArrayPrepararPlay);
+            if (thread != null)
+                thread.interrupt();
+            escribirMenssge("Se ha pausado la cancion " + listSelection.get(musicService.getPosn()).getTitle());
+        } else {
+            escribirMenssge("No hay canciones que reproducir ");
+            Toast.makeText(getContext(),
+                    "No hay canciones que reproducir", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Pone en play la cancion en el Cliente
      */
     private void play()
     {
-        MainActivity.musicService.setSong(listSelectionClinteParaReproducir.get(0));
-        MainActivity.musicService.playSong();
-        //escribirMenssge("Se esta reproduciendo " + listSelectionClinteParaReproducir.get(MainActivity.musicService.getPosn()).getTitle());
+        musicService.setList(listSelection);
+        if(primerReproduccion) {
+            musicService.setSong(listSelection.get(0));
+            primerReproduccion = false;
+        }
+        musicService.playSong();
+
+        escribirMenssge("Se esta reproduciendo " + listSelectionClinteParaReproducir.get(musicService.getPosn()).getTitle());
     }
     //------------------------
 
@@ -601,6 +687,21 @@ public class SongsFragment extends ListFragment
     }
 
     /**
+     * Metodo Llamado después onCreate(Bundle)- o después de onRestart()
+     * cuando la actividad se había detenido, pero ahora se muestra nuevamente al usuario.
+     * Será seguido por onResume().
+     * Queremos iniciar la instancia de Service cuando se inicia la instancia de Activity.
+     */
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        if(!soyElLider) {
+            botonesEnablesFalseCliente();
+        }
+    }
+
+    /**
      *
      */
     @Override
@@ -626,6 +727,188 @@ public class SongsFragment extends ListFragment
             if(tr != null)
                 tr.interrupt();
         }
+    }
+
+
+    //Metodo de MusicController ,
+
+    /**
+     * Metodo de ayuda para configurar el controlador
+     * más de una vez en el ciclo de vida de la aplicación
+     */
+    private void setController(View convertView)
+    {
+        // Instanciar el controlador:
+        controller = new MusicController(getActivity()){
+
+            //Manejar el BACK button cuando el reproductor de música está activo
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent event) {
+                if(event.getKeyCode() == KeyEvent.KEYCODE_BACK){
+
+                    if(controller.isShown()) {
+                        controller.hide();//Oculta el mediaController
+                    }
+
+                    return true;
+                }
+                //Si no presiona el back button, pues sigue funcionando igual.
+                return super.dispatchKeyEvent(event);
+            }
+        };
+        controller.setMediaPlayer(this);
+        controller.setAnchorView(convertView.findViewById(R.id.linear2));
+        controller.setEnabled(true);
+
+        controller.setPrevNextListeners(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                playNext();
+            }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playPrev();
+            }
+        });
+
+
+    }
+
+    //  Métodos que llamamos cuando establecemos el controlador:
+
+    /**
+     * play next
+     */
+    private void playNext()
+    {
+        musicService.playNext();
+        if(playbackPaused){
+            playbackPaused = false;
+        }
+        pasarDeCancion();
+        controller.show(0);
+    }
+
+    /**
+     * play previous
+     */
+    private void playPrev()
+    {
+        musicService.playPrev();
+        if(playbackPaused){
+            playbackPaused = false;
+        }
+        controller.show(0);
+    }
+
+    //Metodos  de MediaPlayerControl
+
+    /**
+     *
+     */
+    @Override
+    public void start()
+    {
+        musicService.pausePlay();
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void pause()
+    {
+        playbackPaused = true;
+        musicService.pausePlay();
+        pausarCancion();
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public int getDuration()
+    {
+        if(musicService!=null && musicService.isPng())
+            return musicService.getDur();
+        else return 0;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public int getCurrentPosition()
+    {
+        if(musicService!=null  && musicService.isPng())
+            return musicService.getPosn();
+        else return 0;
+    }
+
+    /**
+     *
+     * @param pos
+     */
+    @Override
+    public void seekTo(int pos) {
+        musicService.seek(pos);
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public boolean isPlaying()
+    {
+        if(musicService!=null )
+            return musicService.isPng();
+        return false;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public int getBufferPercentage() {
+        return 0;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return 0;
     }
 }
 

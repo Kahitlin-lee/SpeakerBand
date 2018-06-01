@@ -108,6 +108,7 @@ public class MainFragment extends Fragment
                     // agrega local service
                     if (getHandler().getWifiP2pServiceInfo() == null)
                     {
+                        //sourceDeviceNameOtroMovil = getHandler().getThisDevice().deviceName;
                         HashMap<String, String> record = new HashMap<>();
                         record.put("Name", getHandler().getThisDevice().deviceName);
                         record.put("Address", getHandler().getThisDevice().deviceAddress);

@@ -3,11 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.speakerband.MainActivity">
 
-
+    <item
+        android:id="@+id/ayuda"
+        android:title="@string/ayuda"
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_end"
-        android:icon="@drawable/cancel3"
-        android:orderInCategory="2"
-        app:showAsAction="always"
-        android:title="@string/titleEnd"/>
+        android:orderInCategory="100"
+        android:title="@string/titleEnd"
+        app:showAsAction="never" />
+
 </menu>

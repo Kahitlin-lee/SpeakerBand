@@ -55,6 +55,4 @@
             android:id="@+id/linear">
         </LinearLayout>
     </RelativeLayout>
-
-
 </android.support.constraint.ConstraintLayout>

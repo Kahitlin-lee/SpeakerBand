@@ -485,8 +485,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 playPrev();
             }
         });
-
-
     }
 
     //  Métodos que llamamos cuando establecemos el controlador:

@@ -6,8 +6,6 @@ package com.speakerband;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 
-import com.google.gson.annotations.Expose;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,22 +20,15 @@ public class Song implements Serializable
 {
     // Dentro de la declaración de la clase, agrega tres variables de instancia para
     // los datos que deseamos guardar de cada pista
-    @Expose
     private long id;
-    @Expose
     private String title;
-    @Expose
     private String album;
-    @Expose
     private String artist;
-    @Expose
     private String uri;
-    @Expose
     private byte[] songFile;
-    @Expose
     private String titleWithExtension;
-    @Expose
     private long songSize;
+    private boolean provieneDeOtroMovil;
 
     /**
      *
@@ -55,6 +46,7 @@ public class Song implements Serializable
         uri = songUri;
         titleWithExtension = uri.substring(uri.lastIndexOf("/") + 1, uri.length() ) ;
         songFile = null;
+        provieneDeOtroMovil = false;
     }
 
     /**
@@ -178,6 +170,15 @@ public class Song implements Serializable
 
     public void setUri (String uriuri) { this.uri = uriuri; }
 
+    public boolean getProvenincia()
+    {
+        return provieneDeOtroMovil;
+    }
+
+    public void setProvenincia (boolean p) {
+        this.provieneDeOtroMovil = true;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (this == object)
@@ -186,12 +187,9 @@ public class Song implements Serializable
             return false;
 
         Song that = (Song) object;
-        return super.equals(that)
-                && this.id == that.id
-                && this.title.equals(that.title)
+        return  this.title.equals(that.title)
                 && this.album.equals(that.album)
-                && this.artist.equals(that.artist)
-                && this.uri.equals(that.uri);
+                && this.artist.equals(that.artist);
     }
 
     // just omitted null checks

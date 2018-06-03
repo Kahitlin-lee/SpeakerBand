@@ -345,6 +345,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             stopService(intentWifiDirect);
             unbindService(wifiServiceConnection);
             wifiDirectHandlerBound = false;
+            yaSePreguntoQuienEsElLider = false;
         }
         Log.i(TAG, "MainActivity paused");
     }
@@ -357,6 +358,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             unbindService(wifiServiceConnection);
             wifiDirectHandlerBound = false;
         }
+        yaSePreguntoQuienEsElLider = false;
         Log.i(TAG, "MainActivity stopped");
     }
 
@@ -371,6 +373,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             wifiDirectHandlerBound = false;
             Log.i(TAG, "MainActivity destroyed");
         }
+        yaSePreguntoQuienEsElLider = false;
     }
 
     /**
@@ -493,8 +496,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     {
         int numeroFragments = getSupportFragmentManager().getBackStackEntryCount();
         for (int i=0; i<numeroFragments; i++)
-        {
-                getSupportFragmentManager().popBackStackImmediate();
+        {// TODO cada tanto peta aca
+            getSupportFragmentManager().popBackStackImmediate();
         }
     }
 
@@ -545,7 +548,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
      */
     public void preguntarQuienEsELLider()
     {
-
+        String textoBoton;
         // get prompts.xml view
         LayoutInflater li = LayoutInflater.from(ConnectionActivity.this.getApplicationContext());
         View promptsView = li.inflate(R.layout.dialog_conection, null);
@@ -559,22 +562,26 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         final TextView text1 = (TextView) promptsView.findViewById(R.id.textView1);
         final TextView text2 = (TextView) promptsView.findViewById(R.id.textView2);
 
+
         if(yaSePreguntoQuienEsElLiderCliente) {
             text2.setVisibility(View.INVISIBLE);
+            textoBoton = "Ok";
+        } else {
+            textoBoton = "Si!!";
         }
 
         // set dialog message
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton("SI!!!",
+                .setPositiveButton(textoBoton,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog,int id) {
                                 // get user input and set it to result
                                 // edit text
-                                yaSePreguntoQuienEsElLider = true;
                                 if(!yaSePreguntoQuienEsElLiderCliente) {
-                                    soyLider(userInput.getText().toString());
+                                    soyLider(userInput.getText().toString(), true);
                                 }
+                                yaSePreguntoQuienEsElLider = true;
                                 sourceDeviceName = userInput.getText().toString();
                             }
                         })
@@ -582,6 +589,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 soyElLider = false;
+                                soyLider(userInput.getText().toString(), false);
                                 dialog.cancel();
                             }
                         });
@@ -626,11 +634,16 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     /**
      * Metodo para el envio de quien es el lider
      */
-    private  void soyLider(String nuevoNombre){
+    private  void soyLider(String nuevoNombre, Boolean canceladoOaceptado){
         byte[] byteArrayPrepararPlay  = (nuevoNombre).getBytes();
-        soyElLider = true;
+        if(canceladoOaceptado)
+            soyElLider = true;
+        else
+            soyElLider = false;
+
         Toast.makeText(getContext(),
                 "Eres el lider del grupo!!", Toast.LENGTH_SHORT).show();
         envioMensajesAlOtroDispositivoParaDescarga(MessageType.SOY_LIDER, byteArrayPrepararPlay);
     }
+
 }

@@ -169,7 +169,6 @@ public class MusicService extends Service implements
         trackUri= ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currSong);
-
         try
         {
             mediaPlayer.setDataSource(getApplicationContext(), trackUri);

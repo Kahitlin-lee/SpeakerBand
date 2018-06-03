@@ -23,6 +23,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.MediaController.MediaPlayerControl;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,6 +64,9 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     private List<String> items = new ArrayList<>();
     private ArrayList<String> messages = new ArrayList<>();
 
+    private ProgressBar progressBar;
+    private int progressStatus = 0;
+
     //instancia de la interfaz WiFiDirectHandlerAccessor
     private WiFiDirectHandlerAccessor handlerAccessor;
     private Toolbar toolbar;
@@ -94,7 +98,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         listSelectionClinteParaReproducir = new ArrayList<>();
 
         // Boton que envia las canciones
-        syncButton = (ImageButton) view.findViewById(R.id.syncButton);
+        syncButton = (ImageButton) view.findViewById(R.id.sync_blacco);
         // Boton que le da el play a las canciones
         playButton = (ImageButton) view.findViewById(R.id.playButton);
 
@@ -105,6 +109,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         playButton.setBackground(ResourcesCompat.getDrawable(getResources(),R.drawable.imageview_border, null));
         syncButton.setBackground(ResourcesCompat.getDrawable(getResources(),R.drawable.imageview_border, null));
 
+        progressBar = (ProgressBar) view.findViewById(R.id.progressBarSong);
+        progressBar.setVisibility(View.INVISIBLE);
 
         //el adaptador es solo usado para los mensajes de texto
         ListView messagesListView = (ListView) view.findViewById(android.R.id.list);
@@ -123,6 +129,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         syncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
                 pushSong();
             }
         });
@@ -219,6 +226,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
                     in = new ByteArrayInputStream(message.content);
                     ObjectInputStream is = new ObjectInputStream(in);
                     _song = loadSong(is);
+                    _song.setProvenincia(true);
                     listSelectionClinteParaReproducir.add(_song);
                     writeSong(_song);
                     //-----
@@ -230,8 +238,13 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             //La cancion se termina de llegar
             case SONG_END:
                 if (!listSelectionClinteParaReproducir.isEmpty()) {
-                    Log.i(TAG, "Han llegado todas las cancion si es que no existien ya en el movil");
-                    escribirMenssge("Han llegado todas las cancion si es que no existien ya en el movil \n El boton de sync queda deshabilitado");
+                    if(soyElLider) {
+                        Log.i(TAG, "Han llegado todas las cancion si es que no existien ya en el movil");
+                        escribirMenssge("Han llegado todas las cancion si es que no existien ya en el movil \n El boton de sync queda deshabilitado");
+                    } else {
+                        Log.i(TAG, "Han llegado todas las cancion si es que no existien ya en el movil");
+                        escribirMenssge("Han llegado todas las cancion si es que no existien ya en el movil \n Los botones estan deshabilitados");
+                    }
                     SongCursor.encontrarLaCancionEnMilista();
                 }
                 //Actualizamos el Servicio con toda la lista de canciones
@@ -239,19 +252,19 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
                     musicService.setList(listSelectionClinteParaReproducir);
                 break;
             case PREPARE_PLAY:
-                prepararMovilParaReploduccionParaPlay();
+                prepararMovilParaReploduccionParaPlay(listSelectionClinteParaReproducir);
                 break;
             case PLAY:
-                play();
+                playClienteEnPlay(listSelectionClinteParaReproducir);
                 break;
             case PREPARADO:
                 ponerListaDeCancionesDelLiderEnPlay();
                 break;
             case PAUSAR:
-                    pause();
+                pause();
                 break;
             case PASAR_CANCION:
-                    playNext();
+                playNext();
                 break;
         }
     }
@@ -263,6 +276,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         // Los botones tendran un orden de uso especifico
         playButton.setEnabled(true);
         syncButton.setEnabled(false);
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -294,14 +308,15 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
 
     /**
      * Pone la cancion del cliente en play/pause
+     * @param listS
      */
-    public void prepararMovilParaReploduccionParaPlay() {
-        if(!listSelectionClinteParaReproducir.isEmpty()) {
+    public void prepararMovilParaReploduccionParaPlay(ArrayList<Song> listS) {
+        if(!listS.isEmpty()) {
             if (musicService != null){
-                musicService.setList(listSelectionClinteParaReproducir);
-                musicService.setSong(listSelectionClinteParaReproducir.get(0));
-                musicService.playSong();
-                musicService.pausar();
+                musicService.setList(listS);
+                musicService.setSong(listS.get(0));
+                start();
+                pause();
             }
 
             Thread thread;
@@ -318,6 +333,22 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     }
 
     /**
+     * Pone en play la cancion en el cliente
+     * @param listSelectionClinteParaReproducir
+     */
+    private void playClienteEnPlay(ArrayList<Song> listSelectionClinteParaReproducir)
+    {
+        musicService.setList(listSelection);
+        if(primerReproduccion) {
+            musicService.setSong(listSelectionClinteParaReproducir.get(0));
+            primerReproduccion = false;
+        }
+        musicService.playSong();
+
+        escribirMenssge("Se esta reproduciendo " + listSelectionClinteParaReproducir.get(musicService.getPosn()).getTitle());
+    }
+
+    /**
      * Pone la cancion del lider en play
      */
     public void ponerListaDeCancionesDelLiderEnPlay() {
@@ -329,11 +360,12 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
                 thread.interrupt();
 
             if(primerReproduccion) {
-                musicService.setSong(listSelectionClinteParaReproducir.get(0));
+                musicService.setSong(listSelection.get(0));
                 primerReproduccion = false;
             }
 
-            play();
+            start();
+
             escribirMenssge("Se esta reproduciendo " + listSelection.get(musicService.getPosn()).getTitle());
 
         } else {
@@ -379,20 +411,6 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         }
     }
 
-    /**
-     * Pone en play la cancion en el Cliente
-     */
-    private void play()
-    {
-        musicService.setList(listSelection);
-        if(primerReproduccion) {
-            musicService.setSong(listSelection.get(0));
-            primerReproduccion = false;
-        }
-        musicService.playSong();
-
-        escribirMenssge("Se esta reproduciendo " + listSelectionClinteParaReproducir.get(musicService.getPosn()).getTitle());
-    }
     //------------------------
 
     /**
@@ -423,6 +441,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
      */
     public void pushSong()
     {
+
         byte[] byteArraySong = null;
 
         Thread thread;
@@ -579,6 +598,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         String url = path +"/"+ song.getTitleWithExtension();
         File file = new File(path, song.getTitleWithExtension());
         FileOutputStream fileOutputStream = null; // save
+
         if ((!file.exists()) && path.exists()) {
             try {
                 fileOutputStream = new FileOutputStream(file);
@@ -698,6 +718,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         super.onStart();
         if(!soyElLider) {
             botonesEnablesFalseCliente();
+        } else {
+            escribirMenssge("Eres el lider del grupo \n ");
         }
     }
 
@@ -787,7 +809,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         if(playbackPaused){
             playbackPaused = false;
         }
-        pasarDeCancion();
+        if(soyElLider)
+            pasarDeCancion();
         controller.show(0);
     }
 
@@ -802,8 +825,6 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         }
         controller.show(0);
     }
-
-    //Metodos  de MediaPlayerControl
 
     /**
      *
@@ -822,7 +843,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     {
         playbackPaused = true;
         musicService.pausePlay();
-        pausarCancion();
+        if(soyElLider)
+            pausarCancion();
     }
 
     /**

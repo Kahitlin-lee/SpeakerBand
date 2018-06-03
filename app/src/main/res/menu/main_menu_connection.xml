@@ -11,4 +11,9 @@
         android:orderInCategory="100"
         android:title="@string/ayuda"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/mostrar_barra_control2"
+        android:orderInCategory="100"
+        android:title="@string/controlador_de_musica"
+        app:showAsAction="never" />
 </menu>

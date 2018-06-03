@@ -2,6 +2,7 @@
     <string name="app_name">SpeakerBand</string>
     <string name="action_settings">Configuración</string>
     <string name="titleShuffle">Aleatorio</string>
+    <string name="controlador_de_musica">Controlador de musica</string>
     <string name="titleEnd">Exit!</string>
     <string name="permission_menssage">SpeakerBand necesita permisos de lectura para mostrar tu biblioteca musical en la aplicación</string>
 

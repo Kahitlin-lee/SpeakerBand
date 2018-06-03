@@ -169,6 +169,7 @@ public class MusicService extends Service implements
         trackUri= ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currSong);
+
         try
         {
             mediaPlayer.setDataSource(getApplicationContext(), trackUri);
@@ -368,6 +369,11 @@ public class MusicService extends Service implements
     }
 
     //Metodos para pasar a la cancion anterior y siguiente
+
+    public  int getSongPosition() {
+        return songPosition;
+    }
+
     /**
      * Metodo para ir a la cancion anteior
      */

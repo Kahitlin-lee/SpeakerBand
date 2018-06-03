@@ -399,6 +399,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 musicService = null;
                 finish();
                 break;
+            case R.id.mostrar_barra_control:
+                controller.show(musicService.getPosn());
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -456,7 +459,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             @Override
             public boolean dispatchKeyEvent(KeyEvent event) {
                 if(event.getKeyCode() == KeyEvent.KEYCODE_BACK){
-
+                    // TODO no se si es culpa de esto q ahora hay momentos que el conroller desaparece sin que se toque nada cuando no se debe
                     if(controller.isShown()) {
                         controller.hide();//Oculta el mediaController
                     }
@@ -487,6 +490,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         });
     }
 
+
+    //Metodos  de MediaPlayerControl
     //  Métodos que llamamos cuando establecemos el controlador:
 
     /**
@@ -522,6 +527,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public void start()
     {
         musicService.pausePlay();
+        controller.show(getCurrentPosition());
     }
 
     /**
@@ -621,6 +627,4 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public int getAudioSessionId() {
         return 0;
     }
-
-
 }

@@ -46,6 +46,7 @@ import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaRepro
 import static com.speakerband.ClaseAplicationGlobal.musicService;
 import static com.speakerband.ClaseAplicationGlobal.sourceDeviceName;
 import static com.speakerband.ClaseAplicationGlobal.soyElLider;
+import static com.speakerband.ClaseAplicationGlobal.controllerSongFragmen;
 import static com.speakerband.ClaseAplicationGlobal.yaSePreguntoQuienEsElLider;
 import static com.speakerband.ClaseAplicationGlobal.yaSePreguntoQuienEsElLiderCliente;
 import static com.speakerband.ClaseAplicationGlobal.sourceDeviceNameOtroMovil;
@@ -232,6 +233,10 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 return true;
             case R.id.action_exit:
                 //finish();
+                return true;
+            case R.id.mostrar_barra_control2:
+                if(controllerSongFragmen!=null)
+                    controllerSongFragmen.show(musicService.getPosn());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

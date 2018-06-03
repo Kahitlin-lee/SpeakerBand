@@ -30,6 +30,7 @@ public class ClaseAplicationGlobal extends Application {
     public static boolean yaSePreguntoQuienEsElLider;
     public static boolean yaSePreguntoQuienEsElLiderCliente;
     public static String sourceDeviceNameOtroMovil;
+    public static MusicController controllerSongFragmen;
 
 
 

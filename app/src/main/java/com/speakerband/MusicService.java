@@ -373,7 +373,6 @@ public class MusicService extends Service implements
     public  int getSongPosition() {
         return songPosition;
     }
-
     /**
      * Metodo para ir a la cancion anteior
      */

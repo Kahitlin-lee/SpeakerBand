@@ -187,7 +187,9 @@ public class Song implements Serializable
             return false;
 
         Song that = (Song) object;
-        return  this.title.equals(that.title)
+        return  ((this.title.equals(that.title)
+                ||  (this.getTitleWithExtension().equals(that.getTitle())
+                ||  (this.getTitle().equals(that.getTitleWithExtension())))))
                 && this.album.equals(that.album)
                 && this.artist.equals(that.artist);
     }

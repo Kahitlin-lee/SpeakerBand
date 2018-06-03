@@ -205,7 +205,8 @@ public class SongCursor {
                     for (Song s : listSelectionClinteParaReproducir)
                     {
                         if(s.getProvenincia()) {
-                            if (s.getTitle().equals(song.getTitle())) {
+                            if (s.getTitle().equals(song.getTitle())
+                                || (s.getTitleWithExtension().equals(song.getTitle()))) {
                                 if(!list.contains(song))
                                     list.add(song);
                             }

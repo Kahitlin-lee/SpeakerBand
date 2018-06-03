@@ -8,14 +8,15 @@
         android:title="@string/ayuda"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_end"
-        android:orderInCategory="100"
-        android:title="@string/titleEnd"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/mostrar_barra_control"
         android:orderInCategory="100"
         android:title="@string/controlador_de_musica"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_end"
+        android:orderInCategory="100"
+        android:title="@string/titleEnd"
+        app:showAsAction="never" />
+
 
 </menu>

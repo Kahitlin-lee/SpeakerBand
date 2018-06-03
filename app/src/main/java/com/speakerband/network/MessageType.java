@@ -26,6 +26,8 @@ public enum MessageType
 
     PAUSAR,
 
-    PASAR_CANCION
+    PASAR_CANCION,
+
+    PLAY_PAUSE
 
 }

@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     //Texto que se mostrara si la lista de canciones esta vacia
     private TextView textListEmpty;
 
+    private RecyclerView rv;
+
     private ClaseAplicationGlobal mApplication;
 
     private TabLayout tabsLayout;
@@ -75,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         textListSelectionEmpty.setVisibility(View.INVISIBLE);
         textListEmpty = (TextView) findViewById(R.id.list_empty);
         textListEmpty.setVisibility(View.INVISIBLE);
+        rv = (RecyclerView) findViewById(R.id.rv);
+        rv.setVisibility(View.INVISIBLE);
 
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
@@ -148,8 +152,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     {
         if(songList.isEmpty()) {
             text.setVisibility(View.VISIBLE);
+            rv.setVisibility(View.INVISIBLE);
         }else{
             text.setVisibility(View.INVISIBLE);
+            rv.setVisibility(View.VISIBLE);
         }
     }
 
@@ -259,9 +265,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     {
         super.onStart();
         // en teoria al volver de la otra activity tiene q poner tab 0
-        initRecyclerView(2);
+        //initRecyclerView(2);
 
-        //TODO El bug está relacionado con playIntent porque
         if(playIntent == null)
         {
             playIntent = new Intent(this, MusicService.class);
@@ -277,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     protected void onResume()
     {
         super.onResume();
-        initRecyclerView(0);
+        //initRecyclerView(0);
         if (paused) {
             setController();
             paused = false;

@@ -31,7 +31,7 @@ public class Song implements Serializable
     private boolean provieneDeOtroMovil;
 
     /**
-     *
+     * Constructor de la clase song
      * @param songID
      * @param songTitle
      * @param songAlbum
@@ -112,17 +112,17 @@ public class Song implements Serializable
     }
 
 
+    /**
+     * Metodo obtener la cancion en bytes
+     * @return
+     */
     public byte[] getSongBytes()
     {
         return songFile;
     }
 
-    public void setSongBytes(byte[] bytes)
-    {
-        this.songFile = bytes;
-    }
-
     /**
+     * Obtener ID
      * @return
      */
     public long getId()
@@ -131,7 +131,7 @@ public class Song implements Serializable
     }
 
     /**
-     *
+     * Obtener titulo
      * @return
      */
     public String getTitle()
@@ -140,7 +140,7 @@ public class Song implements Serializable
     }
 
     /**
-     *
+     * Obtener Album
      * @return
      */
     public String getAlbum()
@@ -149,7 +149,7 @@ public class Song implements Serializable
     }
 
     /**
-     *
+     * Obtener Artista
      * @return
      */
     public String getArtist()
@@ -166,19 +166,53 @@ public class Song implements Serializable
         return uri;
     }
 
+    /**
+     * Obtener el nombre de la cancion con la extencion
+     * @return
+     */
     public String getTitleWithExtension() { return titleWithExtension; }
 
-    public void setUri (String uriuri) { this.uri = uriuri; }
-
+    /**
+     * Metodo que indica si la cancion Proviene de otro telefono externo
+     * Se pone en true si es externo
+     * @return
+     */
     public boolean getProvenincia()
     {
         return provieneDeOtroMovil;
     }
 
+    /**
+     * Metodo set la cancion en bytes
+     * @param bytes
+     */
+    public void setSongBytes(byte[] bytes)
+    {
+        this.songFile = bytes;
+    }
+
+    /**
+     *
+     * @param uriuri
+     */
+    public void setUri (String uriuri) { this.uri = uriuri; }
+
+    /**
+     * Metodo que cambiamos a true o false dependiendo de si la cancion
+     * objeto es de un telefono externo
+     * @param p
+     */
     public void setProvenincia (boolean p) {
         this.provieneDeOtroMovil = true;
     }
 
+
+    /**
+     * Metodo para sobreescribir el metodo equals
+     * @param object
+     * @return true si son iguales
+     * false si no lo son
+     */
     @Override
     public boolean equals(Object object) {
         if (this == object)
@@ -194,7 +228,10 @@ public class Song implements Serializable
                 && this.artist.equals(that.artist);
     }
 
-    // just omitted null checks
+    /**
+     *
+     * @return
+     */
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public int hashCode() {

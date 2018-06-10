@@ -4,4 +4,6 @@
     <color name="colorPrimaryDark">#212121</color>
     <color name="colorAccent">#FF4081</color>
     <color name="colorToolbar">#212121</color>
+    <!--Color de boton pulsado en menu lateral-->
+    <color name="colorBotonPulsadoMenuLateral">#BDBDBD</color>
 </resources>

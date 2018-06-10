@@ -3,25 +3,33 @@ package com.speakerband;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.MediaController.MediaPlayerControl;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.speakerband.conexiones.AyudaConectionDialogFragment;
 import com.speakerband.conexiones.ConnectionActivity;
 import com.speakerband.utils.UtilList;
 
@@ -32,8 +40,9 @@ import static com.speakerband.ClaseAplicationGlobal.musicService;
 
 /**
  * Activity principal
+ * Created by Catalina Saavedra
  */
-public class MainActivity extends AppCompatActivity implements MediaPlayerControl
+public class MainActivity extends AppCompatActivity implements MediaPlayerControl, NavigationView.OnNavigationItemSelectedListener
 {
 
     private RequestPermissions requerirPermisos;
@@ -49,10 +58,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private List<Song> songList;
     //Variable auxiliar
     private Song song;
-    //Texto que se mostrara si la lista de canciones seleccionada esta vacia
-    private TextView textListSelectionEmpty;
-    //Texto que se mostrara si la lista de canciones esta vacia
-    private TextView textListEmpty;
+
+    private AyudaConectionDialogFragment ayudaConectionDialogFragment;
+
+    private DrawerLayout drawerLayout;
 
     private RecyclerView rv;
 
@@ -71,14 +80,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        //variables que se ocultan y se muestran dependiendo de si hay cancioones en las listas o no
-        textListSelectionEmpty = (TextView) findViewById(R.id.list_selection_empty);
-        textListSelectionEmpty.setVisibility(View.INVISIBLE);
-        textListEmpty = (TextView) findViewById(R.id.list_empty);
-        textListEmpty.setVisibility(View.INVISIBLE);
-        rv = (RecyclerView) findViewById(R.id.rv);
-        rv.setVisibility(View.INVISIBLE);
 
         requerirPermisos = new RequestPermissions();
         //Administra los permisos de la api mayores a la 23 y mustra el panel al usuario
@@ -105,9 +106,16 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         //Metodo de ayuda para configurar el controlador
         setController();
+
+        //Codigo del menu lateral. No funciona drawer_layout me da null, se veq ue este tendria que ser el activiti principal
+//        drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+//        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(
+//                this, drawerLayout, R.string.abrir_navegacion_lateral, R.string.cerrar_navegacion_lateral);
+//        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+//        actionBarDrawerToggle.syncState();
+//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+//        navigationView.setNavigationItemSelectedListener(this);
     }
-
-
 
     /**
      * Pinta el RecyclerView con la lista de canciones dependiendo de la pestaña
@@ -133,32 +141,52 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
             recyclerView.setAdapter(new SongsAdapter(songList, getApplication(), listItemClickListener));
         }
-
-        //TODO no funciona correctamente y estoy arta de mirarlo y saber por que
-        showHideTextDependingOnList(textListEmpty, songList);
-        textListSelectionEmpty.setVisibility(View.INVISIBLE);
-        if (songList.equals(listSelection)) {
-            showHideTextDependingOnList(textListSelectionEmpty, songList);
-        }
+        showHideTextDependingOnList(songList);
     }
 
     /**
-     * Metodo que hace visible o invidible un texto informativo de pendiendo de si hay canciones
+     * Metodo que muestra  un dialog informativo de pendiendo de si hay canciones
      * o no en el dispositivo o en la liesta de seleccion
-     * @param text
      * @param songList
      */
-    private void showHideTextDependingOnList(TextView text, List<Song> songList)
+    private void showHideTextDependingOnList(List<Song> songList)
     {
         if(songList.isEmpty()) {
-            text.setVisibility(View.VISIBLE);
-            rv.setVisibility(View.INVISIBLE);
-        }else{
-            text.setVisibility(View.INVISIBLE);
-            rv.setVisibility(View.VISIBLE);
+            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+            View mView = getLayoutInflater().inflate(R.layout.info, null);
+            final CheckBox mCheckBox = (CheckBox)mView.findViewById(R.id.checkBox);
+
+            alertDialog.setTitle("Info");
+            if (songList.equals(listSelection)) {
+                alertDialog.setMessage(getString(R.string.list_selection_empty));
+            } else {
+                alertDialog.setMessage(getString(R.string.list_empty));
+            }
+
+            alertDialog.setView(mView);
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(compoundButton.isChecked()){
+                        mApplication.noMostrarMasDialogo(true);
+                    }else{
+                        mApplication.noMostrarMasDialogo(false);
+                    }
+                }
+            });
+            if(mApplication.obtenerDialogStatus()){
+                alertDialog.hide();
+            }else{
+                alertDialog.show();
+            }
         }
     }
-
 
     private RecyclerViewOnItemClickListener listItemClickListener = new RecyclerViewOnItemClickListener()
     {
@@ -318,7 +346,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 }
             }
         }
-
         super.onDestroy();
     }
 
@@ -376,7 +403,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         return songs;
     }
 
-
     /**
      *
      * @param menu
@@ -406,6 +432,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 break;
             case R.id.mostrar_barra_control:
                 controller.show(musicService.getPosn());
+                break;
+            case R.id.ayuda:
+                if(ayudaConectionDialogFragment==null)
+                    ayudaConectionDialogFragment  = new AyudaConectionDialogFragment();
+                ayudaConectionDialogFragment.show(getFragmentManager(), "ayuda");
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -448,9 +479,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     };
 
-
     //Metodo de MusicController ,
-
     /**
      * Metodo de ayuda para configurar el controlador
      * más de una vez en el ciclo de vida de la aplicación
@@ -590,8 +619,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         return false;
     }
 
-
-
     /**
      *
      * @return
@@ -631,5 +658,48 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public int getAudioSessionId() {
         return 0;
+    }
+
+    /**
+     * Called when an item in the navigation menu is selected.
+     *
+     * @param item The selected item
+     * @return true to display the item as the selected item
+     */
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        //abrir el activity de futuras visitas
+        if(item.getItemId()==R.id.action_end2){
+            musicService = null;
+            finish();
+            return true;
+            //Abre la activity del buscador.
+        }else if(item.getItemId()==R.id.mostrar_barra_control2) {
+            controller.show(musicService.getPosn());
+            return true;
+            //Abre las preferencias de la aplicación.
+        }else if(item.getItemId()==R.id.ayuda2) {
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Método para realizar las acciones del toolbar de la aplicación. Solo realiza la acción de abrir o cerrar el
+     * menú lateral
+     * @return
+     */
+    @Override
+    public boolean onSupportNavigateUp() {
+        //Si el menú está abierto
+        if(drawerLayout.isDrawerOpen(Gravity.LEFT)){
+            //Cerrará el menú
+            drawerLayout.closeDrawer(Gravity.LEFT);
+        }else{
+            //Abrirá el menu
+            drawerLayout.openDrawer(Gravity.LEFT);
+        }
+        return super.onSupportNavigateUp();
     }
 }

@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.Context.MODE_PRIVATE;
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
 
 /**
@@ -46,7 +47,7 @@ public class SharedPreferencesClass
         SharedPreferences.Editor editor;
 
         settings = context.getSharedPreferences(LIST_SELECTION,
-                Context.MODE_PRIVATE);
+                MODE_PRIVATE);
         editor = settings.edit();
 
         //Comprobaremos que las canciones no contienen el array de bytes de la canción al completo.
@@ -96,7 +97,7 @@ public class SharedPreferencesClass
     protected void removeSongFromListSelectionPreferences(Context context)
     {
         SharedPreferences sharedPrefs = context.getSharedPreferences(LIST_SELECTION,
-                Context.MODE_PRIVATE);
+                MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.clear();
         editor.apply();
@@ -112,7 +113,7 @@ public class SharedPreferencesClass
         SharedPreferences settings;
 
         settings = context.getSharedPreferences(LIST_SELECTION,
-                Context.MODE_PRIVATE);
+                MODE_PRIVATE);
 
         if (settings.contains(LIST_SELECTION)) {
             String jsonFavorites = settings.getString(LIST_SELECTION, null);
@@ -153,5 +154,21 @@ public class SharedPreferencesClass
         }
 
         return nuevaLista;
+    }
+
+    /**
+     *
+     * @param isChecked
+     */
+    public void storeDialogStatus(boolean isChecked, Context context){
+        SharedPreferences mSharedPreferences = context.getSharedPreferences("CheckItem", MODE_PRIVATE);
+        SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+        mEditor.putBoolean("item", isChecked);
+        mEditor.apply();
+    }
+
+    public boolean getDialogStatus(Context context){
+        SharedPreferences mSharedPreferences = context.getSharedPreferences("CheckItem", MODE_PRIVATE);
+        return mSharedPreferences.getBoolean("item", false);
     }
 }

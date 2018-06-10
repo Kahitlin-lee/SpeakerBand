@@ -175,6 +175,12 @@ public class Utility {
         }
     }
 
+    /**
+     * Metodo para Para comprobar si tienes  permisos.
+     * @param strPermission
+     * @param _c contexto
+     * @return true o false
+     */
     public static boolean checkPermission(String strPermission, Context _c) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             int result = ContextCompat.checkSelfPermission(_c, strPermission);

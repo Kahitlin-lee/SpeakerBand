@@ -57,7 +57,7 @@ import static com.speakerband.ClaseAplicationGlobal.listSelection;
 import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
 import static com.speakerband.ClaseAplicationGlobal.musicService;
 import static com.speakerband.ClaseAplicationGlobal.soyElLider;
-import static com.speakerband.network.MessageType.SONG_START;
+import static com.speakerband.network.MessageType.SONG_SEND_START;
 
 public class SongsFragment extends ListFragment implements MediaPlayerControl
 {
@@ -68,7 +68,6 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     private ArrayList<String> messages = new ArrayList<>();
 
     private ProgressBar progressBar;
-    private int progressStatus = 0;
 
     //instancia de la interfaz WiFiDirectHandlerAccessor
     private WiFiDirectHandlerAccessor handlerAccessor;
@@ -82,8 +81,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
 
     private CommunicationManager _communicationManager;
 
-    private boolean paused = false, playbackPaused = false, primerReproduccion;
-
+    private boolean paused = false, playbackPaused = false, primerReproduccion = true;
 
     /**
      *
@@ -141,10 +139,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             @Override
             public void onClick(View v)
             {
-                if(playbackPaused)
-                {
-                    playbackPaused = false;
-                }//muestra los controles de reproduccion
+                //muestra los controles de reproduccion
                 controllerSongFragmen.show(0);
 
                 if (_communicationManager != null)
@@ -168,7 +163,24 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     }
 
     /**
-     * El fragment se ha adjuntado al Activity
+     * Metodo Llamado después onCreate(Bundle)- o después de onRestart()
+     * cuando la actividad se había detenido, pero ahora se muestra nuevamente al usuario.
+     * Será seguido por onResume().
+     * Queremos iniciar la instancia de Service cuando se inicia la instancia de Activity.
+     */
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        if(!soyElLider) {
+            botonesEnablesFalseCliente();
+        } else {
+            escribirMenssge("Eres el lider del grupo \n ");
+        }
+    }
+
+    /**
+     *  Metodo que se llama cuando el  fragment se ha adjuntado al Activity
      */
     @Override
     public void onAttach(Context context)
@@ -181,9 +193,10 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         }
     }
 
-
     /**
-     *
+     * Se llama cuando la actividad comenzará a interactuar con el usuario.
+     * En este punto, tu actividad está en la parte superior de la pila de actividades,
+     * con la entrada del usuario.
      */
     @Override
     public void onResume() {
@@ -210,6 +223,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
      */
     public void pullMessage(byte[] readMessage, Context context)
     {
+        // TODO peta aca tambien
         Message message = SerializationUtils.deserialize(readMessage);
         Bitmap bitmap;
         ByteArrayInputStream in;
@@ -219,7 +233,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         {
             //cancion
             //Comienza a recibir la cancion
-            case SONG_START:
+            case SONG_SEND_START:
                 Log.i(TAG, "SongPath");
                 try
                 {
@@ -234,10 +248,9 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
                 break;
             //La cancion se termina de llegar
-            case SONG_END:
+            case SONG_SEND_END:
                 if (!listSelectionClinteParaReproducir.isEmpty()) {
                     if(soyElLider) {
                         Log.i(TAG, "Han llegado todas las cancion si es que no existien ya en el movil");
@@ -252,25 +265,28 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
                 if (musicService != null)
                     musicService.setList(listSelectionClinteParaReproducir);
                 break;
+
+                // case de poner en play los dos telefonos
             case PREPARE_PLAY:
-                prepararMovilParaReploduccionParaPlay(listSelectionClinteParaReproducir);
-                dormirApp2Segundos();
-                musicService.pausePlay();
+                prepararMovilParaReploduccionParaPlayDelCliente(listSelectionClinteParaReproducir);
                 break;
             case PREPARADO:
+                enviarMensajeParaPonerClienteEnPause();
+                break;
+            case PREPARADO2:
+                prepararMovilParaReploduccionParaPlayDelCliente2(listSelectionClinteParaReproducir);
+                break;
+            case PLAY_LIDER:
                 ponerListaDeCancionesDelLiderEnPlay();
                 break;
-            case PLAY:
-                playClienteEnPlay(listSelectionClinteParaReproducir);
+            case PLAY_CLIENTE:
+                playClienteEnPlay();
                 break;
             case PAUSAR:
                 pause();
                 break;
             case PLAY_PAUSE:
                 start();
-                break;
-            case PASAR_CANCION:
-                playNext();
                 break;
         }
     }
@@ -292,11 +308,13 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         // Los botones tendran un orden de uso especifico
         playButton.setEnabled(false);
         syncButton.setEnabled(false);
-        setControllerCliente(getView());
+        setController(getView());
         escribirMenssge("Eres miembro del grupo. \n Disfruta de la musica del lider del grupo. \n Los botones estan deshabilitados para ti.");
     }
 
-    // ------METODOS PARA PONER LAS CANCIONES EN PLAY EN ORDEN DE EJECUCION
+    /*
+    --METODOS PARA PONER LAS CANCIONES EN PLAY EN ORDEN DE EJECUCION
+     */
     /**
      * Cuando se pulsa el boton envia el mensaje al cliente para que pongo en play pause la cancion
      */
@@ -350,16 +368,20 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     }
 
     /**
-     * Pone la cancion del cliente en play/pause
+     * Pone la cancion del cliente en play
      * @param listS
      */
-    public void prepararMovilParaReploduccionParaPlay(ArrayList<Song> listS) {
+    public void prepararMovilParaReploduccionParaPlayDelCliente(ArrayList<Song> listS) {
         if(!listS.isEmpty()) {
-            if (musicService != null){
-                musicService.setList(listS);
-                musicService.setSong(listS.get(0));
-                musicService.playSong();
-                 controllerSongFragmen.show();
+            if (musicService != null) {
+                if (primerReproduccion) {
+                    musicService.setList(listS);
+                    musicService.setSong(listS.get(0));
+                    musicService.playSong();
+                    primerReproduccion = false;
+                } else {
+                    start();
+                }
             }
 
             Thread thread;
@@ -371,19 +393,54 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PREPARADO, byteArrayPrepararPlay);
             if (thread != null)
                 thread.interrupt();
+        }
+    }
+
+    /**
+     * Envia el mensaje al cliente para que se ponga en pause
+     */
+    public void enviarMensajeParaPonerClienteEnPause() {
+        Thread thread;
+        byte[] byteArrayPrepararPlay = ("preparar play").getBytes();
+
+        escribirMenssge("Preparando sincronización\n");
+        Toast.makeText(getContext(),
+                "Preparando Play", Toast.LENGTH_SHORT).show();
+        thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PREPARADO2, byteArrayPrepararPlay);
+        if (thread != null)
+            thread.interrupt();
+
+    }
+
+    /**
+     * Pone la cancion del cliente en pause
+     * @param listS
+     */
+    public void prepararMovilParaReploduccionParaPlayDelCliente2(ArrayList<Song> listS) {
+        if(!listS.isEmpty()) {
+            dormirApp2Segundos();
+            musicService.pausePlay();
+            controllerSongFragmen.show();
+
+            Thread thread;
+            byte[] byteArrayPrepararPlay = ("preparar play").getBytes();
+
+            escribirMenssge("Preparando sincronización\n");
+            Toast.makeText(getContext(),
+                    "Preparando Play", Toast.LENGTH_SHORT).show();
+            thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PLAY_LIDER, byteArrayPrepararPlay);
+            if (thread != null)
+                thread.interrupt();
 
         }
     }
 
     /**
      * Pone en play la cancion en el cliente
-     * @param listSelectionClinteParaReproducir
      */
-    private void playClienteEnPlay(ArrayList<Song> listSelectionClinteParaReproducir)
+    private void playClienteEnPlay()
     {
-        musicService.setList(listSelectionClinteParaReproducir);
-        start();
-
+        musicService.pausePlay();
         escribirMenssge("Se esta reproduciendo " + listSelectionClinteParaReproducir.get(musicService.getSongPosition()).getTitle());
     }
 
@@ -397,17 +454,21 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
 
             byte[] byteArrayPlay = ("").getBytes();
 
-            thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PLAY, byteArrayPlay);
+            thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PLAY_CLIENTE, byteArrayPlay);
 
             if (thread != null)
                 thread.interrupt();
 
             if (primerReproduccion) {
-                musicService.setSong(listSelection.get(0));
-                musicService.playSong();
-                primerReproduccion = false;
+                if (musicService != null) {
+                    musicService.setList(listSelection);
+                    musicService.setSong(listSelection.get(0));
+                    musicService.playSong();
+                    primerReproduccion = false;
+                }
+            } else {
+                start();
             }
-            start();
 
             syncButton.setEnabled(false);
             escribirMenssge("Se esta reproduciendo " + listSelection.get(musicService.getSongPosition()).getTitle());
@@ -448,6 +509,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             byte[] byteArrayPrepararPlay = ("pausar cancion").getBytes();
             thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PLAY_PAUSE, byteArrayPrepararPlay);
 
+            start2();
+
             if (thread != null)
                 thread.interrupt();
 
@@ -460,25 +523,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     }
 
     /**
-     * Pone la cancion del lider en play
+    --- Para escribir los mensajes en el fragment
      */
-    public void pasarDeCancion() {
-        if(!listSelection.isEmpty()) {
-            Thread thread;
-            byte[] byteArrayPrepararPlay = ("pasar de cancion").getBytes();
-            thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PASAR_CANCION, byteArrayPrepararPlay);
-            if (thread != null)
-                thread.interrupt();
-            escribirMenssge("Se ha pausado la cancion " + listSelection.get(musicService.getSongPosition()).getTitle());
-        } else {
-            escribirMenssge("No hay canciones que reproducir ");
-            Toast.makeText(getContext(),
-                    "No hay canciones que reproducir", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    //------------------------
-
     /**
      * Envia el texto
      * Este metodo se usa en el onClick de el envio de texto
@@ -501,7 +547,9 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         Log.i(TAG, "Message: " + message);
     }
 
-    //--------- TODOS LOS METODOS DE OS ENVIOS/RECIBIR DE CANCIONES
+    /*
+    TODOS LOS METODOS DE OS ENVIOS/RECIBIR DE CANCIONES
+     */
     /**
      * Envia la cancion trozo a trozo
      */
@@ -519,7 +567,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             // Pasa la cancion que se va a enviar a Bytes
             byteArraySong = convertirObjetoArrayBytes(listSelection.get(x));
 
-            thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_START, byteArraySong);
+            thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_SEND_START, byteArraySong);
 
             if(dormirApp3Segundos(thread)) {
                 escribirMenssge("Si la cancion no existia en el otro movil, ha sido enviada. \n Cancion : " + listSelection.get(x).getTitle());
@@ -536,17 +584,16 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             escribirMenssge("No hay canciones para enviar. ");
             Toast.makeText(getContext(),
                     "No hay canciones para enviar", Toast.LENGTH_SHORT).show();
-            thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.SONG_END, byteArraySong);
-            if(thread != null)
-                thread.interrupt();
         } else {
             escribirMenssge("Ya se han sincronizado todas las canciones \n El boton de sync queda deshabilitado ");
             Toast.makeText(getContext(),
                     "Ya se han enviado todas las canciones", Toast.LENGTH_SHORT).show();
-            thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.SONG_END, byteArraySong);
-            if(thread != null)
-                thread.interrupt();
         }
+
+        thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.SONG_SEND_END, byteArraySong);
+        if(thread != null)
+            thread.interrupt();
+
         cambiarBotonesUnaVezYaTenemosTodasLasCanciones();
     }
 
@@ -692,7 +739,6 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             contentValues.put(MediaStore.Audio.AudioColumns.ALBUM,  song.getAlbum());
             contentValues.put(MediaStore.Audio.AudioColumns.ARTIST, song.getArtist());
             contentValues.put(MediaStore.Audio.AudioColumns.DATA, url);
-
             //contentValues.put(MediaStore.Audio.AudioColumns.DISPLAY_NAME, song.getTitleWithExtension());
 
             // more columns should be filled from here
@@ -704,7 +750,9 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         return file.getAbsolutePath();
     }
 
-    // TODOS los metodos que usan hilos Clases.
+    /**
+    Metodos que usan hilos Clases.
+     */
     /**
      *
      */
@@ -744,7 +792,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     public Boolean dormirApp3Segundos(Thread t)
     {
         try {
-            Thread.sleep (4000);
+            Thread.sleep (5000);
             if(!t.isInterrupted()) {
                 t.interrupt();
             }
@@ -762,7 +810,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     public Boolean dormirApp2Segundos()
     {
         try {
-            Thread.sleep (5);
+            Thread.sleep (2);
         }
         catch (InterruptedException ex) {
             Log.d ("", ex.toString ());
@@ -771,70 +819,9 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         return true;
     }
 
-    // Metodos del ciclo de vida de la actividad
-
     /**
-     *
+    Metodo de MusicController ,
      */
-    @Override
-    public void onPause() {
-        super.onPause();
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        View focusedView = getActivity().getCurrentFocus();
-        // TODO Con esta linea Por fin he arreglado este pete del null, solo espero que no afecte a la conexion
-//        if (focusedView != null) {
-//            if(textMessageEditText.getWindowToken()== null)
-//                imm.hideSoftInputFromWindow(textMessageEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-//        }
-    }
-
-    /**
-     * Metodo Llamado después onCreate(Bundle)- o después de onRestart()
-     * cuando la actividad se había detenido, pero ahora se muestra nuevamente al usuario.
-     * Será seguido por onResume().
-     * Queremos iniciar la instancia de Service cuando se inicia la instancia de Activity.
-     */
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-        if(!soyElLider) {
-            botonesEnablesFalseCliente();
-        } else {
-            escribirMenssge("Eres el lider del grupo \n ");
-        }
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void onStop() {
-        super.onStop();
-        //listQueYaHasidoEnviada.clear();
-        matarTodosLoshilos();
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        //listQueYaHasidoEnviada.clear();
-        matarTodosLoshilos();
-    }
-
-    public void matarTodosLoshilos() {
-        for (Thread tr : threadsDeLaClas ) {
-            if(tr != null)
-                tr.interrupt();
-        }
-    }
-
-
-    //Metodo de MusicController ,
-
     /**
      * Metodo de ayuda para configurar el controlador
      * más de una vez en el ciclo de vida de la aplicación
@@ -860,7 +847,11 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         };
         controllerSongFragmen.setMediaPlayer(this);
         controllerSongFragmen.setAnchorView(convertView.findViewById(R.id.linear2));
-        controllerSongFragmen.setEnabled(true);
+
+        if(soyElLider)
+            controllerSongFragmen.setEnabled(true);
+        else
+            controllerSongFragmen.setEnabled(false);
 
         controllerSongFragmen.setPrevNextListeners(new View.OnClickListener() {
             @Override
@@ -876,48 +867,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     }
 
     /**
-     * Metodo de ayuda para configurar el controlador
-     * más de una vez en el ciclo de vida de la aplicación
+     *  Métodos que llamamos cuando establecemos el controlador:
      */
-    private void setControllerCliente(View convertView)
-    {
-        // Instanciar el controlador:
-        controllerSongFragmen = new MusicController(getActivity()) {
-
-            //Manejar el BACK button cuando el reproductor de música está activo
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-
-                    if (controllerSongFragmen.isShown()) {
-                        controllerSongFragmen.hide();//Oculta el mediaController
-                    }
-
-                    return true;
-                }
-                //Si no presiona el back button, pues sigue funcionando igual.
-                return super.dispatchKeyEvent(event);
-            }
-        };
-        controllerSongFragmen.setMediaPlayer(this);
-        controllerSongFragmen.setAnchorView(convertView.findViewById(R.id.linear2));
-        controllerSongFragmen.setEnabled(false);
-
-        controllerSongFragmen.setPrevNextListeners(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playNext();
-            }
-        }, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playPrev();
-            }
-        });
-    }
-
-    //  Métodos que llamamos cuando establecemos el controlador:
-
     /**
      * play next
      */
@@ -927,8 +878,6 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         if(playbackPaused){
             playbackPaused = false;
         }
-        if(soyElLider)
-            pasarDeCancion();
         controllerSongFragmen.show(0);
     }
 
@@ -952,7 +901,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     @Override
     public void start()
     {
-        musicService.go();
+        musicService.pausePlay();
+        controllerSongFragmen.show(getCurrentPosition());
         if(soyElLider)
             playSongDepuesDePausar();
     }
@@ -960,9 +910,17 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     /**
      *
      */
+    public void start2()
+    {
+        musicService.pausePlay();
+    }
+
+    /**
+     *
+     */
     public void pausar()
     {
-        musicService.pausar();
+        musicService.pausePlay();
     }
 
     /**
@@ -971,8 +929,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     @Override
     public void pause()
     {
+        musicService.pausePlay();
         playbackPaused = true;
-        musicService.pausar();
         if(soyElLider)
             pausarCancion();
     }
@@ -1022,8 +980,6 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         return false;
     }
 
-
-
     /**
      *
      * @return
@@ -1060,10 +1016,63 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         return true;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public int getAudioSessionId() {
         return 0;
     }
 
+    /**
+     *  Metodos De Ciclo de vida del Activity
+     */
+
+
+    /**
+     *
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        View focusedView = getActivity().getCurrentFocus();
+        // TODO Con esta linea Por fin he arreglado este pete del null, solo espero que no afecte a la conexion
+//        if (focusedView != null) {
+//            if(textMessageEditText.getWindowToken()== null)
+//                imm.hideSoftInputFromWindow(textMessageEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+//        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onStop() {
+        super.onStop();
+        //listQueYaHasidoEnviada.clear();
+        matarTodosLoshilos();
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //listQueYaHasidoEnviada.clear();
+        matarTodosLoshilos();
+    }
+
+    /**
+     *
+     */
+    public void matarTodosLoshilos() {
+        for (Thread tr : threadsDeLaClas ) {
+            if(tr != null)
+                tr.interrupt();
+        }
+    }
 
 }

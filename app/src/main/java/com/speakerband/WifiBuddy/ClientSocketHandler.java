@@ -15,12 +15,19 @@ public class ClientSocketHandler extends Thread {
     private Handler handler;
     private InetAddress inetAddress;
 
+    /**
+     *
+     * @param handler
+     * @param groupOwnerAddress
+     */
     public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress) {
         this.handler = handler;
         this.inetAddress = groupOwnerAddress;
     }
 
-    // TODO: Add JavaDoc
+    /**
+     *
+     */
     @Override
     public void run() {
         Log.i(TAG, "Client socket thread running");

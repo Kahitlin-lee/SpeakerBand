@@ -35,7 +35,6 @@
     <!-- Actions -->
     <string name="action_toggle_wifi">Activar Wi-Fi</string>
     <string name="action_view_logs">Visualizar Logs</string>
-    <string name="ayuda">Ayuda</string>
     <string name="action_exit">Salir</string>
     <string name="action_close">Cerrar</string>
     <string name="action_refresh">Refrescar</string>
@@ -55,5 +54,40 @@
     <string name="artistas">Artistas</string>
     <string name="sincronizacion">ListaSincro</string>
     <string name="conexion">Conexión</string>
+
+    <string name="ayuda">Ayuda</string>
+    <string name="menu">Menu</string>
+
+    <string name="texto_ayuda_1">
+        Con SpeakerBand podrás reproducir la música que tengas en el telefono. \n\n
+        Podrás ver tres pestañas con tres listas.\n\n
+        -En la primera lista están todas tus canciones ordenadas por el nombre de la canción.\n
+        -En la segunda lista encontras tus canciones ordenadas por el nombre del artista.\n
+        -En la tercera lista es donde estarán las canciones que desees enviar a tus amigos para que juntos puedan disfrutar de la música.\n
+        -Para agregar canciones a la LISTASICRO solo tienes que hacer un click largo en una canción de cualquiera de las otras dos listas.\n
+        -Si quieres quitar la canción de la lista solo tienes que dentro de la LISTASICRO  hacer un click largo.\n
+        -Para reproducir la música sólo tienes que hacer click sobre la canción y verás que aparece los controles de mandos para pausar , volver a poner a play la canción,  pasar de canción o volver a la canción anterior.\n
+        En el caso de que los controles de mando desaparezcan en el menú de la esquina superior derecha podrás volver a ver los controles haciendo click en “Controlador de música”.\n
+        Para conectar con amigos hay que presionar en el botón de conexión.\n\n
+    </string>
+
+    <string name="texto_ayuda_2">
+        Tienes dos opciones entrar al chat, donde puedes escribirle a tus a amigos y envíales imágenes instantáneas.\n
+        O\n
+        Conectar las canciones con tus amigos y disfrutar todos de la misma música.\n
+    </string>
+    <string name="texto_ayuda_3">
+        Aquí primero tienes que enviar/sincronizar las canciones con el primer botón y con el segundo se pondran las canciones en play.\n
+        Con el controlador solo podrás pausar y poner en play nuevamente las canciones.\n
+        En el caso de que los controles de mando desaparezcan en el menú de la esquina superior derecha podrás volver a ver los controles haciendo click en “Controlador de música”.\n
+    </string>
+    <string name="texto_ayuda_4">
+        Este es un simple chat.\n
+        Aqui puede enviar imagenes instantaneas , estas imagenes se envian pero no se guardan en el telefono de tus amigos\n
+    </string>
+
+    <string name="abrir_navegacion_lateral">Abrir menu lateral</string>
+    <string name="cerrar_navegacion_lateral">Cerrar menu lateral</string>
+
 
 </resources>

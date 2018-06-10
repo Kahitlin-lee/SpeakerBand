@@ -17,6 +17,9 @@ import java.util.List;
 import static com.speakerband.ClaseAplicationGlobal.listSelection;
 import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
 
+/**
+ *  Created by Catalina Saavedra
+ */
 public class SongCursor {
 
     private static ClaseAplicationGlobal mApplicationAux;
@@ -224,5 +227,4 @@ public class SongCursor {
 
         listSelectionClinteParaReproducir = list;
     }
-    //---------------
 }

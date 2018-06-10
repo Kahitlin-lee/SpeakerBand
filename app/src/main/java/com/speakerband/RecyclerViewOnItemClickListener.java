@@ -3,7 +3,7 @@ package com.speakerband;
 import android.view.View;
 
 /**
- * Created by g_electra on 16/10/17.
+ * Created by Catalina Saavedra 16/10/17.
  */
 
 /**

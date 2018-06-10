@@ -5,29 +5,43 @@ package com.speakerband.network;
  */
 public enum MessageType
 {
-    //Tipo cuando se recibe  texto
+    /**
+    Tipo para cuando se recibe  texto
+     */
     TEXT,
-    //Tipo cuando se recibe  una imagen tomada con la camara
+    /**
+     Señal Tipo para cuando se recibe  una imagen tomada con la camara
+     */
     IMAGE,
-    //Tipo cuando comienza a enviar la cancion, y recibe el principio de la misma
-    SONG_START,
-    //Tipo de mientras envia los array de bytes
-    SONG,
-    //Tipo de cuando ya a terminado de enviar la cancion
-    SONG_END,
-    //Señal para que re reproduzcan las canciones
-    PLAY,
-
+    /**
+     Señal Tipo cuando comienza a enviar la cancion, y recibe el principio de la misma
+     */
+    SONG_SEND_START,
+    /**
+    Señal Tipo de cuando ya a terminado de enviar la cancion
+     */
+    SONG_SEND_END,
+    /**
+    Señales para la sync de las  canciones
+     */
     PREPARE_PLAY,
-
     PREPARADO,
-
+    PREPARADO2,
+    /**
+     * Señal tipo que Indica quien ha aceptado el valo de linder
+     */
     SOY_LIDER,
-
+    /**
+     *  Señales para poner en play las canciones
+     */
+    PLAY_CLIENTE,
+    PLAY_LIDER,
+    /**
+     * Señal tipo pausar cancion
+     */
     PAUSAR,
-
-    PASAR_CANCION,
-
+    /**
+     * Señal tipo para poner en play si esta en puase o en pause si esta en play la cancion
+     */
     PLAY_PAUSE
-
 }

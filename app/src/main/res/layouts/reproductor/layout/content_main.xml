@@ -17,26 +17,6 @@
         android:background="#212121"
         android:id="@+id/relativeLayoutMainContent">
 
-        <TextView
-            android:id="@+id/list_selection_empty"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorAccent"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:text="@string/list_selection_empty"
-            />
-
-        <TextView
-            android:id="@+id/list_empty"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorAccent"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:text="@string/list_empty"
-            />
-
         <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

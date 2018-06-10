@@ -10,9 +10,11 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title"
         android:text="Elige tu nombre : "
         android:textColor="@color/colorAccent"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:singleLine="true"
+        android:ellipsize="marquee"/>
 
 
     <EditText
@@ -24,14 +26,15 @@
         >
     </EditText>
 
-
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/colorAccent"
         android:text="Eres el Lider ??  "
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title"
+        android:singleLine="true"
+        android:ellipsize="marquee" />
 
         <requestFocus />
 

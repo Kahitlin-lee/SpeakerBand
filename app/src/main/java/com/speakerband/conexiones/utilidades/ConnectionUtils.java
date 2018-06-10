@@ -10,11 +10,15 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 /**
- * Authored by KaushalD on 6/28/2016.
+ *
  */
 public class ConnectionUtils {
 
-
+    /**
+     * Metodo IP  From Mac
+     * @param MAC
+     * @return
+     */
     public static String getIPFromMac(String MAC) {
         BufferedReader br = null;
         try {
@@ -46,7 +50,11 @@ public class ConnectionUtils {
         return null;
     }
 
-
+    /**
+     * Metodo Otener puerto
+     * @param context
+     * @return
+     */
     public static int getPort(Context context) {
         int localPort = Utility.getInt(context, "localport");
         if (localPort < 0) {
@@ -56,6 +64,10 @@ public class ConnectionUtils {
         return localPort;
     }
 
+    /**
+     * Metodo Otener puerto libre
+     * @return
+     */
     public static int getNextFreePort() {
         int localPort = -1;
         try {

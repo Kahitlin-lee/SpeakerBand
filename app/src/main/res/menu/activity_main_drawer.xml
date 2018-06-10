@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:title="@string/menu">
+            <menu>
+                <item
+                    android:id="@+id/ayuda2"
+                    android:title="@string/ayuda" />
+                <item
+                    android:id="@+id/mostrar_barra_control2"
+                    android:title="@string/controlador_de_musica" />
+                <item
+                    android:id="@+id/action_end2"
+                    android:title="@string/titleEnd" />
+            </menu>
+        </item>
+    </group>
+
+</menu>

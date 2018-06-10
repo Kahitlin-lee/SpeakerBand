@@ -12,10 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 /**
- * Created by g_electra on 29/9/17.
+ * Created by Catalina Saavedra
  * Clase con metodos para administrar los permisos de la apis mayores a la 23
  */
-
 public class RequestPermissions
 {
     /**
@@ -92,6 +91,9 @@ public class RequestPermissions
         return true;
     }
 
+    /**
+     * Metodo Eliminar Dialogo Permisos
+     */
     public void eliminarDialogoPermisos()
     {
         if (vistaPadre != null && dialogoPermisos != null)

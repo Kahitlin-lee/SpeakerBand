@@ -10,10 +10,12 @@
         android:id="@+id/action_ayuda"
         android:orderInCategory="100"
         android:title="@string/ayuda"
+        android:icon="@drawable/question"
         app:showAsAction="never" />
     <item
         android:id="@+id/mostrar_barra_control2"
         android:orderInCategory="100"
         android:title="@string/controlador_de_musica"
+        android:icon="@drawable/controls"
         app:showAsAction="never" />
 </menu>

@@ -6,16 +6,19 @@
     <item
         android:id="@+id/ayuda"
         android:title="@string/ayuda"
+        android:icon="@drawable/question"
         app:showAsAction="never" />
     <item
         android:id="@+id/mostrar_barra_control"
         android:orderInCategory="100"
+        android:icon="@drawable/controls"
         android:title="@string/controlador_de_musica"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_end"
         android:orderInCategory="100"
         android:title="@string/titleEnd"
+        android:icon="@drawable/exit"
         app:showAsAction="never" />
 
 

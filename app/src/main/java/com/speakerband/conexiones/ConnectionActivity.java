@@ -53,10 +53,11 @@ import static com.speakerband.ClaseAplicationGlobal.sourceDeviceNameOtroMovil;
 
 
 /**
- * Actividad que  que es un contenedor para Fragment y la ActionBar.
+ * Created by Catalina Saavedra
+ * Actividad que  es un contenedor para Fragment y la ActionBar.
  * Contiene WifiDirectHandler, que es el service
  * MainActivity tiene Communication BroadcastReceiver to handle Intents diparado desde WifiDirectHandler.
- * Es el activity que inicializa la conexion entre los moviles
+ * Es la activity que inicializa la conexion entre los moviles
  */
 public class ConnectionActivity extends AppCompatActivity implements WiFiDirectHandlerAccessor
 {
@@ -66,6 +67,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     private ChatFragment chatFragment = null;
     private SongsFragment songsFragment = null;
     private LogsDialogFragment logsDialogFragment;
+    private AyudaConectionDialogFragment ayudaConectionDialogFragment;
     private MainFragment mainFragment;
 
     private TextView deviceInfoTextView;
@@ -101,7 +103,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         layoutBotones = (LinearLayout) findViewById(R.id.layoutbotones);
         layoutBotones.setVisibility(View.INVISIBLE);
         deviceInfoTextView = (TextView) findViewById(R.id.thisDeviceInfoTextView);
-
 
 
         // Inicializa ActionBar
@@ -163,48 +164,45 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     protected void onResume()
     {
         Log.i(TAG, "Resuming MainActivity");
-
-
         super.onResume();
-
         Log.i(TAG, "MainActivity resumed");
     }
 
-        /**
-         *
-         */
-        private void desapareceLayout() {
-            abrirCancionesButton.setEnabled(false);
-            abrirChatButton.setEnabled(false);
-            layoutBotones.setVisibility(View.INVISIBLE);
-        }
+    /**
+     *
+     */
+    private void desapareceLayout() {
+        abrirCancionesButton.setEnabled(false);
+        abrirChatButton.setEnabled(false);
+        layoutBotones.setVisibility(View.INVISIBLE);
+    }
 
-        /**
-         *
-         */
-        private void aparececeLayout() {
-            abrirCancionesButton.setEnabled(true);
-            abrirChatButton.setEnabled(true);
-            layoutBotones.setVisibility(View.VISIBLE);
-        }
+    /**
+     *
+     */
+    private void aparececeLayout() {
+        abrirCancionesButton.setEnabled(true);
+        abrirChatButton.setEnabled(true);
+        layoutBotones.setVisibility(View.VISIBLE);
+    }
 
-        /**
-         * Configura CommunicationReceiver para recibir intents disparados de WifiDirectHandler
-         * Se utiliza para actualizar la interfaz de usuario y recibir mensajes de comunicación
-         */
-        private void registerCommunicationReceiver()
-        {
-            if(communicationReceiver == null)
-                communicationReceiver = new CommunicationReceiver();
+    /**
+     * Configura CommunicationReceiver para recibir intents lanzados de WifiDirectHandler
+     * Se utiliza para actualizar la interfaz de usuario y recibir mensajes de comunicación
+     */
+    private void registerCommunicationReceiver()
+    {
+        if(communicationReceiver == null)
+            communicationReceiver = new CommunicationReceiver();
 
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(WifiDirectHandler.Action.SERVICE_CONNECTED);
-            filter.addAction(WifiDirectHandler.Action.MESSAGE_RECEIVED);
-            filter.addAction(WifiDirectHandler.Action.DEVICE_CHANGED);
-            filter.addAction(WifiDirectHandler.Action.WIFI_STATE_CHANGED);
-            LocalBroadcastManager.getInstance(this).registerReceiver(communicationReceiver, filter);
-            Log.i(TAG, "Communication Receiver registered");
-        }
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(WifiDirectHandler.Action.SERVICE_CONNECTED);
+        filter.addAction(WifiDirectHandler.Action.MESSAGE_RECEIVED);
+        filter.addAction(WifiDirectHandler.Action.DEVICE_CHANGED);
+        filter.addAction(WifiDirectHandler.Action.WIFI_STATE_CHANGED);
+        LocalBroadcastManager.getInstance(this).registerReceiver(communicationReceiver, filter);
+        Log.i(TAG, "Communication Receiver registered");
+    }
 
     /**
      * Agrega al  Main Menu de ActionBar
@@ -231,12 +229,14 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 }
                 logsDialogFragment.show(getFragmentManager(), "dialog");
                 return true;
-            case R.id.action_exit:
-                //finish();
-                return true;
             case R.id.mostrar_barra_control2:
                 if(controllerSongFragmen!=null)
                     controllerSongFragmen.show(musicService.getPosn());
+                return true;
+            case R.id.action_ayuda:
+                if(ayudaConectionDialogFragment==null)
+                    ayudaConectionDialogFragment  = new AyudaConectionDialogFragment();
+                ayudaConectionDialogFragment.show(getFragmentManager(), "ayuda");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -245,8 +245,8 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
 
     /**
-     * Esto se usa para ejecutar WifiDirectHandler como un servicio en lugar de estar acoplado a una
-     * Actividad. Esto NO es una conexión a un servicio P2P que se está transmitiendo desde un dispositivo
+     *  Se utiliza para ejecutar WifiDirectHandler como un servicio en lugar de estar acoplado a una
+     * Actividad. Esto NO es una conexión a un servicio P2P.
      */
     private ServiceConnection wifiServiceConnection = new ServiceConnection()
     {
@@ -278,7 +278,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
         /**
          * Se invoca cuando se pierde una conexión al Servicio. Esto
-         * sucede cuando el proceso que aloja el servicio se ha bloqueado o ha sido asesinado.
+         * sucede cuando el proceso que aloja el servicio se ha bloqueado o ha sido destruido.
          * Esto  elimina el ServiceConnection en sí,
          * el enlace al servicio permanecerá activo y recibirá una llamada
          * a onServiceConnected cuando el servicio se ejecuta nuevamente.
@@ -303,8 +303,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     /**
      * Inicia una conexión P2P a un servicio cuando se escucha un ListItem de servicio.
      * Aparece una invitación en el otro dispositivo para aceptar o rechazar la conexión.
-     * Conexion aceptada del dispositivo que acepta la conexion
-     * @param service El servicio para conectarse a
+     * @param service El servicio para conectarse
      */
     public void onServiceClick(DnsSdService service) {
         Log.i(TAG, "\nService List item tapped");
@@ -518,7 +517,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         transaction.addToBackStack(null);
 
         // Commit de la transaction
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
 
@@ -566,7 +565,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         final EditText userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
         final TextView text1 = (TextView) promptsView.findViewById(R.id.textView1);
         final TextView text2 = (TextView) promptsView.findViewById(R.id.textView2);
-
 
         if(yaSePreguntoQuienEsElLiderCliente) {
             text2.setVisibility(View.INVISIBLE);

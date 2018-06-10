@@ -109,8 +109,6 @@ public class ClaseAplicationGlobal extends Application {
         preferences.saveListSelectionPreferences(getApplicationContext(), _realList );
     }
 
-
-
     /**
      * Agrega una cancion a la preferencias desde cualquier parte de la aplicacion
      * @param
@@ -136,6 +134,12 @@ public class ClaseAplicationGlobal extends Application {
             preferences.saveListSelectionPreferences(getApplicationContext(), listSelection);
     }
 
+    public  void noMostrarMasDialogo(boolean isChecked){
+        preferences.storeDialogStatus(isChecked,getApplicationContext());
+    }
 
+    public boolean obtenerDialogStatus(){
+        return preferences.getDialogStatus(getApplicationContext());
+    }
 
 }

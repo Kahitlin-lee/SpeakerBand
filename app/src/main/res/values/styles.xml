@@ -44,4 +44,12 @@
         <item name="android:layout_gravity">center_horizontal</item>
     </style>
 
+    <style name="Opciones" parent="Theme.AppCompat.Dialog">
+
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:background">@drawable/botonpulsado</item>
+
+    </style>
+
+
 </resources>

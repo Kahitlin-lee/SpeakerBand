@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.speakerband.musica.MainActivity;
+
 /**
  * Created by Catalina Saavedra
  * Clase con metodos para administrar los permisos de la apis mayores a la 23

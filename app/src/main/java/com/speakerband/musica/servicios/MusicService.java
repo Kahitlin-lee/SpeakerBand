@@ -1,4 +1,4 @@
-package com.speakerband;
+package com.speakerband.musica.servicios;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -16,6 +16,10 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.PowerManager;
 import android.util.Log;
+
+import com.speakerband.musica.MainActivity;
+import com.speakerband.R;
+import com.speakerband.musica.modelo.Song;
 
 import java.io.IOException;
 import java.util.List;

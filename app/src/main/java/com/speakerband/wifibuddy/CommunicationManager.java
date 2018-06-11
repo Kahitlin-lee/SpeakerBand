@@ -1,16 +1,13 @@
-package com.speakerband.WifiBuddy;
+package com.speakerband.wifibuddy;
 
 import android.os.Handler;
-import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InterfaceAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /**
  * Handles reading and writing of messages with socket buffers. Uses a Handler

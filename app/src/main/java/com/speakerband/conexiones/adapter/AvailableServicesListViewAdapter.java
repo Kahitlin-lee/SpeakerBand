@@ -1,4 +1,4 @@
-package com.speakerband.conexiones;
+package com.speakerband.conexiones.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,18 +8,19 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.speakerband.R;
-import com.speakerband.WifiBuddy.DnsSdService;
-import com.speakerband.WifiBuddy.DnsSdTxtRecord;
+import com.speakerband.wifibuddy.DnsSdService;
+import com.speakerband.wifibuddy.DnsSdTxtRecord;
+import com.speakerband.conexiones.ConnectionActivity;
 
 import java.util.List;
 import java.util.Map;
 
-import static com.speakerband.ClaseAplicationGlobal.sourceDeviceName;
+import static com.speakerband.ClaseApplicationGlobal.sourceDeviceName;
 
 /**
  *
  */
-class AvailableServicesListViewAdapter extends BaseAdapter
+public class AvailableServicesListViewAdapter extends BaseAdapter
 {
     private List<DnsSdService> serviceList;
     private final ConnectionActivity context;

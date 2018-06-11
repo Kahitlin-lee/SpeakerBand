@@ -1,4 +1,4 @@
-package com.speakerband.conexiones;
+package com.speakerband.conexiones.fragments;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -20,10 +20,11 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 
 import com.speakerband.R;
-import com.speakerband.WifiBuddy.DnsSdService;
-import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
-import com.speakerband.WifiBuddy.WifiDirectHandler;
-
+import com.speakerband.wifibuddy.DnsSdService;
+import com.speakerband.wifibuddy.WiFiDirectHandlerAccessor;
+import com.speakerband.wifibuddy.WifiDirectHandler;
+import com.speakerband.conexiones.ConnectionActivity;
+import com.speakerband.conexiones.adapter.AvailableServicesListViewAdapter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;

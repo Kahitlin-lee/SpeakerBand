@@ -1,4 +1,4 @@
-package com.speakerband.WifiBuddy;
+package com.speakerband.wifibuddy;
 
 import android.app.Service;
 import android.content.Intent;

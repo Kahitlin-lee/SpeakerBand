@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.speakerband.MainActivity"
+    tools:context="com.speakerband.musica.MainActivity"
     tools:showIn="@layout/activity_main"
     android:id="@+id/content_main"
     >
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:background="#212121"
-            tools:context=".MainActivity"
+            tools:context=".musica.MainActivity"
             android:layout_below="@id/rv"
             android:layout_alignParentBottom = "true"
             android:id="@+id/linear">

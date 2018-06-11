@@ -1,4 +1,4 @@
-package com.speakerband.WifiBuddy;
+package com.speakerband.wifibuddy;
 
 import java.util.HashMap;
 

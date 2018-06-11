@@ -1,4 +1,4 @@
-package com.speakerband.WifiBuddy;
+package com.speakerband.wifibuddy;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,8 +27,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.speakerband.ClaseAplicationGlobal;
-import com.speakerband.conexiones.utilidades.ConnectionUtils;
+import com.speakerband.ClaseApplicationGlobal;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -111,7 +110,7 @@ public class WifiDirectHandler extends NonStopIntentService implements
         Log.i(TAG, "Creating WifiDirectHandler");
 
         // Registers the Wi-Fi Manager and the Wi-Fi BroadcastReceiver
-        wifiManager = ((ClaseAplicationGlobal)getApplication()).getWifiManager(); //(WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        wifiManager = ((ClaseApplicationGlobal)getApplication()).getWifiManager(); //(WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
 
         registerWifiReceiver();
 
@@ -248,6 +247,7 @@ public class WifiDirectHandler extends NonStopIntentService implements
                     return;
                 }
             }
+            //TODO El hacer mas restrictivo este else soluciona el problema de que se conectara consigo mismo.
             else if (!wifiP2pInfo.isGroupOwner && socketHandler == null)
             {
                 Log.i(TAG, "Connected as peer");
@@ -654,6 +654,8 @@ public class WifiDirectHandler extends NonStopIntentService implements
      * Creates a service that can be connected to without prompting. This is possible by creating an
      * access point and broadcasting the password for peers to use. Peers connect via normal wifi, not
      * wifi direct, but the effect is the same.
+     * TODO -- Al crear un grupo tambien estamos forzando a que sea groupowner, asi que en el futuro
+     * TODO -- estaria muy bien forzar esa opcion: poder elegir quien es groupowner
      */
     public void startAddingNoPromptService(ServiceData serviceData) {
         if (wifiP2pServiceInfo != null) {
@@ -828,7 +830,6 @@ public class WifiDirectHandler extends NonStopIntentService implements
                 }
             }
         });
-
     }
 
     /**

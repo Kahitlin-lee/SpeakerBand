@@ -12,7 +12,7 @@
             android:orientation="vertical"
             android:paddingBottom="30dp"
             android:background="#FAFAFA"
-            tools:context="com.speakerband.MainActivity"
+            tools:context="com.speakerband.musica.MainActivity"
             tools:showIn="@layout/activity_main"
             >
 

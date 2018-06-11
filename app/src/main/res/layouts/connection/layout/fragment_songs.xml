@@ -36,38 +36,50 @@
                 android:layout_weight="0"
                 android:layout_gravity="bottom"
                 android:layout_below="@android:id/list"
-                android:background="#BDBDBD"
+                android:background="#E0E0E0"
                 android:id="@+id/l"
                 android:gravity="center"
                 android:layout_alignParentBottom = "true"
-                >
+                android:orientation="vertical">
 
                 <ProgressBar
                     android:id="@+id/progressBarSong"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="55dp"
+                    android:layout_height="55dp"
                     android:layout_gravity="center"
                     style="?android:attr/progressBarStyle"
                     >
                 </ProgressBar>
 
-                <ImageButton
-                    android:id="@+id/sync_blacco"
-                    android:layout_width="170dip"
-                    android:layout_height="80dip"
-                    android:src="@drawable/my_selector_sync"
-                    android:background="#BDBDBD"
-                    android:paddingBottom="3sp"
-                    />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0"
+                    android:layout_gravity="bottom"
+                    android:layout_below="@android:id/list"
+                    android:background="#E0E0E0"
+                    android:gravity="center"
+                    android:layout_alignParentBottom = "true"
+                    >
 
-                <ImageButton
-                    android:id="@+id/playButton"
-                    android:layout_width="170dip"
-                    android:layout_height="80dip"
-                    android:src="@drawable/my_selector_play"
-                    android:background="#BDBDBD"
-                    android:paddingBottom="3sp"
-                    />
+                    <ImageButton
+                        android:id="@+id/sync_blacco"
+                        android:layout_width="170dip"
+                        android:layout_height="80dip"
+                        android:src="@drawable/my_selector_sync"
+                        android:background="#E0E0E0"
+                        android:paddingBottom="3sp"
+                        />
+
+                    <ImageButton
+                        android:id="@+id/playButton"
+                        android:layout_width="170dip"
+                        android:layout_height="80dip"
+                        android:src="@drawable/my_selector_play"
+                        android:background="#E0E0E0"
+                        android:paddingBottom="3sp"
+                        />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 

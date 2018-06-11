@@ -28,14 +28,14 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:name="ClaseAplicationGlobal"
+        android:name=".ClaseApplicationGlobal"
         android:supportsRtl="true"
         android:hardwareAccelerated="false"
         android:largeHeap="true"
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".musica.MainActivity"
             android:configChanges="screenSize|orientation"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
@@ -52,9 +52,9 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
 
-        <service android:name="com.speakerband.MusicService" />
+        <service android:name=".musica.servicios.MusicService" />
         <!-- TODO No sé si este servicio nos va a dar problemas ya que se importa desde la librería directamente-->
-        <service android:name="com.speakerband.WifiBuddy.WifiDirectHandler" />
+        <service android:name="com.speakerband.wifibuddy.WifiDirectHandler" />
 
     </application>
 </manifest>

@@ -28,28 +28,33 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.speakerband.ClaseAplicationGlobal;
+import com.speakerband.ClaseApplicationGlobal;
 import com.speakerband.R;
-import com.speakerband.WifiBuddy.CommunicationManager;
-import com.speakerband.WifiBuddy.DnsSdService;
-import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
-import com.speakerband.WifiBuddy.WifiDirectHandler;
-import com.speakerband.network.Message;
-import com.speakerband.network.MessageType;
+import com.speakerband.conexiones.dialogos.AyudaConectionDialogFragment;
+import com.speakerband.conexiones.dialogos.LogsDialogFragment;
+import com.speakerband.conexiones.fragments.ChatFragment;
+import com.speakerband.conexiones.fragments.MainFragment;
+import com.speakerband.conexiones.fragments.SongsFragment;
+import com.speakerband.musica.modelo.network.Message;
+import com.speakerband.musica.modelo.network.MessageType;
+import com.speakerband.wifibuddy.CommunicationManager;
+import com.speakerband.wifibuddy.DnsSdService;
+import com.speakerband.wifibuddy.WiFiDirectHandlerAccessor;
+import com.speakerband.wifibuddy.WifiDirectHandler;
 
 import org.apache.commons.lang3.SerializationUtils;
 
-import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentChat;
-import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentSong;
-import static com.speakerband.ClaseAplicationGlobal.getContext;
-import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
-import static com.speakerband.ClaseAplicationGlobal.musicService;
-import static com.speakerband.ClaseAplicationGlobal.sourceDeviceName;
-import static com.speakerband.ClaseAplicationGlobal.soyElLider;
-import static com.speakerband.ClaseAplicationGlobal.controllerSongFragmen;
-import static com.speakerband.ClaseAplicationGlobal.yaSePreguntoQuienEsElLider;
-import static com.speakerband.ClaseAplicationGlobal.yaSePreguntoQuienEsElLiderCliente;
-import static com.speakerband.ClaseAplicationGlobal.sourceDeviceNameOtroMovil;
+import static com.speakerband.ClaseApplicationGlobal.controllerSongFragmen;
+import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentChat;
+import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentSong;
+import static com.speakerband.ClaseApplicationGlobal.getContext;
+import static com.speakerband.ClaseApplicationGlobal.listSelectionClinteParaReproducir;
+import static com.speakerband.ClaseApplicationGlobal.musicService;
+import static com.speakerband.ClaseApplicationGlobal.sourceDeviceName;
+import static com.speakerband.ClaseApplicationGlobal.sourceDeviceNameOtroMovil;
+import static com.speakerband.ClaseApplicationGlobal.soyElLider;
+import static com.speakerband.ClaseApplicationGlobal.yaSePreguntoQuienEsElLider;
+import static com.speakerband.ClaseApplicationGlobal.yaSePreguntoQuienEsElLiderCliente;
 
 
 /**
@@ -76,7 +81,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     private Button abrirChatButton;
     private Button abrirCancionesButton;
     private LinearLayout layoutBotones;
-    private ClaseAplicationGlobal mApplication;
+    private ClaseApplicationGlobal mApplication;
 
     private CommunicationReceiver communicationReceiver;
     private Intent intentWifiDirect;
@@ -109,7 +114,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         Toolbar toolbar = (Toolbar) findViewById(R.id.mainToolbar);
         setSupportActionBar(toolbar);
 
-        mApplication = (ClaseAplicationGlobal) getApplicationContext ();
+        mApplication = (ClaseApplicationGlobal) getApplicationContext ();
 
         // Establecer el Oyente Click para el botón abrirChatButton
         abrirChatButton.setOnClickListener(new View.OnClickListener() {
@@ -133,10 +138,10 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                  Log.i(TAG, "\n");
                  if (songsFragment == null) {
                         songsFragment = new SongsFragment();
-                        }
-                        estaEnElFragmentSong= true;
-                        desapareceLayout();
-                        replaceFragment(songsFragment);
+                    }
+                    estaEnElFragmentSong= true;
+                    desapareceLayout();
+                    replaceFragment(songsFragment);
                     }
                 });
 
@@ -341,34 +346,17 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     }
 
 
-    protected void onPause() {
-        super.onPause();
-        Log.i(TAG, "Pausing MainActivity");
-        if (wifiDirectHandlerBound) {
-            Log.i(TAG, "WifiDirectHandler service unbound");
-            stopService(intentWifiDirect);
-            unbindService(wifiServiceConnection);
-            wifiDirectHandlerBound = false;
-            yaSePreguntoQuienEsElLider = false;
-        }
-        Log.i(TAG, "MainActivity paused");
-    }
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.i(TAG, "Stopping MainActivity");
-        if(wifiDirectHandlerBound) {
-            stopService(intentWifiDirect);
-            unbindService(wifiServiceConnection);
-            wifiDirectHandlerBound = false;
-        }
-        yaSePreguntoQuienEsElLider = false;
-        Log.i(TAG, "MainActivity stopped");
-    }
-
     @Override
     protected void onDestroy() {
+
+        pararServicioAntesCerrar();
+
+        yaSePreguntoQuienEsElLider = false;
         super.onDestroy();
+    }
+
+    public void pararServicioAntesCerrar()
+    {
         Log.i(TAG, "Destroying MainActivity");
         if (wifiDirectHandlerBound) {
             Log.i(TAG, "WifiDirectHandler service unbound");
@@ -377,10 +365,11 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
             wifiDirectHandlerBound = false;
             Log.i(TAG, "MainActivity destroyed");
         }
-        yaSePreguntoQuienEsElLider = false;
     }
 
+
     /**
+     * Cuando el usuario termina de utilizar la actividad subsiguiente y vuelve,
      * Le llega la foto desde el otro activity
      * Con este metodo se coge la info que manda del activity
      * 2º lugar por donde pasa para enviar la foto
@@ -434,18 +423,18 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 Log.i(TAG, "Este dispositivo cambia");
                 deviceInfoTextView.setText(wifiDirectHandler.getThisDeviceInfo());
             } else if (intent.getAction().equals(WifiDirectHandler.Action.MESSAGE_RECEIVED)) {
-                // A message from the Communication Manager has been received
+                // Se recibió un mensaje del Communication Manager
                 Log.i(TAG, "Mensaje recibido");
                 if(chatFragment != null &&  estaEnElFragmentChat) {
                     //2º lugar donde pasa cuando llega
                     chatFragment.pullMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY), context);
-                }
-                if(songsFragment != null && estaEnElFragmentSong) {
+                } else if(songsFragment != null && estaEnElFragmentSong) {
                     //2º lugar donde pasa cuando llega
                     songsFragment.pullMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY), context);
-                }
-                if(mensageDeEstaActivity)
+                } else if(mensageDeEstaActivity) {
                     pullMessage(intent.getByteArrayExtra(WifiDirectHandler.MESSAGE_KEY), context);
+                    mensageDeEstaActivity = false;
+                }
 
             } else if (intent.getAction().equals(WifiDirectHandler.Action.WIFI_STATE_CHANGED)) {
                 //3º lugar donde pasa cuando llega la foto, depues de esto la muestra
@@ -455,37 +444,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                 if(mainFragment != null)
                      mainFragment.handleWifiStateChanged();
             }
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-
-        if (estaEnElFragmentSong) {
-            if(songsFragment!=null) {
-                eliminarFragment();
-                aparececeLayout();
-                estaEnElFragmentSong = false;
-            }
-        } else if (estaEnElFragmentChat) {
-            if(chatFragment!=null) {
-                eliminarFragment();
-                aparececeLayout();
-                estaEnElFragmentChat = false;
-            }
-        } else {
-
-            if (wifiDirectHandlerBound) {
-                Log.i(TAG, "WifiDirectHandler service unbound");
-                unbindService(wifiServiceConnection);
-                wifiDirectHandlerBound = false;
-                Log.i(TAG, "MainActivity destroyed");
-            }
-            musicService.pausar();
-            super.onBackPressed();
-            listSelectionClinteParaReproducir.clear();
-            yaSePreguntoQuienEsElLider = false;
-            finish();
         }
     }
 
@@ -500,9 +458,14 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     {
         int numeroFragments = getSupportFragmentManager().getBackStackEntryCount();
         for (int i=0; i<numeroFragments; i++)
-        {// TODO cada tanto peta aca
+        {// TODO cada tanto peta aca     java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState
             getSupportFragmentManager().popBackStackImmediate();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        //No call for super(). Bug on API Level > 11.
     }
 
     // --- Dejo uno generico para usar en la propia clase Connection
@@ -554,10 +517,10 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     {
         String textoBoton;
         // get prompts.xml view
-        LayoutInflater li = LayoutInflater.from(ConnectionActivity.this.getApplicationContext());
+        LayoutInflater li = LayoutInflater.from(this);
         View promptsView = li.inflate(R.layout.dialog_conection, null);
 
-        alertDialogBuilder = new AlertDialog.Builder(ConnectionActivity.this);
+        alertDialogBuilder = new AlertDialog.Builder(this);
 
         // set prompts.xml to alertdialog builder
         alertDialogBuilder.setView(promptsView);
@@ -600,8 +563,14 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         // create alert dialog
         alertDialog = alertDialogBuilder.create();
 
-        // show it
-        alertDialog.show();
+        // TODO ARREGLAR EL PETE DEL DIALOGO
+        if(alertDialog!=null)
+        {
+            if(!((ConnectionActivity)this).isFinishing())
+
+                alertDialog.show();
+
+        }
     }
 
     /**
@@ -630,7 +599,6 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         thread.start();
 
         return thread;
-
     }
 
 
@@ -646,7 +614,37 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
         Toast.makeText(getContext(),
                 "Eres el lider del grupo!!", Toast.LENGTH_SHORT).show();
-        envioMensajesAlOtroDispositivoParaDescarga(MessageType.SOY_LIDER, byteArrayPrepararPlay);
+
+        Thread thread;
+        thread =envioMensajesAlOtroDispositivoParaDescarga(MessageType.SOY_LIDER, byteArrayPrepararPlay);
+        if (thread != null)
+            thread.interrupt();
     }
 
+    @Override
+    public void onBackPressed() {
+
+        if (estaEnElFragmentSong) {
+            if (songsFragment != null) {
+                eliminarFragment();
+                aparececeLayout();
+                estaEnElFragmentSong = false;
+            }
+        } else if (estaEnElFragmentChat) {
+            if (chatFragment != null) {
+                eliminarFragment();
+                aparececeLayout();
+                estaEnElFragmentChat = false;
+            }
+        } else {
+
+            musicService.pausar();
+            pararServicioAntesCerrar();
+
+            super.onBackPressed();
+            listSelectionClinteParaReproducir.clear();
+            yaSePreguntoQuienEsElLider = false;
+            finish();
+        }
+    }
 }

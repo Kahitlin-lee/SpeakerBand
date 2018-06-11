@@ -3,8 +3,7 @@ package com.speakerband.utils;
 import android.content.Context;
 import android.os.Environment;
 
-import com.speakerband.Song;
-import com.speakerband.utils.Constants;
+import com.speakerband.musica.modelo.Song;
 
 import java.io.File;
 import java.io.FileInputStream;

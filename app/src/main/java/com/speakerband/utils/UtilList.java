@@ -1,7 +1,7 @@
 package com.speakerband.utils;
 
 
-import com.speakerband.Song;
+import com.speakerband.musica.modelo.Song;
 
 import java.util.Collections;
 import java.util.Comparator;

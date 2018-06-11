@@ -1,4 +1,4 @@
-package com.speakerband.conexiones;
+package com.speakerband.conexiones.fragments;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -27,15 +27,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.speakerband.MusicController;
+import com.speakerband.musica.MusicController;
 import com.speakerband.R;
-import com.speakerband.Song;
-import com.speakerband.SongCursor;
-import com.speakerband.WifiBuddy.CommunicationManager;
-import com.speakerband.WifiBuddy.WiFiDirectHandlerAccessor;
-import com.speakerband.WifiBuddy.WifiDirectHandler;
-import com.speakerband.network.Message;
-import com.speakerband.network.MessageType;
+import com.speakerband.musica.modelo.Song;
+import com.speakerband.musica.cursor.SongCursor;
+import com.speakerband.wifibuddy.CommunicationManager;
+import com.speakerband.wifibuddy.WiFiDirectHandlerAccessor;
+import com.speakerband.wifibuddy.WifiDirectHandler;
+import com.speakerband.musica.modelo.network.Message;
+import com.speakerband.musica.modelo.network.MessageType;
 
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -52,12 +52,12 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.speakerband.ClaseAplicationGlobal.controllerSongFragmen;
-import static com.speakerband.ClaseAplicationGlobal.listSelection;
-import static com.speakerband.ClaseAplicationGlobal.listSelectionClinteParaReproducir;
-import static com.speakerband.ClaseAplicationGlobal.musicService;
-import static com.speakerband.ClaseAplicationGlobal.soyElLider;
-import static com.speakerband.network.MessageType.SONG_SEND_START;
+import static com.speakerband.ClaseApplicationGlobal.controllerSongFragmen;
+import static com.speakerband.ClaseApplicationGlobal.listSelection;
+import static com.speakerband.ClaseApplicationGlobal.listSelectionClinteParaReproducir;
+import static com.speakerband.ClaseApplicationGlobal.musicService;
+import static com.speakerband.ClaseApplicationGlobal.soyElLider;
+import static com.speakerband.musica.modelo.network.MessageType.SONG_SEND_START;
 
 public class SongsFragment extends ListFragment implements MediaPlayerControl
 {
@@ -223,7 +223,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
      */
     public void pullMessage(byte[] readMessage, Context context)
     {
-        // TODO peta aca tambien
+        // TODO peta aca tambien SerializationException: java.io.StreamCorruptedException: Wrong format creo q es porque algo va mal cuando monta el file en el push
         Message message = SerializationUtils.deserialize(readMessage);
         Bitmap bitmap;
         ByteArrayInputStream in;
@@ -261,9 +261,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
                     }
                     SongCursor.encontrarLaCancionEnMilista();
                 }
-                //Actualizamos el Servicio con toda la lista de canciones
-                if (musicService != null)
-                    musicService.setList(listSelectionClinteParaReproducir);
+                progressBar.setVisibility(View.INVISIBLE);
                 break;
 
                 // case de poner en play los dos telefonos
@@ -374,14 +372,14 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     public void prepararMovilParaReploduccionParaPlayDelCliente(ArrayList<Song> listS) {
         if(!listS.isEmpty()) {
             if (musicService != null) {
-                if (primerReproduccion) {
+                //if (primerReproduccion) {
                     musicService.setList(listS);
                     musicService.setSong(listS.get(0));
                     musicService.playSong();
                     primerReproduccion = false;
-                } else {
-                    start();
-                }
+//                } else {
+//                    start();
+//                }
             }
 
             Thread thread;
@@ -459,16 +457,16 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             if (thread != null)
                 thread.interrupt();
 
-            if (primerReproduccion) {
+            //if (primerReproduccion) {
                 if (musicService != null) {
                     musicService.setList(listSelection);
                     musicService.setSong(listSelection.get(0));
                     musicService.playSong();
                     primerReproduccion = false;
                 }
-            } else {
-                start();
-            }
+//            } else {
+//                start();
+//            }
 
             syncButton.setEnabled(false);
             escribirMenssge("Se esta reproduciendo " + listSelection.get(musicService.getSongPosition()).getTitle());
@@ -509,12 +507,8 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             byte[] byteArrayPrepararPlay = ("pausar cancion").getBytes();
             thread = envioMensajesAlOtroDispositivoParaDescarga(MessageType.PLAY_PAUSE, byteArrayPrepararPlay);
 
-            start2();
-
             if (thread != null)
                 thread.interrupt();
-
-            escribirMenssge("Se ha pausado la cancion " + listSelection.get(musicService.getSongPosition()).getTitle());
         } else {
             escribirMenssge("No hay canciones que reproducir ");
             Toast.makeText(getContext(),
@@ -564,22 +558,23 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
             // Esto no hay que tacarlo
             listSelection.get(x).readFile();
 
-            // Pasa la cancion que se va a enviar a Bytes
-            byteArraySong = convertirObjetoArrayBytes(listSelection.get(x));
+            if (listSelection.get(x) != null) {
+                // Pasa la cancion que se va a enviar a Bytes
+                byteArraySong = convertirObjetoArrayBytes(listSelection.get(x));
 
-            thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_SEND_START, byteArraySong);
+                thread = envioMensajesAlOtroDispositivoParaDescarga(SONG_SEND_START, byteArraySong);
 
-            if(dormirApp3Segundos(thread)) {
-                escribirMenssge("Si la cancion no existia en el otro movil, ha sido enviada. \n Cancion : " + listSelection.get(x).getTitle());
-                Toast.makeText(getContext(),
-                        "Se ha enviado una cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
-            } else {
-                escribirMenssge("No se ha enviado la cancion : " + listSelection.get(x).getTitle());
-                Toast.makeText(getContext(),
-                        "No se ha podido enviar la cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
+                if (dormirApp3Segundos(thread)) {
+                    escribirMenssge("Si la cancion no existia en el otro movil, ha sido enviada. \n Cancion : " + listSelection.get(x).getTitle());
+                    Toast.makeText(getContext(),
+                            "Se ha enviado una cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
+                } else {
+                    escribirMenssge("No se ha enviado la cancion : " + listSelection.get(x).getTitle());
+                    Toast.makeText(getContext(),
+                            "No se ha podido enviar la cancion" + listSelection.get(x).getTitle(), Toast.LENGTH_SHORT).show();
+                }
             }
         }
-
         if(listSelection.size() <= 0) {
             escribirMenssge("No hay canciones para enviar. ");
             Toast.makeText(getContext(),
@@ -905,22 +900,6 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         controllerSongFragmen.show(getCurrentPosition());
         if(soyElLider)
             playSongDepuesDePausar();
-    }
-
-    /**
-     *
-     */
-    public void start2()
-    {
-        musicService.pausePlay();
-    }
-
-    /**
-     *
-     */
-    public void pausar()
-    {
-        musicService.pausePlay();
     }
 
     /**

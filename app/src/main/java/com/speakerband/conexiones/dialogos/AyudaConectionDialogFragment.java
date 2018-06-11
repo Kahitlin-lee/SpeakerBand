@@ -1,4 +1,4 @@
-package com.speakerband.conexiones;
+package com.speakerband.conexiones.dialogos;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -9,12 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import com.speakerband.MainActivity;
+import com.speakerband.musica.MainActivity;
 import com.speakerband.R;
-import com.speakerband.WifiBuddy.WifiDirectHandler;
+import com.speakerband.wifibuddy.WifiDirectHandler;
+import com.speakerband.conexiones.ConnectionActivity;
 
-import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentChat;
-import static com.speakerband.ClaseAplicationGlobal.estaEnElFragmentSong;
+import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentChat;
+import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentSong;
 
 public class AyudaConectionDialogFragment extends DialogFragment
 {
@@ -36,14 +37,14 @@ public class AyudaConectionDialogFragment extends DialogFragment
 
         if (getActivity() instanceof MainActivity) {
             alertDialog.setMessage(getString(R.string.texto_ayuda_1));
-        } else if ((getActivity() instanceof ConnectionActivity)){
-            alertDialog.setMessage(getString(R.string.texto_ayuda_2));
         }else if ((getActivity() instanceof ConnectionActivity)
                 && estaEnElFragmentSong){
             alertDialog.setMessage(getString(R.string.texto_ayuda_3));
         }else if ((getActivity() instanceof ConnectionActivity)
-                        && estaEnElFragmentChat){
-                    alertDialog.setMessage(getString(R.string.texto_ayuda_4));
+                && estaEnElFragmentChat){
+            alertDialog.setMessage(getString(R.string.texto_ayuda_4));
+        } else if ((getActivity() instanceof ConnectionActivity)) {
+            alertDialog.setMessage(getString(R.string.texto_ayuda_2));
         }
 
         alertDialog.setPositiveButton("OK",

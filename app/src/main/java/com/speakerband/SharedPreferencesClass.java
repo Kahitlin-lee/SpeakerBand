@@ -6,13 +6,14 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.speakerband.musica.modelo.Song;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.speakerband.ClaseAplicationGlobal.listSelection;
+import static com.speakerband.ClaseApplicationGlobal.listSelection;
 
 /**
  * Created by g_electra on 29/11/17.

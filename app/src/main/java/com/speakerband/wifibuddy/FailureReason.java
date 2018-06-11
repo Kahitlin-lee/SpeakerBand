@@ -1,4 +1,4 @@
-package com.speakerband.WifiBuddy;
+package com.speakerband.wifibuddy;
 
 /**
  * An enum for translating P2P error codes to readable Strings.

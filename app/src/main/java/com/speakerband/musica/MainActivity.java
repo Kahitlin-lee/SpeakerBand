@@ -136,20 +136,17 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //Obtengo la lista de canciones del dispositivo
         songList = getSongListByType(this, typeList, listSelection);
 
-        //Si la lista de canciones no esta vacia
-        if (!songList.isEmpty()) {
-            //Actualizamos el Servicio con toda la lista de canciones
-            if (musicService != null)
-                musicService.setList(songList);
-            RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
+        //Actualizamos el Servicio con toda la lista de canciones
+        if (musicService != null)
+            musicService.setList(songList);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
 
-            //indicamos tipo de layout para el recyclerView
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        //indicamos tipo de layout para el recyclerView
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-            recyclerView.setAdapter(new SongsAdapter(songList, getApplication(), listItemClickListener));
-        } else {
-            showHideTextDependingOnList(typeList);
-        }
+        recyclerView.setAdapter(new SongsAdapter(songList, getApplication(), listItemClickListener));
+
+        showHideTextDependingOnList(typeList);
     }
 
     /**

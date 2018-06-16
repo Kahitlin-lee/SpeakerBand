@@ -496,13 +496,46 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
     public void pullMessage(byte[] readMessage, Context context) {
         Message message = SerializationUtils.deserialize(readMessage);
 
+        boolean vOut;
+
         switch (message.messageType) {
             case SOY_LIDER:
                 Log.i(TAG, "SongPath");
                 sourceDeviceNameOtroMovil = (new String(message.content));
-                yaSePreguntoQuienEsElLiderCliente = true;
-                yaSePreguntoQuienEsElLider = true;
-                soyElLider = false;
+                break;
+
+            case SOY_LIDER_BOOL_1:
+                Log.i(TAG, "SongPath");
+                vOut = message.content[0]!=0;
+                soyElLider = vOut;
+
+                if(soyElLider)
+                    soyElLider = false; // false
+                else
+                    soyElLider = true;
+                break;
+
+            case SOY_LIDER_BOOL_2:
+                Log.i(TAG, "SongPath");
+                vOut = message.content[0]!=0;
+                yaSePreguntoQuienEsElLider = vOut;
+
+                if(yaSePreguntoQuienEsElLider) // false
+                    yaSePreguntoQuienEsElLider = false;
+                else
+                    yaSePreguntoQuienEsElLider = true;
+                break;
+
+            case SOY_LIDER_BOOL_3:
+                Log.i(TAG, "SongPath");
+                vOut = message.content[0]!=0;
+                yaSePreguntoQuienEsElLiderCliente = vOut;
+
+                if(yaSePreguntoQuienEsElLiderCliente)
+                    yaSePreguntoQuienEsElLiderCliente = false;
+                else
+                    yaSePreguntoQuienEsElLiderCliente = true;
+
                 mensageDeEstaActivity = false;
                 preguntarQuienEsELLider();
                 break;
@@ -547,20 +580,27 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
                                 // get user input and set it to result
                                 // edit text
                                 if(!yaSePreguntoQuienEsElLiderCliente) {
+                                    soyElLider = true;
                                     soyLider(userInput.getText().toString(), true);
+                                    Toast.makeText(getContext(),
+                                            "Eres el lider del grupo!!", Toast.LENGTH_SHORT).show();
                                 }
                                 yaSePreguntoQuienEsElLider = true;
                                 sourceDeviceName = userInput.getText().toString();
                             }
-                        })
-                .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                soyElLider = false;
-                                soyLider(userInput.getText().toString(), false);
-                                dialog.cancel();
-                            }
                         });
+
+        if(!yaSePreguntoQuienEsElLiderCliente) {
+            alertDialogBuilder
+                    .setNegativeButton("Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    soyElLider = false;
+                                    soyLider(userInput.getText().toString(), false);
+                                    dialog.cancel();
+                                }
+                            });
+        }
 
         // create alert dialog
         alertDialog = alertDialogBuilder.create();
@@ -614,11 +654,21 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         else
             soyElLider = false;
 
-        Toast.makeText(getContext(),
-                "Eres el lider del grupo!!", Toast.LENGTH_SHORT).show();
-
         Thread thread;
         thread =envioMensajesAlOtroDispositivoParaDescarga(MessageType.SOY_LIDER, byteArrayPrepararPlay);
+
+        byte [] boolByte = new byte[]{(byte) (soyElLider?1:0)};
+
+        thread =envioMensajesAlOtroDispositivoParaDescarga(MessageType.SOY_LIDER_BOOL_1, boolByte);
+
+        boolByte = new byte[]{(byte) (yaSePreguntoQuienEsElLiderCliente?1:0)};
+
+        thread =envioMensajesAlOtroDispositivoParaDescarga(MessageType.SOY_LIDER_BOOL_2, boolByte);
+
+        boolByte = new byte[]{(byte) (yaSePreguntoQuienEsElLider?1:0)};
+
+        thread =envioMensajesAlOtroDispositivoParaDescarga(MessageType.SOY_LIDER_BOOL_3, boolByte);
+
         if (thread != null)
             thread.interrupt();
     }

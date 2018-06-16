@@ -31,6 +31,10 @@ public enum MessageType
      * Señal tipo que Indica quien ha aceptado el valo de linder
      */
     SOY_LIDER,
+
+    SOY_LIDER_BOOL_1,
+    SOY_LIDER_BOOL_2,
+    SOY_LIDER_BOOL_3,
     /**
      *  Señales para poner en play las canciones
      */

@@ -10,8 +10,8 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 /**
- * Handles reading and writing of messages with socket buffers. Uses a Handler
- * to post messages to UI thread for UI updates.
+ * Maneja la lectura y escritura de mensajes con buffers de socket. Utiliza un controlador
+ * para publicar mensajes en el hilo de la interfaz de usuario.
  */
 public class CommunicationManager implements Runnable {
 
@@ -20,12 +20,19 @@ public class CommunicationManager implements Runnable {
     private OutputStream outputStream;
     private static final String TAG = WifiDirectHandler.TAG + "CommManager";
 
+    /**
+     * Constructor
+     * @param socket
+     * @param handler
+     */
     public CommunicationManager(Socket socket, Handler handler) {
         this.socket = socket;
         this.handler = handler;
     }
 
-    // TODO: Add JavaDoc
+    /**
+     * Metodo run
+     */
     @Override
     public void run() {
         try {
@@ -40,7 +47,7 @@ public class CommunicationManager implements Runnable {
 
             while (true) {
                 try {
-                    // Read from the InputStream
+                    // Lee el inputStream con el mensage
                     bytes = inputStream.read(messageSizeBuffer);
                     if (bytes == -1) { break; }
                     messageSize = ByteBuffer.wrap(messageSizeBuffer).getInt();
@@ -55,12 +62,12 @@ public class CommunicationManager implements Runnable {
                     }
                     if (bytes == -1) { break; }
 
-                    // Send the obtained bytes to the UI Activity
+                    // Enviar los bytes obtenidos a la Activity IU
                     // Log.i(TAG, "Rec:" + Arrays.toString(buffer));  --> Provoca una excepcion de memoria.
                     handler.obtainMessage(WifiDirectHandler.MESSAGE_READ,
                             bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
-                    // Sends a message to WifiDirectHandler to handle the disconnect
+                    // Envía un mensaje a WifiDirectHandler para manejar la desconexión
                     handler.obtainMessage(WifiDirectHandler.COMMUNICATION_DISCONNECTED, this).sendToTarget();
                     Log.i(TAG, "Communication disconnected");
                 }
@@ -77,6 +84,10 @@ public class CommunicationManager implements Runnable {
         }
     }
 
+    /**
+     * Escribe el mensaje que se obtine por medio de nun array bytes
+     * @param message
+     */
     public void write(byte[] message) {
         try {
             ByteBuffer sizeBuffer = ByteBuffer.allocate(Integer.SIZE/Byte.SIZE);
@@ -86,7 +97,7 @@ public class CommunicationManager implements Runnable {
             System.arraycopy(message, 0, completeMessage, sizeArray.length, message.length);
             outputStream.write(completeMessage);
         } catch (IOException e) {
-            Log.e(TAG, "Exception during write", e);
+            Log.e(TAG, "Exception durante la escritura", e);
         }
     }
 }

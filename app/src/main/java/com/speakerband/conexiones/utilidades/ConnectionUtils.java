@@ -52,6 +52,7 @@ public class ConnectionUtils {
 
     /**
      * Metodo Otener puerto
+     * Crea un Socket con el puerto 0.
      * @param context
      * @return
      */

@@ -161,15 +161,28 @@ public class SharedPreferencesClass
      *
      * @param isChecked
      */
-    public void storeDialogStatus(boolean isChecked, Context context){
-        SharedPreferences mSharedPreferences = context.getSharedPreferences("CheckItem", MODE_PRIVATE);
-        SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-        mEditor.putBoolean("item", isChecked);
-        mEditor.apply();
+    public void storeDialogStatus(boolean isChecked, Context context, int typeList){
+        if(typeList == 2) {
+            SharedPreferences mSharedPreferences = context.getSharedPreferences("CheckItem2", MODE_PRIVATE);
+            SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+            mEditor.putBoolean("item2", isChecked);
+            mEditor.apply();
+        } else {
+            SharedPreferences mSharedPreferences = context.getSharedPreferences("CheckItem", MODE_PRIVATE);
+            SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+            mEditor.putBoolean("item", isChecked);
+            mEditor.apply();
+        }
+
     }
 
-    public boolean getDialogStatus(Context context){
-        SharedPreferences mSharedPreferences = context.getSharedPreferences("CheckItem", MODE_PRIVATE);
-        return mSharedPreferences.getBoolean("item", false);
+    public boolean getDialogStatus(Context context, int typeList){
+        if(typeList == 2) {
+            SharedPreferences mSharedPreferences = context.getSharedPreferences("CheckItem2", MODE_PRIVATE);
+            return mSharedPreferences.getBoolean("item2", false);
+        } else {
+            SharedPreferences mSharedPreferences = context.getSharedPreferences("CheckItem", MODE_PRIVATE);
+            return mSharedPreferences.getBoolean("item", false);
+        }
     }
 }

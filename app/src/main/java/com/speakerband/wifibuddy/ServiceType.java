@@ -1,5 +1,8 @@
 package com.speakerband.wifibuddy;
 
+/**
+ * Enumerado para el tipo de servicio que es el tcp
+ */
 public enum ServiceType {
 
     PRESENCE_TCP("_presence._tcp");

@@ -9,12 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import com.speakerband.musica.MainActivity;
 import com.speakerband.R;
-import com.speakerband.wifibuddy.WifiDirectHandler;
 import com.speakerband.conexiones.ConnectionActivity;
+import com.speakerband.musica.MainActivity;
+import com.speakerband.wifibuddy.WifiDirectHandler;
 
 import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentChat;
+import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentMain;
 import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentSong;
 
 public class AyudaConectionDialogFragment extends DialogFragment
@@ -37,6 +38,8 @@ public class AyudaConectionDialogFragment extends DialogFragment
 
         if (getActivity() instanceof MainActivity) {
             alertDialog.setMessage(getString(R.string.texto_ayuda_1));
+        }else if ((getActivity() instanceof ConnectionActivity) &&  estaEnElFragmentMain ) {
+                alertDialog.setMessage(" ");
         }else if ((getActivity() instanceof ConnectionActivity)
                 && estaEnElFragmentSong){
             alertDialog.setMessage(getString(R.string.texto_ayuda_3));

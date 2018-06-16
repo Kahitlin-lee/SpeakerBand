@@ -5,7 +5,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import java.util.Map;
 
 /**
- * A class for storing a Bonjour TXT record.
+ * Una clase para almacenar un registro TXT de Bonjour.
  */
 public class DnsSdTxtRecord {
 

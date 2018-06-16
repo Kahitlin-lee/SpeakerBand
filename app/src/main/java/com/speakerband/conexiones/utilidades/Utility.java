@@ -28,7 +28,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * Authored by KaushalD on 8/27/2016.
+ * Authored by Catalina Saavedra
  */
 public class Utility {
 

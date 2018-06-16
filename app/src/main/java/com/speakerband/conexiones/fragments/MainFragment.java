@@ -30,6 +30,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentMain;
+
 /**
  * EL  Fragment principal de la aplicación, que contiene los interruptores
  * y botones para realizar tareas P2P
@@ -140,6 +142,8 @@ public class MainFragment extends Fragment
         });
 
         updateToggles();
+
+        estaEnElFragmentMain = true;
 
         return viewRoot;
     }

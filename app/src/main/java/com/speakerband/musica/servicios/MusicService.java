@@ -413,9 +413,11 @@ public class MusicService extends Service implements
             if(songPosition >= songs.size())
                 songPosition = 0;
         }
-        song = songs.get(songPosition);
-        //lo pongo a falso ya que el unico que podra manejar esto es el lider
-        playSong();
+        if(songs.contains(songPosition)) {
+            song = songs.get(songPosition);
+            //lo pongo a falso ya que el unico que podra manejar esto es el lider
+            playSong();
+        }
     }
 
     /**

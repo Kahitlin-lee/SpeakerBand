@@ -18,13 +18,18 @@ public class OwnerSocketHandler extends Thread {
     private Handler handler;
     private static final String TAG = WifiDirectHandler.TAG + "Ownerw";
 
+    /**
+     * Cosntructor
+     * @param handler
+     * @throws IOException
+     */
     public OwnerSocketHandler(Handler handler) throws IOException {
         try {
             serverSocket = new ServerSocket(WifiDirectHandler.SERVER_PORT);
             this.handler = handler;
-            Log.i(TAG, "Group owner server socket started");
+            Log.i(TAG, "Se inició el socket del servidor propietario del grupo");
         } catch (IOException e) {
-            Log.e(TAG, "Error starting server socket");
+            Log.e(TAG, " socket");
             Log.e(TAG, e.getMessage());
             pool.shutdownNow();
             throw e;
@@ -32,31 +37,35 @@ public class OwnerSocketHandler extends Thread {
     }
 
     /**
-     * A ThreadPool for client sockets.
+     * A ThreadPool para los sockets clientes.
+     * Ejecuta cada tarea enviada usando uno de posiblemente varios subprocesos agrupados.
      */
     private final ThreadPoolExecutor pool = new ThreadPoolExecutor(
             THREAD_COUNT, THREAD_COUNT, 10, TimeUnit.SECONDS,
             new LinkedBlockingQueue<Runnable>());
 
+    /**
+     * Tira el Hilo
+     */
     @Override
     public void run() {
-        Log.i(TAG, "Group owner server socket thread running");
+        Log.i(TAG, "Hilo de socket del servidor propietario del grupo ejecutándose");
         while (true) {
             try {
-                // A blocking operation. Initiate a CommunicationManager instance when
-                // there is a new connection
+                // Una operación de bloqueo. Iniciar una instancia de CommunicationManager cuando
+                // hay una nueva conexión
                 pool.execute(new CommunicationManager(serverSocket.accept(), handler));
-                Log.i(TAG, "Launching the I/O handler");
+                Log.i(TAG, "iniciando el handler I/O ");
             } catch (IOException e) {
-                Log.e(TAG, "Error launching the I/O handler");
+                Log.e(TAG, "Error iniciando handler I/O ");
                 Log.e(TAG, e.getMessage());
                 try {
                     if (serverSocket != null && !serverSocket.isClosed()) {
                         serverSocket.close();
-                        Log.i(TAG, "Server socket closed");
+                        Log.i(TAG, "Server socket cerrado");
                     }
                 } catch (IOException ioe) {
-                    Log.e(TAG, "Error closing socket");
+                    Log.e(TAG, "Error cerrando el socket");
                     Log.e(TAG, ioe.getMessage());
                 }
                 pool.shutdownNow();

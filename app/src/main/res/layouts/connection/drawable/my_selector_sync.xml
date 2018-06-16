@@ -3,7 +3,8 @@
 
     <!-- pressed state -->
     <item android:drawable="@drawable/sync_blaco"
-            android:state_enabled="true"/>
+            android:state_enabled="true"
+        />
     <!-- focused state -->
     <item android:drawable="@drawable/sync_blaco"
            android:state_pressed="true"/>

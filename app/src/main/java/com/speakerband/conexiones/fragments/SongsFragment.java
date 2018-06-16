@@ -34,8 +34,8 @@ import com.speakerband.musica.cursor.SongCursor;
 import com.speakerband.wifibuddy.CommunicationManager;
 import com.speakerband.wifibuddy.WiFiDirectHandlerAccessor;
 import com.speakerband.wifibuddy.WifiDirectHandler;
-import com.speakerband.musica.modelo.network.Message;
-import com.speakerband.musica.modelo.network.MessageType;
+import com.speakerband.conexiones.network.Message;
+import com.speakerband.conexiones.network.MessageType;
 
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -57,13 +57,13 @@ import static com.speakerband.ClaseApplicationGlobal.listSelection;
 import static com.speakerband.ClaseApplicationGlobal.listSelectionClinteParaReproducir;
 import static com.speakerband.ClaseApplicationGlobal.musicService;
 import static com.speakerband.ClaseApplicationGlobal.soyElLider;
-import static com.speakerband.musica.modelo.network.MessageType.SONG_SEND_START;
+import static com.speakerband.conexiones.network.MessageType.SONG_SEND_START;
 
 public class SongsFragment extends ListFragment implements MediaPlayerControl
 {
     //
     private EditText textMessageEditText;
-    private SongsFragment.SongMessageAdapter adapter = null;
+    private SongsFragment.SongMessageAdapter adapter;
     private List<String> items = new ArrayList<>();
     private ArrayList<String> messages = new ArrayList<>();
 
@@ -76,6 +76,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
     //variables de los botones
     private ImageButton syncButton;
     private ImageButton playButton;
+    private ListView messagesListView;
 
     private static final String TAG = WifiDirectHandler.TAG + "ListFragment";
 
@@ -113,7 +114,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
         progressBar.setVisibility(View.INVISIBLE);
 
         //el adaptador es solo usado para los mensajes de texto
-        ListView messagesListView = (ListView) view.findViewById(android.R.id.list);
+        messagesListView = (ListView) view.findViewById(android.R.id.list);
         adapter = new SongsFragment.SongMessageAdapter(getActivity(), android.R.id.text1, items);
         messagesListView.setAdapter(adapter);
         messagesListView.setDividerHeight(0);
@@ -282,6 +283,7 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
                 break;
             case PAUSAR:
                 pause();
+                escribirMenssge("Se ha pausado la cancion: " + listSelectionClinteParaReproducir.get(musicService.getSongPosition()).getTitle());
                 break;
             case PLAY_PAUSE:
                 start();
@@ -527,8 +529,16 @@ public class SongsFragment extends ListFragment implements MediaPlayerControl
      */
     private void pullMessage(String message)
     {
-        adapter.add(message);
-        adapter.notifyDataSetChanged();
+        if (adapter == null)
+        {
+            adapter = new SongsFragment.SongMessageAdapter(getActivity(), android.R.id.text1, items);
+            messagesListView.setAdapter(adapter);
+        }
+        if ( message != null) {
+            adapter.add(message);
+            adapter.notifyDataSetChanged();
+
+        }
     }
 
     /**

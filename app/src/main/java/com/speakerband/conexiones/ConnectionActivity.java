@@ -35,8 +35,8 @@ import com.speakerband.conexiones.dialogos.LogsDialogFragment;
 import com.speakerband.conexiones.fragments.ChatFragment;
 import com.speakerband.conexiones.fragments.MainFragment;
 import com.speakerband.conexiones.fragments.SongsFragment;
-import com.speakerband.musica.modelo.network.Message;
-import com.speakerband.musica.modelo.network.MessageType;
+import com.speakerband.conexiones.network.Message;
+import com.speakerband.conexiones.network.MessageType;
 import com.speakerband.wifibuddy.CommunicationManager;
 import com.speakerband.wifibuddy.DnsSdService;
 import com.speakerband.wifibuddy.WiFiDirectHandlerAccessor;
@@ -46,6 +46,7 @@ import org.apache.commons.lang3.SerializationUtils;
 
 import static com.speakerband.ClaseApplicationGlobal.controllerSongFragmen;
 import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentChat;
+import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentMain;
 import static com.speakerband.ClaseApplicationGlobal.estaEnElFragmentSong;
 import static com.speakerband.ClaseApplicationGlobal.getContext;
 import static com.speakerband.ClaseApplicationGlobal.listSelectionClinteParaReproducir;
@@ -397,9 +398,9 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
         private static final String TAG = WifiDirectHandler.TAG + "CommReceiver";
         @Override
         public void onReceive(Context context, Intent intent) {
-            // Get the intent sent by WifiDirectHandler when a service is found
+            // Obtenga el intent enviado por WifiDirectHandler cuando se encuentre un servicio
             if (intent.getAction().equals(WifiDirectHandler.Action.SERVICE_CONNECTED)) {
-                // This device has connected to another device broadcasting the same service
+                // Este dispositivo se ha conectado a otro dispositivo que transmite el mismo servicio
                 Log.i(TAG, "Service conectado");
                 layoutBotones.setVisibility(View.VISIBLE);
 
@@ -456,6 +457,7 @@ public class ConnectionActivity extends AppCompatActivity implements WiFiDirectH
 
     public void eliminarTodosFragments()
     {
+        estaEnElFragmentMain = false;
         int numeroFragments = getSupportFragmentManager().getBackStackEntryCount();
         for (int i=0; i<numeroFragments; i++)
         {// TODO cada tanto peta aca     java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState

@@ -39,7 +39,9 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// TODO: Add JavaDoc
+/**
+ *  Clase principal de WiFi Direct, esta clase es la que maneja todo
+ */
 public class WifiDirectHandler extends NonStopIntentService implements
         WifiP2pManager.ConnectionInfoListener,
         Handler.Callback {
@@ -79,11 +81,11 @@ public class WifiDirectHandler extends NonStopIntentService implements
     private boolean serviceDiscoveryRegistered = false;
     private boolean stopDiscoveryAfterGroupFormed = true;
 
-    // Flag for creating a no prompt service
+    // Banderas
     private boolean isCreatingNoPrompt = false;
     private ServiceData noPromptServiceData;
 
-    // Variables created in onCreate()
+    // Variables que se crean en el  onCreate()
     private WifiP2pManager.Channel channel;
     private WifiP2pManager wifiP2pManager;
     private WifiManager wifiManager;
@@ -101,20 +103,20 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
     /**
-     * Registers the Wi-Fi manager, registers the app with the Wi-Fi P2P framework, registers the
-     * P2P BroadcastReceiver, and registers a local BroadcastManager
+     * Registra el administrador  Wi-Fi,
+     * Registra el  BroadcastReceiver P2P, y registra un BroadcastManager local
      */
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "Creating WifiDirectHandler");
 
-        // Registers the Wi-Fi Manager and the Wi-Fi BroadcastReceiver
+        // Registra el Wi-Fi Manager y el Wi-Fi BroadcastReceiver
         wifiManager = ((ClaseApplicationGlobal)getApplication()).getWifiManager(); //(WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
 
         registerWifiReceiver();
 
-        // Scans for available Wi-Fi networks
+        // Explora las redes Wi-Fi disponibles
         wifiManager.startScan();
 
         if (wifiManager.isWifiEnabled()) {
@@ -123,28 +125,28 @@ public class WifiDirectHandler extends NonStopIntentService implements
             Log.i(TAG, "Wi-Fi disabled on load");
         }
 
-        // Registers a local BroadcastManager that is used to broadcast Intents to Activities
+        // Registra un BroadcastManager local que se usa para transmitir intenciones a actividades
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
         Log.i(TAG, "WifiDirectHandler created");
     }
 
     /**
-     * Registers the application with the Wi-Fi P2P framework
-     * Initializes the P2P manager and gets a P2P communication channel
+     * Registra la aplicación con el framework Wi-Fi P2P
+     * Inicializa el administrador P2P y obtiene un canal de comunicación P2P
      */
     public void registerP2p() {
         // Manages Wi-Fi P2P connectivity
         wifiP2pManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
 
-        // initialize() registers the app with the Wi-Fi P2P framework
-        // Channel is used to communicate with the Wi-Fi P2P framework
-        // Main Looper is the Looper for the main thread of the current process
+        // initialize() registra la aplicación con el Wi-Fi P2P framework
+        // El canal se usa para comunicarse con el Wi-Fi P2P framework
+        //Main Looper es el Looper para el hilo principal del proceso actual
         channel = wifiP2pManager.initialize(this, getMainLooper(), null);
         Log.i(TAG, "Registered with Wi-Fi P2P framework");
     }
 
     /**
-     * Unregisters the application with the Wi-Fi P2P framework
+     * Anula el registro de la aplicación con el framework Wi-Fi P2P
      */
     public void unregisterP2p() {
         if (wifiP2pManager != null) {
@@ -157,20 +159,20 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
     /**
-     * Registers a WifiDirectBroadcastReceiver with an IntentFilter listening for P2P Actions
+     * Registra  WifiDirectBroadcastReceiver con un IntentFilter escuchando acciones P2P
      */
     public void registerP2pReceiver()
     {
         p2pBroadcastReceiver = new WifiDirectBroadcastReceiver();
 
         IntentFilter intentFilter = new IntentFilter();
-        // Indicates a change in the list of available peers
+        // Indica un cambio en la lista de pares disponibles
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        // Indicates a change in the Wi-Fi P2P status
+        // Indica un cambio en el estado de Wi-Fi P2P
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        // Indicates the state of Wi-Fi P2P connectivity has changed
+        // Indica que el estado de la conectividad Wi-Fi P2P ha cambiado
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        // Indicates this device's details have changed.
+        // Indica que los detalles de este dispositivo han cambiado.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
         registerReceiver(p2pBroadcastReceiver, intentFilter);
@@ -215,7 +217,7 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
     /**
-     * The requested connection info is available
+     * la información de conexión solicitada está disponible
      * @param wifiP2pInfo Wi-Fi P2P connection info
      */
     @Override
@@ -238,19 +240,19 @@ public class WifiDirectHandler extends NonStopIntentService implements
 //            Thread handler;
             if (wifiP2pInfo.isGroupOwner && socketHandler == null)
             {
-                Log.i(TAG, "Connected as group owner");
+                Log.i(TAG, "Conecta con el group owner/lider");
                 try {
                     socketHandler = new OwnerSocketHandler(this.getHandler());
                     socketHandler.start();
                 } catch (IOException e) {
-                    Log.e(TAG, "Failed to create a server thread - " + e.getMessage());
+                    Log.e(TAG, "Error al crear un hilo de servidor - " + e.getMessage());
                     return;
                 }
             }
             //TODO El hacer mas restrictivo este else soluciona el problema de que se conectara consigo mismo.
             else if (!wifiP2pInfo.isGroupOwner && socketHandler == null)
             {
-                Log.i(TAG, "Connected as peer");
+                Log.i(TAG, "Conectando con el cliente");
                 socketHandler = new ClientSocketHandler(this.getHandler(), wifiP2pInfo.groupOwnerAddress);
                 socketHandler.start();
             }
@@ -258,25 +260,29 @@ public class WifiDirectHandler extends NonStopIntentService implements
 //            localBroadcastManager.sendBroadcast(new Intent(Action.SERVICE_CONNECTED));
         }
         else {
-            Log.w(TAG, "Group not formed");
+            Log.w(TAG, "Group no formado");
         }
         localBroadcastManager.sendBroadcast(new Intent(Action.DEVICE_CHANGED));
     }
 
-    // TODO add JavaDoc
+    /**
+     * Crear un servicio local:
+     * @param serviceName
+     * @param serviceRecord
+     */
     public void addLocalService(String serviceName, HashMap<String, String> serviceRecord) {
 
-        // Logs information about local service
+        // Registra información sobre el servicio local
         Log.i(TAG, "Adding local service: " + serviceName);
 
-        // Service information
+        // Servicio info
         wifiP2pServiceInfo = WifiP2pDnsSdServiceInfo.newInstance(
                 serviceName,
                 ServiceType.PRESENCE_TCP.toString(),
                 serviceRecord
         );
 
-        // Only add a local service if clearLocalServices succeeds
+        // Solo agregue un servicio local si clearLocalServices tira
         wifiP2pManager.clearLocalServices(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -385,13 +391,13 @@ public class WifiDirectHandler extends NonStopIntentService implements
 
 
     /*
-     * Registers listeners for DNS-SD services. These are callbacks invoked
-     * by the system when a service is actually discovered.
+     * Registra oyentes para servicios DNS-SD. Estos son callbacks llamados
+     * por el sistema cuando se descubre realmente un servicio.
      */
     private void registerServiceDiscoveryListeners() {
         // DnsSdTxtRecordListener
-        // Interface for callback invocation when Bonjour TXT record is available for a service
-        // Used to listen for incoming records and get peer device information
+        // Interfaz para la invocar la devolución de llamada cuando el registro Bonjour TXT está disponible para un servicio
+        // Se usa para escuchar los registros entrantes y obtener información del dispositivo del mismo nivel
         WifiP2pManager.DnsSdTxtRecordListener txtRecordListener = new WifiP2pManager.DnsSdTxtRecordListener() {
             @Override
             public void onDnsSdTxtRecordAvailable(String fullDomainName, Map<String, String> txtRecordMap, WifiP2pDevice srcDevice) {
@@ -405,14 +411,12 @@ public class WifiDirectHandler extends NonStopIntentService implements
             }
         };
 
-        // DnsSdServiceResponseListener
-        // Interface for callback invocation when Bonjour service discovery response is received
-        // Used to get service information
+         // DnsSdServiceResponseListener
+        // Interfaz para invocar la  devolución de llamada cuando se recibe respuesta del servicio Bonjour
+        // Utilizado para obtener información de servicio
         WifiP2pManager.DnsSdServiceResponseListener serviceResponseListener = new WifiP2pManager.DnsSdServiceResponseListener() {
             @Override
             public void onDnsSdServiceAvailable(String instanceName, String registrationType, WifiP2pDevice srcDevice) {
-                // Not sure if we want to track the map here or just send the service in the request to let the caller do
-                // what it wants with it
 
                 Log.i(TAG, "DNS-SD service available");
                 Log.i(TAG, "Local service found: " + instanceName);
@@ -429,16 +433,26 @@ public class WifiDirectHandler extends NonStopIntentService implements
         Log.i(TAG, "Service discovery listeners registered");
     }
 
+    /**
+     * Este método también requiere que un oyente informe sobre el éxito o el fracaso.
+     */
     private void addServiceDiscoveryRequest() {
         serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
 
-        // Tell the framework we want to scan for services. Prerequisite for discovering services
+        // Indica el framework en el que queremos escanear los servicios. Requisito previo para descubrir servicios
         wifiP2pManager.addServiceRequest(channel, serviceRequest, new WifiP2pManager.ActionListener() {
+            /**
+             * Éxito
+             */
             @Override
             public void onSuccess() {
                 Log.i(TAG, "Service discovery request added");
             }
 
+            /**
+             * falló. Verifique P2P_UNSUPPORTED, ERROR o OCUPADO
+             * @param reason
+             */
             @Override
             public void onFailure(int reason) {
                 Log.e(TAG, "Failure adding service discovery request: " + FailureReason.fromInteger(reason).toString());
@@ -467,11 +481,12 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
     /**
-     * Initiates a service discovery. This has a 2 minute timeout. To continuously
-     * discover services use continuouslyDiscoverServices
+     * Inicia un descubrimiento de servicio. Esto tiene un tiempo de espera de 2 minutos.
+     * Para continuamente descubrir servicios utilizar continuouslyDiscoverServices
+     *
      */
     public void discoverServices(){
-        // Initiates service discovery. Starts to scan for services we want to connect to
+        // Comienza/Inicia el descubrimiento de servicio. Comienza a buscar servicios a los que queremos conectarnos
         wifiP2pManager.discoverServices(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -486,8 +501,8 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
     /**
-     * Calls initial services discovery call and submits the first
-     * Discover task. This will continue until stopDiscoveringServices is called
+     * Llama al descubrimiento inicial del servicio y lo envia
+     * Este continuará hasta que se llame a stopDiscoveringServices
      */
     public void continuouslyDiscoverServices(){
         Log.i(TAG, "Continuously Discover services called");
@@ -498,26 +513,28 @@ public class WifiDirectHandler extends NonStopIntentService implements
             serviceDiscoveryRegistered = true;
         }
 
-        // TODO Change this to give some sort of status
         if (isDiscovering){
             Log.w(TAG, "Services are still discovering, do not need to make this call");
         } else {
             addServiceDiscoveryRequest();
             isDiscovering = true;
-            // List to track discovery tasks in progress
+            // Lista para rastrear tareas  en curso
             serviceDiscoveryTasks = new ArrayList<>();
-            // Make discover call and first discover task submission
+            // Hacer descubrir llamada y descubrir primero el envío de tareas
             discoverServices();
             submitServiceDiscoveryTask();
         }
     }
 
+    /**
+     * Para el Servicio
+     */
     public void stopServiceDiscovery() {
         Log.i(TAG, "Stopping service discovery");
         if (isDiscovering) {
             dnsSdServiceMap = new HashMap<>();
             dnsSdTxtRecordMap = new HashMap<>();
-            // Cancel all discover tasks that may be in progress
+            // Cancelar todas las tareas de descubrimiento que pueden estar en progreso
             for (ServiceDiscoveryTask serviceDiscoveryTask : serviceDiscoveryTasks) {
                 serviceDiscoveryTask.cancel();
             }
@@ -528,6 +545,9 @@ public class WifiDirectHandler extends NonStopIntentService implements
         }
     }
 
+    /**
+     * Reseta el descubrimiento de servicio
+     */
     public void resetServiceDiscovery() {
         Log.i(TAG, "Resetting service discovery");
         stopServiceDiscovery();
@@ -535,23 +555,24 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
     /**
-     * Submits a new task to initiate service discovery after the discovery
-     * timeout period has expired
+     * Envía una nueva tarea para iniciar el descubrimiento del servicio después del primer descubrimiento
+     * el tiempo de espera ha terminado
      */
     private void submitServiceDiscoveryTask(){
         Log.i(TAG, "Submitting service discovery task");
-        // Discover times out after 2 minutes so we set the timer to that
+        //  El tiempo de espera después de 2 minutos
         int timeToWait = SERVICE_DISCOVERY_TIMEOUT;
         ServiceDiscoveryTask serviceDiscoveryTask = new ServiceDiscoveryTask();
         Timer timer = new Timer();
-        // Submit the service discovery task and add it to the list
+        // Envíe la tarea de descubrimiento de servicio y agréguela a la lista
         timer.schedule(serviceDiscoveryTask, timeToWait);
         serviceDiscoveryTasks.add(serviceDiscoveryTask);
     }
 
     /**
-     * Timed task to initiate a new services discovery. Will recursively submit
-     * a new task as long as isDiscovering is true
+     * Tarea programada para iniciar un nuevo descubrimiento de servicios.
+     * Presentará de forma recursiva
+     * nueva tarea, siempre y cuando isDiscovering sea true
      */
     private class ServiceDiscoveryTask extends TimerTask {
         public void run() {
@@ -625,35 +646,35 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
     /**
-     * Initiates a connection to a service
-     * @param service The service to connect to
+     * Inicia una conexión a un servicio
+     * @param service El servicio para conectarse
      */
     public void initiateConnectToService(DnsSdService service) {
-        // Device info of peer to connect to
+        // Device info del peer se conecta
         WifiP2pConfig wifiP2pConfig = new WifiP2pConfig();
         wifiP2pConfig.deviceAddress = service.getSrcDevice().deviceAddress;
         wifiP2pConfig.wps.setup = WpsInfo.PBC;
 
-        // Starts a peer-to-peer connection with a device with the specified configuration
+        // Starts la conexion  peer-to-peer  con un dispositivo con la configuración especifico
         wifiP2pManager.connect(channel, wifiP2pConfig, new WifiP2pManager.ActionListener() {
-            // The ActionListener only notifies that initiation of connection has succeeded or failed
-
+            // El ActionListener solo notifica que el inicio de la conexión ha tenido éxito o ha fallado
             @Override
             public void onSuccess() {
-                Log.i(TAG, "Initiating connection to service");
+                Log.i(TAG, "Iniciando la conexión al servicio");
             }
 
             @Override
             public void onFailure(int reason) {
-                Log.e(TAG, "Failure initiating connection to service: " + FailureReason.fromInteger(reason).toString());
+                Log.e(TAG, "Error al iniciar la conexión al servicio:" + FailureReason.fromInteger(reason).toString());
             }
         });
     }
 
     /**
-     * Creates a service that can be connected to without prompting. This is possible by creating an
-     * access point and broadcasting the password for peers to use. Peers connect via normal wifi, not
-     * wifi direct, but the effect is the same.
+     * Crea un servicio al que se puede conectar sin preguntar. Esto es posible creando un
+     * punto de acceso y transmisión de la contraseña para que los pares la amigos.
+     Los compañeros se conectan a través de wifi normal, no
+     * wifi direc, pero el efecto es el mismo.
      * TODO -- Al crear un grupo tambien estamos forzando a que sea groupowner, asi que en el futuro
      * TODO -- estaria muy bien forzar esa opcion: poder elegir quien es groupowner
      */
@@ -710,7 +731,10 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
 
-
+    /**
+     *
+     * @param intent
+     */
     @Override
     protected void onHandleIntent(Intent intent) {
         String action = intent.getAction();
@@ -782,7 +806,7 @@ public class WifiDirectHandler extends NonStopIntentService implements
     private void handlePeersChanged(Intent intent) {
         Log.i(TAG, "List of discovered peers changed");
         if (wifiP2pManager != null) {
-            // Request the updated list of discovered peers from wifiP2PManager
+            // Solicite la lista actualizada de peers descubiertos de wifiP2PManager
             wifiP2pManager.requestPeers(channel, new WifiP2pManager.PeerListListener() {
                 @Override
                 public void onPeersAvailable(WifiP2pDeviceList peers) {
@@ -808,7 +832,7 @@ public class WifiDirectHandler extends NonStopIntentService implements
             return;
         }
 
-        // Extra information from EXTRA_NETWORK_INFO
+        // Extra informacion  EXTRA_NETWORK_INFO
         NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
         if(networkInfo.isConnected()) {
             Log.i(TAG, "Connected to P2P network. Requesting connection info");
@@ -818,7 +842,7 @@ public class WifiDirectHandler extends NonStopIntentService implements
             localBroadcastManager.sendBroadcast(disconnected);
         }
 
-        // Requests peer-to-peer group information
+        // Solicita información de grupo de peer-to-peer (Igual a igual)
         wifiP2pManager.requestGroupInfo(channel, new WifiP2pManager.GroupInfoListener() {
             @Override
             public void onGroupInfoAvailable(WifiP2pGroup wifiP2pGroup) {
@@ -942,7 +966,6 @@ public class WifiDirectHandler extends NonStopIntentService implements
                 NO_PROMPT_NETWORK_PASS = "passphrase";
     }
 
-    // TODO: Add JavaDoc
     private class WifiDirectBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {

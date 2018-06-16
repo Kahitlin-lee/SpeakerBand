@@ -9,8 +9,9 @@ import android.os.Looper;
 import android.os.Message;
 
 /*
- * This class comes from  Graeme on StackOverflow: http://stackoverflow.com/users/726954/graeme
- * Link to the answer: http://stackoverflow.com/a/9944203/2354849
+ * Esta clase la he sacado de StackOverflow: http://stackoverflow.com/users/726954/graeme
+ *  http://stackoverflow.com/a/9944203/2354849
+ *  La clase WifiDirectHandler extiende de esta
  */
 public abstract class NonStopIntentService extends Service {
 
@@ -23,6 +24,9 @@ public abstract class NonStopIntentService extends Service {
         mName = name;
     }
 
+    /**
+     *
+     */
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
             super(looper);
@@ -31,10 +35,12 @@ public abstract class NonStopIntentService extends Service {
         @Override
         public void handleMessage(Message msg) {
             onHandleIntent((Intent)msg.obj);
-            // stopSelf(msg.arg1); <-- Removed
         }
     }
 
+    /**
+     *
+     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -45,6 +51,11 @@ public abstract class NonStopIntentService extends Service {
         mServiceHandler = new ServiceHandler(mServiceLooper);
     }
 
+    /**
+     *
+     * @param intent
+     * @param startId
+     */
     @Override
     public void onStart(Intent intent, int startId) {
         Message msg = mServiceHandler.obtainMessage();
@@ -53,17 +64,32 @@ public abstract class NonStopIntentService extends Service {
         mServiceHandler.sendMessage(msg);
     }
 
+    /**
+     *
+     * @param intent
+     * @param flags
+     * @param startId
+     * @return
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         onStart(intent, startId);
         return START_STICKY;
     }
 
+    /**
+     *
+     */
     @Override
     public void onDestroy() {
         mServiceLooper.quit();
     }
 
+    /**
+     *
+     * @param intent
+     * @return
+     */
     @Override
     public IBinder onBind(Intent intent) {
         // Auto-generated method stub
@@ -71,11 +97,11 @@ public abstract class NonStopIntentService extends Service {
     }
 
     /**
-     * This method is invoked on the worker thread with a request to process.
-     * Only one Intent is processed at a time, but the processing happens on a
-     * worker thread that runs independently from other application logic.
-     * So, if this code takes a long time, it will hold up other requests to
-     * the same IntentService, but it will not hold up anything else.
+     * Este método se invoca en el hilo del trabajador con una solicitud de proceso.
+     * Solo se procesa un intent a la vez, pero el procesamiento ocurre en un
+     * hilo de trabajo que se ejecuta independientemente de otra lógica de aplicación.
+     * Entonces, si este código lleva mucho tiempo, retendrá otras solicitudes para
+     * el mismo IntentService, pero no soportará nada más.
      *
      * @param intent The value passed to {@link
      *               android.content.Context#startService(Intent)}.

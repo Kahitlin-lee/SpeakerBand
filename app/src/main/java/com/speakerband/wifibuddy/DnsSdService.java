@@ -3,7 +3,7 @@ package com.speakerband.wifibuddy;
 import android.net.wifi.p2p.WifiP2pDevice;
 
 /**
- * A class for storing Bonjour service information that is advertised over a Wi-Fi P2P connection.
+ * La clase para almacenar la información del servicio Bonjour que se anuncia a través de una conexión Wi-Fi P2P.
  */
 public class DnsSdService{
 
@@ -20,7 +20,7 @@ public class DnsSdService{
     public String getInstanceName() { return instanceName; }
     public WifiP2pDevice getSrcDevice() {
         //if(srcDevice!=null)
-        // TODO reresa nulo que lo vea juanpe
+        // TODO da problemas, usar con mucho cuidado porque sino regresa null
             return srcDevice;
     }
 

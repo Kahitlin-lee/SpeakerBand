@@ -290,12 +290,12 @@ public class WifiDirectHandler extends NonStopIntentService implements
                 wifiP2pManager.addLocalService(channel, wifiP2pServiceInfo, new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
-                        Log.i(TAG, "Local service added");
+                        Log.i(TAG, "Servicio local agregado");
                     }
 
                     @Override
                     public void onFailure(int reason) {
-                        Log.e(TAG, "Failure adding local service: " + FailureReason.fromInteger(reason).toString());
+                        Log.e(TAG, "Error al agregar servicio local: " + FailureReason.fromInteger(reason).toString());
                         wifiP2pServiceInfo = null;
                     }
                 });
@@ -303,7 +303,7 @@ public class WifiDirectHandler extends NonStopIntentService implements
 
             @Override
             public void onFailure(int reason) {
-                Log.e(TAG, "Failure clearing local services: " + FailureReason.fromInteger(reason).toString());
+                Log.e(TAG, "Ha fallado al borrar los servicios locales: " + FailureReason.fromInteger(reason).toString());
                 wifiP2pServiceInfo = null;
             }
         });
@@ -655,7 +655,7 @@ public class WifiDirectHandler extends NonStopIntentService implements
         wifiP2pConfig.deviceAddress = service.getSrcDevice().deviceAddress;
         wifiP2pConfig.wps.setup = WpsInfo.PBC;
 
-        // Starts la conexion  peer-to-peer  con un dispositivo con la configuración especifico
+        // Start la conexion  peer-to-peer  con un dispositivo con la configuración especifico
         wifiP2pManager.connect(channel, wifiP2pConfig, new WifiP2pManager.ActionListener() {
             // El ActionListener solo notifica que el inicio de la conexión ha tenido éxito o ha fallado
             @Override
@@ -799,8 +799,8 @@ public class WifiDirectHandler extends NonStopIntentService implements
     }
 
     /**
-     * The list of discovered peers has changed
-     * Available extras: EXTRA_P2P_DEVICE_LIST
+     * La lista de pares descubiertos ha cambiado
+     * Extras disponibles: EXTRA_P2P_DEVICE_LIST
      * @param intent
      */
     private void handlePeersChanged(Intent intent) {
